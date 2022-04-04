@@ -43,7 +43,7 @@ class Rep:  # (abc.ABC):
     # @abc.abstractmethod
     @classmethod
     def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
-        # return a numpy array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
+        # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
         pass
 
     # @abc.abstractmethod

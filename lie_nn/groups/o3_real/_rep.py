@@ -1,6 +1,3 @@
-# book keeping for O3
-
-import itertools
 from dataclasses import dataclass
 from typing import Iterator, List
 
@@ -9,6 +6,8 @@ import jax.numpy as jnp
 from .. import Rep as RepBase
 from ._cg import cg
 from ._j import Jd
+
+_lmax = 8
 
 
 def _rot90_y(l):
@@ -28,15 +27,15 @@ class Rep(RepBase):
     p: int
 
     def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
-        # selection rule
         return [
             Rep(l, ir1.p * ir2.p)
             for l in range(abs(ir1.l - ir2.l), ir1.l + ir2.l + 1)
+            if l <= _lmax  # TODO: à discuter
         ]
 
     @classmethod
     def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
-        # return a numpy array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
+        # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
         if ir3 in ir1 * ir2:
             return cg[(ir1.l, ir2.l, ir3.l)][None]
         else:
@@ -48,10 +47,9 @@ class Rep(RepBase):
 
     @classmethod
     def iterator(cls) -> Iterator['Rep']:
-        # not sure if we need this
-        for l in itertools.count():
-            yield Rep(l, (-1)**l)
-            yield Rep(l, -(-1)**l)
+        for l in range(0, _lmax + 1):
+            yield Rep(l, 1)
+            yield Rep(l, -1)
 
     def discrete_generators(ir: 'Rep') -> jnp.ndarray:
         return ir.p * jnp.eye(ir.dim)[None]
