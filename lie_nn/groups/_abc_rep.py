@@ -34,40 +34,40 @@ def matrix_power(F, n, upper_limit=32):
 
 
 @dataclass(frozen=True)
-class Irrep:  # (abc.ABC):
+class Rep:  # (abc.ABC):
     # @abc.abstractmethod
-    def __mul__(ir1: 'Irrep', ir2: 'Irrep') -> List['Irrep']:
+    def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
         # selection rule
         pass
 
     # @abc.abstractmethod
     @classmethod
-    def clebsch_gordan(cls, ir1: 'Irrep', ir2: 'Irrep', ir3: 'Irrep') -> jnp.ndarray:
+    def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
         # return a numpy array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
         pass
 
     # @abc.abstractmethod
     @property
-    def dim(ir: 'Irrep') -> int:
+    def dim(ir: 'Rep') -> int:
         pass
 
     # @abc.abstractmethod
     @classmethod
-    def iterator(cls) -> Iterator['Irrep']:
+    def iterator(cls) -> Iterator['Rep']:
         # not sure if we need this
         pass
 
     # @abc.abstractmethod
-    def discrete_generators(ir: 'Irrep') -> jnp.ndarray:
+    def discrete_generators(ir: 'Rep') -> jnp.ndarray:
         # return an array of shape ``(lie_group_dimension, ir.dim, ir.dim)``
         pass
 
     # @abc.abstractmethod
-    def continuous_generators(ir: 'Irrep') -> jnp.ndarray:
+    def continuous_generators(ir: 'Rep') -> jnp.ndarray:
         # return an array of shape ``(num_discrete_generators, ir.dim, ir.dim)``
         pass
 
-    def exp_map(ir: 'Irrep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+    def exp_map(ir: 'Rep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
         # return a matrix of shape ``(ir.dim, ir.dim)``
         discrete = jax.vmap(matrix_power)(ir.discrete_generators(), discrete_params)
         output = jax.scipy.linalg.expm(jnp.einsum('a,aij->ij', continuous_params, ir.continuous_generators()))

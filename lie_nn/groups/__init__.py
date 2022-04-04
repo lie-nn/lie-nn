@@ -1,3 +1,3 @@
-from ._irrep import Irrep
+from ._abc_rep import Rep
 
-__all__ = ['Irrep']
+__all__ = ['Rep']
