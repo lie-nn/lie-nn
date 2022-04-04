@@ -25,8 +25,8 @@ def find_version(*file_paths):
 
 
 setup(
-    name='lie-nn',
-    version=find_version("lie-nn", "__init__.py"),
+    name='lie_nn',
+    version=find_version("lie_nn", "__init__.py"),
     description='Tensor Products for Lie Groups',
     long_description=long_description,
     long_description_content_type='text/markdown',

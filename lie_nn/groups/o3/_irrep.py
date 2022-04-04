@@ -6,14 +6,16 @@ from typing import Iterator, List
 
 import numpy as np
 
+from .. import Irrep as IrrepBase
+
 
 @dataclass(frozen=True)
-class Irrep:
+class Irrep(IrrepBase):
     l: int
     p: int
 
-    # selection rule
     def __mul__(ir1: 'Irrep', ir2: 'Irrep') -> List['Irrep']:
+        # selection rule
         return [
             Irrep(l, ir1.p * ir2.p)
             for l in range(abs(ir1.l - ir2.l), ir1.l + ir2.l + 1)
@@ -32,20 +34,35 @@ class Irrep:
     def dim(ir: 'Irrep') -> int:
         return 2 * ir.l + 1
 
-    # not sure if we need this
     @classmethod
     def iterator(cls) -> Iterator['Irrep']:
+        # not sure if we need this
         for l in itertools.count():
             yield Irrep(l, (-1)**l)
             yield Irrep(l, -(-1)**l)
 
-    def discrete_generators(ir: 'Irrep') -> List[np.ndarray]:
-        # return a list of one (2l+1) x (2l+1) matrix
+    def discrete_generators(ir: 'Irrep') -> np.ndarray:
+        return ir.p * np.eye(ir.dim)[None]
 
-        return [ir.p * np.eye(ir.dim)]
-
-    def continuous_generators(ir: 'Irrep') -> List[np.ndarray]:
-        # return a list of three (2l+1) x (2l+1) matrix
-        # TODO: implement this
-        # return [generator_x, generator_y, generator_z]
-        pass
+    def continuous_generators(ir: 'Irrep') -> np.ndarray:
+        if ir.l == 0:
+            return np.ones((3, 1, 1))
+        if ir.l == 1:
+            return np.array([
+                [
+                    [0, 0, 0],
+                    [0, 0, 1],
+                    [0, -1, 0]
+                ],
+                [
+                    [0, 0, -1],
+                    [0, 0, 0],
+                    [1, 0, 0]
+                ],
+                [
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                    [0, 0, 0.0]
+                ],
+            ])
+        # TODO: implement the rest
