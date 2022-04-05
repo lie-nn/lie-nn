@@ -1,7 +1,6 @@
-# import abc
-from dataclasses import dataclass
 from typing import Iterator, List
 
+import chex
 import jax
 import jax.numpy as jnp
 
@@ -33,44 +32,53 @@ def matrix_power(F, n, upper_limit=32):
     return result
 
 
-@dataclass(frozen=True)
-class Rep:  # (abc.ABC):
-    # @abc.abstractmethod
-    def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
+def commutator(A, B):
+    return A @ B - B @ A
+
+
+@chex.dataclass(frozen=True)
+class AbstractRep:
+    def __mul__(ir1: 'AbstractRep', ir2: 'AbstractRep') -> List['AbstractRep']:
         # selection rule
         pass
 
-    # @abc.abstractmethod
     @classmethod
-    def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
+    def clebsch_gordan(cls, ir1: 'AbstractRep', ir2: 'AbstractRep', ir3: 'AbstractRep') -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
         pass
 
-    # @abc.abstractmethod
     @property
-    def dim(ir: 'Rep') -> int:
+    def dim(ir: 'AbstractRep') -> int:
         pass
 
-    # @abc.abstractmethod
     @classmethod
-    def iterator(cls) -> Iterator['Rep']:
+    def iterator(cls) -> Iterator['AbstractRep']:
         # not sure if we need this
         pass
 
-    # @abc.abstractmethod
-    def discrete_generators(ir: 'Rep') -> jnp.ndarray:
+    def discrete_generators(ir: 'AbstractRep') -> jnp.ndarray:
         # return an array of shape ``(lie_group_dimension, ir.dim, ir.dim)``
         pass
 
-    # @abc.abstractmethod
-    def continuous_generators(ir: 'Rep') -> jnp.ndarray:
+    def continuous_generators(ir: 'AbstractRep') -> jnp.ndarray:
         # return an array of shape ``(num_discrete_generators, ir.dim, ir.dim)``
         pass
 
-    def exp_map(ir: 'Rep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+    @classmethod
+    def algebra(cls) -> jnp.ndarray:
+        # [X_i, X_j] = A_ijk X_k
+        pass
+
+    def exp_map(ir: 'AbstractRep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
         # return a matrix of shape ``(ir.dim, ir.dim)``
         discrete = jax.vmap(matrix_power)(ir.discrete_generators(), discrete_params)
         output = jax.scipy.linalg.expm(jnp.einsum('a,aij->ij', continuous_params, ir.continuous_generators()))
         for x in reversed(discrete):
             output = x @ output
         return output
+
+    def test_algebra(ir: 'AbstractRep', rtol=1e-05, atol=1e-08) -> jnp.ndarray:
+        X = ir.continuous_generators()  # (lie_group_dimension, ir.dim, ir.dim)
+        left_side = jax.vmap(jax.vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
+        right_side = jnp.einsum('ijk,kab->ijab', ir.algebra(), X)
+        return jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)

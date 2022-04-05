@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'torch>=1.8.0',
         'jax',
+        'chex',
     ],
     extras_require={
         'dev': [

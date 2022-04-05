@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 from typing import Iterator, List
 
+import chex
 import jax.numpy as jnp
 
-from .. import Rep as RepBase
+from .. import AbstractRep
 from ._cg import cg
 from ._j import Jd
 
@@ -21,14 +21,14 @@ def _rot90_y(l):
     return M
 
 
-@dataclass(frozen=True)
-class Rep(RepBase):
+@chex.dataclass(frozen=True)
+class Rep(AbstractRep):
     l: int
     p: int
 
     def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
         return [
-            Rep(l, ir1.p * ir2.p)
+            Rep(l=l, p=ir1.p * ir2.p)
             for l in range(abs(ir1.l - ir2.l), ir1.l + ir2.l + 1)
             if l <= _lmax  # TODO: à discuter
         ]
@@ -48,8 +48,8 @@ class Rep(RepBase):
     @classmethod
     def iterator(cls) -> Iterator['Rep']:
         for l in range(0, _lmax + 1):
-            yield Rep(l, 1)
-            yield Rep(l, -1)
+            yield Rep(l=l, p=1)
+            yield Rep(l=l, p=-1)
 
     def discrete_generators(ir: 'Rep') -> jnp.ndarray:
         return ir.p * jnp.eye(ir.dim)[None]
@@ -62,5 +62,26 @@ class Rep(RepBase):
 
         Y = jnp.zeros((ir.dim, ir.dim)).at[..., inds, reversed_inds].set(frequencies)
         X = Jd[ir.l] @ Y @ Jd[ir.l]
-        Z = K @ X @ K
+        Z = K.T @ X @ K
         return jnp.stack([X, Y, Z], axis=0)
+
+    @classmethod
+    def algebra(cls) -> jnp.ndarray:
+        # [X_i, X_j] = A_ijk X_k
+        return jnp.array([
+            [
+                [0, 0, 0],
+                [0, 0, 1],
+                [0, -1, 0],
+            ],
+            [
+                [0, 0, -1],
+                [0, 0, 0],
+                [1, 0, 0],
+            ],
+            [
+                [0, 1, 0],
+                [-1, 0, 0],
+                [0, 0, 0.0],
+            ],
+        ])

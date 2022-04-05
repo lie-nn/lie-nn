@@ -1,3 +1,3 @@
-from ._abc_rep import Rep
+from ._abstract_rep import AbstractRep
 
-__all__ = ['Rep']
+__all__ = ['AbstractRep']
