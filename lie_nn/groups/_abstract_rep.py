@@ -96,7 +96,10 @@ class AbstractRep:
                     cg = cls.clebsch_gordan(ir1, ir2, ir3)
                     assert cg.ndim == 1 + 3, (ir1, ir2, ir3, cg.shape)
                     assert cg.shape == (cg.shape[0], ir1.dim, ir2.dim, ir3.dim)
-                    if ir3 not in ir1 * ir2:
+
+                    if ir3 in ir1 * ir2:
+                        assert cg.shape[0] > 0
+                    else:
                         assert cg.shape[0] == 0
 
                     left_side = jnp.einsum('zijk,dlk->zdijl', cg, X3)
