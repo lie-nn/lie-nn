@@ -119,7 +119,7 @@ def clebsch_gordanSU2mat(j1, j2, j3):
         Total angular momentum 3.
     Returns
     -------
-    cg_coeff : numpy.array
+    cg_matrix : numpy.array
         Requested Clebsch-Gordan matrix.
     """
     mat = np.zeros((int(2 * j1 + 1), int(2 * j2 + 1), int(2 * j3 + 1)))
@@ -128,11 +128,11 @@ def clebsch_gordanSU2mat(j1, j2, j3):
             for m2 in (x / 2 for x in range(-int(2 * j2), int(2 * j2) + 1, 2)):
                 if abs(m1 + m2) <= j3:
                     mat[int(j1 + m1), int(j2 + m2), int(j3 + m1 + m2)
-                        ] = clebsch_gordan_coeffs((j1, m1), (j2, m2), (j3, m1 + m2))
+                        ] = clebsch_gordanSU2coeffs((j1, m1), (j2, m2), (j3, m1 + m2))
     return np.array(mat)
 
 
-def clebsch_gordan_coeffs(idx1, idx2, idx3):
+def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
     """Calculates the Clebsch-Gordon coefficient
     for SU(2) coupling (j1,m1) and (j2,m2) to give (j3,m3).
     Parameters
