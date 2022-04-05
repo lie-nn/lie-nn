@@ -37,7 +37,19 @@ class Rep(AbstractRep):
     def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
         if ir3 in ir1 * ir2:
-            return cg[(ir1.l, ir2.l, ir3.l)][None]
+            if ir1.l <= ir2.l <= ir3.l:
+                out = cg[(ir1.l, ir2.l, ir3.l)].reshape(ir1.dim, ir2.dim, ir3.dim)
+            if ir1.l <= ir3.l <= ir2.l:
+                out = cg[(ir1.l, ir3.l, ir2.l)].reshape(ir1.dim, ir3.dim, ir2.dim).transpose(0, 2, 1) * ((-1) ** (ir1.l + ir2.l + ir3.l))
+            if ir2.l <= ir1.l <= ir3.l:
+                out = cg[(ir2.l, ir1.l, ir3.l)].reshape(ir2.dim, ir1.dim, ir3.dim).transpose(1, 0, 2) * ((-1) ** (ir1.l + ir2.l + ir3.l))
+            if ir3.l <= ir2.l <= ir1.l:
+                out = cg[(ir3.l, ir2.l, ir1.l)].reshape(ir3.dim, ir2.dim, ir1.dim).transpose(2, 1, 0) * ((-1) ** (ir1.l + ir2.l + ir3.l))
+            if ir2.l <= ir3.l <= ir1.l:
+                out = cg[(ir2.l, ir3.l, ir1.l)].reshape(ir2.dim, ir3.dim, ir1.dim).transpose(2, 0, 1)
+            if ir3.l <= ir1.l <= ir2.l:
+                out = cg[(ir3.l, ir1.l, ir2.l)].reshape(ir3.dim, ir1.dim, ir2.dim).transpose(1, 2, 0)
+            return out[None]
         else:
             return jnp.zeros((0, ir1.dim, ir2.dim, ir3.dim))
 

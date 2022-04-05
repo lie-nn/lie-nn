@@ -15,12 +15,15 @@ class Rep(AbstractRep):
     j: float  # half integer
 
     def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
-        return [Rep(j=j) for j in range(abs(ir1.j - ir2.j), ir1.j + ir2.j + 1)]
+        return [Rep(j=float(j)) for j in np.arange(abs(ir1.j - ir2.j), ir1.j + ir2.j + 1, 1.0)]
 
     @classmethod
     def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
-        return clebsch_gordanSU2mat(ir1.j, ir2.j, ir3.j)
+        if ir3 in ir1 * ir2:
+            return clebsch_gordanSU2mat(ir1.j, ir2.j, ir3.j)[None]
+        else:
+            return jnp.zeros((0, ir1.dim, ir2.dim, ir3.dim))
 
     @property
     def dim(ir: 'Rep') -> int:
@@ -163,7 +166,7 @@ def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
     vmin = int(np.max([-j1 + j2 + m3, -j1 + m1, 0]))
     vmax = int(np.min([j2 + j3 + m1, j3 - j1 + j2, j3 + m3]))
 
-    C = np.sqrt((2.0 * j3 + 1.0) * factorial(j3 + j1 - j2) * factorial(j3 - j1 + j2) * factorial(j1 + j2 - j3) * factorial(j3 + m3) * factorial(j3 - m3) /
+    C = np.sqrt((2.0 * j3 + 1.0) * factorial(j3 + j1 - j2) * factorial(j3 - j1 + j2) * factorial(j1 + j2 - j3) * factorial(j3 + m3) * factorial(j3 - m3) /  # noqa: W504
                 (factorial(j1 + j2 + j3 + 1) * factorial(j1 - m1) * factorial(j1 + m1) * factorial(j2 - m2) * factorial(j2 + m2)))
     S = 0
     for v in range(vmin, vmax + 1):

@@ -56,11 +56,11 @@ class AbstractRep:
         # not sure if we need this
         pass
 
-    def discrete_generators(ir: 'AbstractRep') -> jnp.ndarray:
+    def continuous_generators(ir: 'AbstractRep') -> jnp.ndarray:
         # return an array of shape ``(lie_group_dimension, ir.dim, ir.dim)``
         pass
 
-    def continuous_generators(ir: 'AbstractRep') -> jnp.ndarray:
+    def discrete_generators(ir: 'AbstractRep') -> jnp.ndarray:
         # return an array of shape ``(num_discrete_generators, ir.dim, ir.dim)``
         pass
 
@@ -82,3 +82,23 @@ class AbstractRep:
         left_side = jax.vmap(jax.vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
         right_side = jnp.einsum('ijk,kab->ijab', ir.algebra(), X)
         return jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
+
+    @classmethod
+    def test_clebsch_gordan(cls, irs: List['AbstractRep'], rtol=1e-05, atol=1e-08):
+        for ir1 in irs:
+            for ir2 in irs:
+                for ir3 in irs:
+                    X1 = ir1.continuous_generators()  # (lie_group_dimension, ir1.dim, ir1.dim)
+                    X2 = ir2.continuous_generators()  # (lie_group_dimension, ir2.dim, ir2.dim)
+                    X3 = ir3.continuous_generators()  # (lie_group_dimension, ir3.dim, ir3.dim)
+
+                    print(ir1, ir2, ir3)
+                    cg = cls.clebsch_gordan(ir1, ir2, ir3)
+                    assert cg.ndim == 1 + 3, (ir1, ir2, ir3, cg.shape)
+                    assert cg.shape == (cg.shape[0], ir1.dim, ir2.dim, ir3.dim)
+                    if ir3 not in ir1 * ir2:
+                        assert cg.shape[0] == 0
+
+                    left_side = jnp.einsum('zijk,dlk->zdijl', cg, X3)
+                    right_side = jnp.einsum('dil,zijk->zdljk', X1, cg) + jnp.einsum('djl,zijk->zdilk', X2, cg)
+                    assert jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
