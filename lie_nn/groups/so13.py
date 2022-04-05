@@ -34,9 +34,10 @@ class Rep(AbstractRep):
 
     @classmethod
     def iterator(cls) -> Iterator['Rep']:
-        for l, k in zip(itertools.count(0)):
-            if (l + k) % 2 == 0:
-                yield Rep(l=l, k=k)
+        for sum in itertools.count(0, 2):
+            for twice_l in range(0, sum + 1):
+                twice_k = sum - twice_l
+                yield Rep(l=twice_l / 2, k=twice_k / 2)
 
     def discrete_generators(ir: 'Rep') -> jnp.ndarray:
         return jnp.zeros((0, ir.dim, ir.dim))
@@ -96,7 +97,7 @@ class Rep(AbstractRep):
 def clebsch_gordanSO13mat(rep1, rep2, rep3, fastcgmat=clebsch_gordanSU2mat):
     """
     Calculates the Clebsch-Gordon matrix
-    for SO(1,3) coupling (l1,k1) and (l2,k2) to give (l3,k3). 
+    for SO(1,3) coupling (l1,k1) and (l2,k2) to give (l3,k3).
     Parameters
     ----------
     rep1 : Tuple(int)
