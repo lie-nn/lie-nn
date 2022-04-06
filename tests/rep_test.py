@@ -1,22 +1,34 @@
 import itertools
 
 import pytest
-from lie_nn.groups.o3_real import Rep as RepO3
-from lie_nn.groups.so3_real import Rep as RepSO3
-# from lie_nn.groups.so13 import Rep as RepSO13
-from lie_nn.groups.su2 import Rep as RepSU2
+from lie_nn.groups import O3Rep, SO3Rep, SU2Rep, SL2Rep, SO13Rep
+
+REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep]  # TODO add SL2Rep and SO13Rep
 
 
-@pytest.mark.parametrize('Rep', [RepO3, RepSU2, RepSO3])
+@pytest.mark.parametrize('Rep', REPRESENTATIONS)
 def test_cg(Rep):
-    irs = list(itertools.islice(Rep.iterator(), 4))
+    reps = list(itertools.islice(Rep.iterator(), 4))
 
-    Rep.test_clebsch_gordan(irs, atol=1e-3, rtol=1e-3)
+    Rep.test_clebsch_gordan(reps, atol=1e-3, rtol=1e-3)
 
 
-@pytest.mark.parametrize('Rep', [RepO3, RepSU2, RepSO3])
+@pytest.mark.parametrize('Rep', REPRESENTATIONS)
 def test_algebra(Rep):
-    irs = list(itertools.islice(Rep.iterator(), 6))
+    reps = list(itertools.islice(Rep.iterator(), 6))
 
-    for ir in irs:
-        ir.test_algebra(atol=1e-3, rtol=1e-3)
+    for rep in reps:
+        rep.test_algebra(atol=1e-3, rtol=1e-3)
+
+
+@pytest.mark.parametrize('Rep', REPRESENTATIONS + [SL2Rep, SO13Rep])
+def test_selection_rule(Rep):
+    reps = list(itertools.islice(Rep.iterator(), 6))
+
+    for rep1, rep2, rep3 in itertools.product(reps, repeat=3):
+        cg = Rep.clebsch_gordan(rep1, rep2, rep3)
+
+        if rep3 in rep1 * rep2:
+            assert cg.shape[0] > 0
+        else:
+            assert cg.shape[0] == 0

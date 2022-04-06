@@ -2,23 +2,22 @@ import itertools
 from math import factorial
 from typing import Iterator, List
 
-import numpy as np
-
 import chex
 import jax.numpy as jnp
+import numpy as np
 
-from . import AbstractRep
+from ._abstract_rep import AbstractRep
 
 
 @chex.dataclass(frozen=True)
-class Rep(AbstractRep):
+class SU2Rep(AbstractRep):
     j: int
 
-    def __mul__(rep1: 'Rep', rep2: 'Rep') -> List['Rep']:
-        return [Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
+    def __mul__(rep1: 'SU2Rep', rep2: 'SU2Rep') -> List['SU2Rep']:
+        return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'Rep', rep2: 'Rep', rep3: 'Rep') -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: 'SU2Rep', rep2: 'SU2Rep', rep3: 'SU2Rep') -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordanSU2mat(rep1.j / 2, rep2.j / 2, rep3.j / 2)[None]
@@ -26,18 +25,18 @@ class Rep(AbstractRep):
             return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
-    def dim(rep: 'Rep') -> int:
+    def dim(rep: 'SU2Rep') -> int:
         return rep.j + 1
 
     @classmethod
-    def iterator(cls) -> Iterator['Rep']:
+    def iterator(cls) -> Iterator['SU2Rep']:
         for j in itertools.count(0):
-            yield Rep(j=j)
+            yield SU2Rep(j=j)
 
-    def discrete_generators(rep: 'Rep') -> jnp.ndarray:
+    def discrete_generators(rep: 'SU2Rep') -> jnp.ndarray:
         return jnp.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: 'Rep') -> jnp.ndarray:
+    def continuous_generators(rep: 'SU2Rep') -> jnp.ndarray:
         hj = rep.j / 2.0  # half-j
         m = jnp.arange(-hj, hj)
         raising = jnp.diag(-jnp.sqrt(hj * (hj + 1) - m * (m + 1)), k=-1)
