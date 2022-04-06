@@ -37,7 +37,7 @@ class Rep(AbstractRep):
         for sum in itertools.count(0, 2):
             for twice_l in range(0, sum + 1):
                 twice_k = sum - twice_l
-                yield Rep(l=twice_l / 2, k=twice_k / 2)
+                yield Rep(l=twice_l, k=twice_k)
 
     def discrete_generators(ir: 'Rep') -> jnp.ndarray:
         return jnp.zeros((0, ir.dim, ir.dim))
