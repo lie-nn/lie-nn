@@ -10,7 +10,7 @@ from .su2 import Rep as SU2Rep
 
 
 def change_basis_real_to_complex(l: int) -> np.ndarray:
-    q = np.zeros((2 * l + 1, 2 * l + 1), dtype=np.complex64)
+    q = np.zeros((2 * l + 1, 2 * l + 1), dtype=np.complex128)
     for m in range(1, l + 1):
         w = 1j**(-m) / np.sqrt(2)
 
@@ -70,20 +70,4 @@ class Rep(AbstractRep):
     @classmethod
     def algebra(cls) -> jnp.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        return jnp.array([
-            [
-                [0, 0, 0],
-                [0, 0, 1],
-                [0, -1, 0],
-            ],
-            [
-                [0, 0, -1],
-                [0, 0, 0],
-                [1, 0, 0],
-            ],
-            [
-                [0, 1, 0],
-                [-1, 0, 0],
-                [0, 0, 0.0],
-            ],
-        ])
+        return SU2Rep.algebra()
