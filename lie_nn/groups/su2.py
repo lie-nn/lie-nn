@@ -12,40 +12,40 @@ from . import AbstractRep
 
 @chex.dataclass(frozen=True)
 class Rep(AbstractRep):
-    j: float  # half integer
+    j: int
 
     def __mul__(rep1: 'Rep', rep2: 'Rep') -> List['Rep']:
-        return [Rep(j=float(j)) for j in np.arange(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 1.0)]
+        return [Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'Rep', rep2: 'Rep', rep3: 'Rep') -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
-            return clebsch_gordanSU2mat(rep1.j, rep2.j, rep3.j)[None]
+            return clebsch_gordanSU2mat(rep1.j / 2, rep2.j / 2, rep3.j / 2)[None]
         else:
             return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
     def dim(rep: 'Rep') -> int:
-        return round(2 * rep.j + 1)
+        return rep.j + 1
 
     @classmethod
     def iterator(cls) -> Iterator['Rep']:
-        for twice_j in itertools.count(0):
-            yield Rep(j=twice_j / 2)
+        for j in itertools.count(0):
+            yield Rep(j=j)
 
     def discrete_generators(rep: 'Rep') -> jnp.ndarray:
         return jnp.zeros((0, rep.dim, rep.dim))
 
     def continuous_generators(rep: 'Rep') -> jnp.ndarray:
-        j = rep.j
-        m = jnp.arange(-j, j)
-        raising = jnp.diag(-jnp.sqrt(j * (j + 1) - m * (m + 1)), k=-1)
+        hj = rep.j / 2.0  # half-j
+        m = jnp.arange(-hj, hj)
+        raising = jnp.diag(-jnp.sqrt(hj * (hj + 1) - m * (m + 1)), k=-1)
 
-        m = jnp.arange(-j + 1, j + 1)
-        lowering = jnp.diag(jnp.sqrt(j * (j + 1) - m * (m - 1)), k=1)
+        m = jnp.arange(-hj + 1, hj + 1)
+        lowering = jnp.diag(jnp.sqrt(hj * (hj + 1) - m * (m - 1)), k=1)
 
-        m = jnp.arange(-j, j + 1)
+        m = jnp.arange(-hj, hj + 1)
         return jnp.stack([
             0.5j * (raising - lowering),  # y (usually)
             jnp.diag(1j * m),  # z (usually)

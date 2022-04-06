@@ -8,7 +8,7 @@ from . import AbstractRep
 from .su2 import Rep as SU2Rep
 
 
-def change_basis_r2c(l):
+def change_basis_real_to_complex(l):
     q = jnp.zeros((2 * l + 1, 2 * l + 1), dtype=jnp.complex64)
     for m in range(-l, 0):
         w = -1j * 1j**m / jnp.sqrt(2)
@@ -34,10 +34,10 @@ class Rep(AbstractRep):
     @classmethod
     def clebsch_gordan(cls, rep1: 'Rep', rep2: 'Rep', rep3: 'Rep') -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
-        C = SU2Rep.clebsch_gordan(SU2Rep(j=rep1.l), SU2Rep(j=rep2.l), SU2Rep(j=rep3.l))
-        Q1 = change_basis_r2c(rep1.l)
-        Q2 = change_basis_r2c(rep2.l)
-        Q3 = change_basis_r2c(rep3.l)
+        C = SU2Rep.clebsch_gordan(SU2Rep(j=2 * rep1.l), SU2Rep(j=2 * rep2.l), SU2Rep(j=2 * rep3.l))
+        Q1 = change_basis_real_to_complex(rep1.l)
+        Q2 = change_basis_real_to_complex(rep2.l)
+        Q3 = change_basis_real_to_complex(rep3.l)
         C = jnp.einsum('ij,kl,mn,zikn->zjlm', Q1, Q2, jnp.conj(Q3.T), C)
 
         # make it real
@@ -59,8 +59,8 @@ class Rep(AbstractRep):
             yield Rep(l=l)
 
     def continuous_generators(rep: 'Rep') -> jnp.ndarray:
-        X = SU2Rep(j=rep.l).continuous_generators()
-        Q = change_basis_r2c(rep.l)
+        X = SU2Rep(j=2 * rep.l).continuous_generators()
+        Q = change_basis_real_to_complex(rep.l)
         X = jnp.conj(Q.T) @ X @ Q
         # assert jnp.max(jnp.abs(jnp.imag(X))) < 1e-5
         return jnp.real(X)
