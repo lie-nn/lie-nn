@@ -11,15 +11,13 @@ from .su2 import Rep as SU2Rep
 
 def change_basis_real_to_complex(l: int) -> np.ndarray:
     q = np.zeros((2 * l + 1, 2 * l + 1), dtype=np.complex64)
-    for m in range(-l, 0):
-        w = -1j * 1j**m / np.sqrt(2)
-        q[l + m, l + m] = w
-        q[l - m, l + m] = -w
-
     for m in range(1, l + 1):
-        w = 1j**(-m) / jnp.sqrt(2)
-        q[l + m, l + m] = w
+        w = 1j**(-m) / np.sqrt(2)
+
+        q[l - m, l - m] = -1j * w
         q[l - m, l + m] = w
+        q[l + m, l - m] = 1j * w
+        q[l + m, l + m] = w
 
     q[l, l] = 1
     return q
