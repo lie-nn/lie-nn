@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Iterator, List
 
 import chex
@@ -36,6 +37,27 @@ def commutator(A, B):
     return A @ B - B @ A
 
 
+def kron(A, *BCD):
+    if len(BCD) == 0:
+        return A
+    return jnp.kron(A, kron(*BCD))
+
+
+@partial(jax.jit, static_argnums=(0, 1, 2))
+def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep'):
+    X1 = rep1.continuous_generators()
+    X2 = rep2.continuous_generators()
+    X3 = rep3.continuous_generators()
+
+    I1 = jnp.eye(rep1.dim)
+    I2 = jnp.eye(rep2.dim)
+    I3 = jnp.eye(rep3.dim)
+
+    A = jax.vmap(lambda X1, X2, X3: kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, jnp.conj(X3)))(X1, X2, X3)
+    A = jnp.sum(jnp.conj(A.swapaxes(1, 2)) @ A, axis=0)
+    return A
+
+
 @chex.dataclass(frozen=True)
 class AbstractRep:
     def __mul__(rep1: 'AbstractRep', rep2: 'AbstractRep') -> List['AbstractRep']:
@@ -44,8 +66,25 @@ class AbstractRep:
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
-        pass
+        r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
+
+        Args:
+            rep1: The first input representation.
+            rep2: The second input representation.
+            rep3: The output representation.
+
+        Returns:
+            The Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
+            It is an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``.
+        """
+        epsilon = 1e-4
+
+        val, vec = jnp.linalg.eigh(clebsch_gordan_linear_system(rep1, rep2, rep3))
+
+        cg = vec.T[jnp.abs(val) < epsilon]
+        cg = jax.vmap(lambda x: x / x[jnp.nonzero(jnp.abs(x) > epsilon, size=1, fill_value=0)[0][0]])(cg)  # fix the phase
+        cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
+        return cg
 
     @property
     def dim(rep: 'AbstractRep') -> int:

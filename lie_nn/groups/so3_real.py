@@ -42,7 +42,7 @@ class Rep(AbstractRep):
 
         # make it real
         C = 1j**(rep1.l + rep2.l + rep3.l) * C
-        assert jnp.all(jnp.abs(jnp.imag(C)) < 1e-5)
+        # assert jnp.all(jnp.abs(jnp.imag(C)) < 1e-5)
         C = jnp.real(C)
 
         # normalization
@@ -62,7 +62,7 @@ class Rep(AbstractRep):
         X = SU2Rep(j=rep.l).continuous_generators()
         Q = change_basis_r2c(rep.l)
         X = jnp.conj(Q.T) @ X @ Q
-        assert jnp.max(jnp.abs(jnp.imag(X))) < 1e-5
+        # assert jnp.max(jnp.abs(jnp.imag(X))) < 1e-5
         return jnp.real(X)
 
     def discrete_generators(rep: 'Rep') -> jnp.ndarray:
