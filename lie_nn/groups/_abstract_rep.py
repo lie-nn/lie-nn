@@ -53,7 +53,7 @@ def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3:
     I2 = jnp.eye(rep2.dim)
     I3 = jnp.eye(rep3.dim)
 
-    A = jax.vmap(lambda X1, X2, X3: kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, jnp.conj(X3)))(X1, X2, X3)
+    A = jax.vmap(lambda X1, X2, X3: kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T))(X1, X2, X3)
     A = jnp.sum(jnp.conj(A.swapaxes(1, 2)) @ A, axis=0)
     return A
 
