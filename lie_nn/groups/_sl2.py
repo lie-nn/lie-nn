@@ -14,26 +14,26 @@ class SL2Rep(AbstractRep):
     l: int  # First integer weight
     k: int  # Second integer weight
 
-    def __mul__(ir1: 'SL2Rep', ir2: 'SL2Rep') -> List['SL2Rep']:
-        lmin = abs(ir1.l - ir2.l)
-        lmax = ir1.l + ir1.l
-        kmin = abs(ir2.k - ir2.k)
-        kmax = ir2.k + ir2.k
+    def __mul__(rep1: 'SL2Rep', rep2: 'SL2Rep') -> List['SL2Rep']:
+        lmin = abs(rep1.l - rep2.l)
+        lmax = rep1.l + rep1.l
+        kmin = abs(rep2.k - rep2.k)
+        kmax = rep2.k + rep2.k
         for l in range(lmin, lmax + 1):
             for k in range(kmin, kmax + 1):
                 yield SL2Rep(l=l, k=k)
 
     @classmethod
-    def clebsch_gordan(cls, ir1: 'SL2Rep', ir2: 'SL2Rep', ir3: 'SL2Rep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
-        if ir3 in ir1 * ir2:
-            return clebsch_gordansl2mat((ir1.l, ir1.k), (ir2.l, ir2.k), (ir3.l, ir3.k))
+    def clebsch_gordan(cls, rep1: 'SL2Rep', rep2: 'SL2Rep', rep3: 'SL2Rep') -> jnp.ndarray:
+        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        if rep3 in rep1 * rep2:
+            return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))
         else:
-            return jnp.zeros((0, ir1.dim, ir2.dim, ir3.dim))
+            return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
-    def dim(ir: 'SL2Rep') -> int:
-        return round((ir.l + 1) * (ir.k + 1))
+    def dim(rep: 'SL2Rep') -> int:
+        return round((rep.l + 1) * (rep.k + 1))
 
     @classmethod
     def iterator(cls) -> Iterator['SL2Rep']:
@@ -41,10 +41,10 @@ class SL2Rep(AbstractRep):
             for l in range(0, sum + 1):
                 yield SL2Rep(l=l, k=sum - l)
 
-    def discrete_generators(ir: 'SL2Rep') -> jnp.ndarray:
-        return jnp.zeros((0, ir.dim, ir.dim))
+    def discrete_generators(rep: 'SL2Rep') -> jnp.ndarray:
+        return jnp.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(ir: 'SL2Rep') -> jnp.ndarray:
+    def continuous_generators(rep: 'SL2Rep') -> jnp.ndarray:
         pass
 
     @classmethod
