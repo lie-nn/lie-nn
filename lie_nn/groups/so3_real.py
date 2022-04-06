@@ -28,20 +28,20 @@ def change_basis_r2c(l):
 class Rep(AbstractRep):
     l: int
 
-    def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
-        return [Rep(l=l) for l in range(abs(ir1.l - ir2.l), ir1.l + ir2.l + 1, 1)]
+    def __mul__(rep1: 'Rep', rep2: 'Rep') -> List['Rep']:
+        return [Rep(l=l) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
 
     @classmethod
-    def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
-        C = SU2Rep.clebsch_gordan(SU2Rep(j=ir1.l), SU2Rep(j=ir2.l), SU2Rep(j=ir3.l))
-        Q1 = change_basis_r2c(ir1.l)
-        Q2 = change_basis_r2c(ir2.l)
-        Q3 = change_basis_r2c(ir3.l)
+    def clebsch_gordan(cls, rep1: 'Rep', rep2: 'Rep', rep3: 'Rep') -> jnp.ndarray:
+        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        C = SU2Rep.clebsch_gordan(SU2Rep(j=rep1.l), SU2Rep(j=rep2.l), SU2Rep(j=rep3.l))
+        Q1 = change_basis_r2c(rep1.l)
+        Q2 = change_basis_r2c(rep2.l)
+        Q3 = change_basis_r2c(rep3.l)
         C = jnp.einsum('ij,kl,mn,zikn->zjlm', Q1, Q2, jnp.conj(Q3.T), C)
 
         # make it real
-        C = 1j**(ir1.l + ir2.l + ir3.l) * C
+        C = 1j**(rep1.l + rep2.l + rep3.l) * C
         assert jnp.all(jnp.abs(jnp.imag(C)) < 1e-5)
         C = jnp.real(C)
 
@@ -50,23 +50,23 @@ class Rep(AbstractRep):
         return C
 
     @property
-    def dim(ir: 'Rep') -> int:
-        return 2 * ir.l + 1
+    def dim(rep: 'Rep') -> int:
+        return 2 * rep.l + 1
 
     @classmethod
     def iterator(cls) -> Iterator['Rep']:
         for l in itertools.count(0):
             yield Rep(l=l)
 
-    def continuous_generators(ir: 'Rep') -> jnp.ndarray:
-        X = SU2Rep(j=ir.l).continuous_generators()
-        Q = change_basis_r2c(ir.l)
+    def continuous_generators(rep: 'Rep') -> jnp.ndarray:
+        X = SU2Rep(j=rep.l).continuous_generators()
+        Q = change_basis_r2c(rep.l)
         X = jnp.conj(Q.T) @ X @ Q
         assert jnp.max(jnp.abs(jnp.imag(X))) < 1e-5
         return jnp.real(X)
 
-    def discrete_generators(ir: 'Rep') -> jnp.ndarray:
-        return jnp.zeros((0, ir.dim, ir.dim))
+    def discrete_generators(rep: 'Rep') -> jnp.ndarray:
+        return jnp.zeros((0, rep.dim, rep.dim))
 
     @classmethod
     def algebra(cls) -> jnp.ndarray:

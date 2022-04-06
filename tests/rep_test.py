@@ -9,7 +9,7 @@ from lie_nn.groups.su2 import Rep as RepSU2
 
 @pytest.mark.parametrize('Rep', [RepO3, RepSU2, RepSO3])
 def test_cg(Rep):
-    irs = list(itertools.islice(Rep.iterator(), 6))
+    irs = list(itertools.islice(Rep.iterator(), 4))
 
     Rep.test_clebsch_gordan(irs, atol=1e-3, rtol=1e-3)
 

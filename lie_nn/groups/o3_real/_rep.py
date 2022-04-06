@@ -26,36 +26,36 @@ class Rep(AbstractRep):
     l: int
     p: int
 
-    def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
+    def __mul__(rep1: 'Rep', rep2: 'Rep') -> List['Rep']:
         return [
-            Rep(l=l, p=ir1.p * ir2.p)
-            for l in range(abs(ir1.l - ir2.l), ir1.l + ir2.l + 1)
+            Rep(l=l, p=rep1.p * rep2.p)
+            for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1)
             if l <= _lmax  # TODO: à discuter
         ]
 
     @classmethod
-    def clebsch_gordan(cls, ir1: 'Rep', ir2: 'Rep', ir3: 'Rep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
-        if ir3 in ir1 * ir2:
-            if ir1.l <= ir2.l <= ir3.l:
-                out = cg[(ir1.l, ir2.l, ir3.l)].reshape(ir1.dim, ir2.dim, ir3.dim)
-            if ir1.l <= ir3.l <= ir2.l:
-                out = cg[(ir1.l, ir3.l, ir2.l)].reshape(ir1.dim, ir3.dim, ir2.dim).transpose(0, 2, 1) * ((-1) ** (ir1.l + ir2.l + ir3.l))
-            if ir2.l <= ir1.l <= ir3.l:
-                out = cg[(ir2.l, ir1.l, ir3.l)].reshape(ir2.dim, ir1.dim, ir3.dim).transpose(1, 0, 2) * ((-1) ** (ir1.l + ir2.l + ir3.l))
-            if ir3.l <= ir2.l <= ir1.l:
-                out = cg[(ir3.l, ir2.l, ir1.l)].reshape(ir3.dim, ir2.dim, ir1.dim).transpose(2, 1, 0) * ((-1) ** (ir1.l + ir2.l + ir3.l))
-            if ir2.l <= ir3.l <= ir1.l:
-                out = cg[(ir2.l, ir3.l, ir1.l)].reshape(ir2.dim, ir3.dim, ir1.dim).transpose(2, 0, 1)
-            if ir3.l <= ir1.l <= ir2.l:
-                out = cg[(ir3.l, ir1.l, ir2.l)].reshape(ir3.dim, ir1.dim, ir2.dim).transpose(1, 2, 0)
+    def clebsch_gordan(cls, rep1: 'Rep', rep2: 'Rep', rep3: 'Rep') -> jnp.ndarray:
+        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        if rep3 in rep1 * rep2:
+            if rep1.l <= rep2.l <= rep3.l:
+                out = cg[(rep1.l, rep2.l, rep3.l)].reshape(rep1.dim, rep2.dim, rep3.dim)
+            if rep1.l <= rep3.l <= rep2.l:
+                out = cg[(rep1.l, rep3.l, rep2.l)].reshape(rep1.dim, rep3.dim, rep2.dim).transpose(0, 2, 1) * ((-1) ** (rep1.l + rep2.l + rep3.l))
+            if rep2.l <= rep1.l <= rep3.l:
+                out = cg[(rep2.l, rep1.l, rep3.l)].reshape(rep2.dim, rep1.dim, rep3.dim).transpose(1, 0, 2) * ((-1) ** (rep1.l + rep2.l + rep3.l))
+            if rep3.l <= rep2.l <= rep1.l:
+                out = cg[(rep3.l, rep2.l, rep1.l)].reshape(rep3.dim, rep2.dim, rep1.dim).transpose(2, 1, 0) * ((-1) ** (rep1.l + rep2.l + rep3.l))
+            if rep2.l <= rep3.l <= rep1.l:
+                out = cg[(rep2.l, rep3.l, rep1.l)].reshape(rep2.dim, rep3.dim, rep1.dim).transpose(2, 0, 1)
+            if rep3.l <= rep1.l <= rep2.l:
+                out = cg[(rep3.l, rep1.l, rep2.l)].reshape(rep3.dim, rep1.dim, rep2.dim).transpose(1, 2, 0)
             return out[None]
         else:
-            return jnp.zeros((0, ir1.dim, ir2.dim, ir3.dim))
+            return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
-    def dim(ir: 'Rep') -> int:
-        return 2 * ir.l + 1
+    def dim(rep: 'Rep') -> int:
+        return 2 * rep.l + 1
 
     @classmethod
     def iterator(cls) -> Iterator['Rep']:
@@ -63,17 +63,17 @@ class Rep(AbstractRep):
             yield Rep(l=l, p=1)
             yield Rep(l=l, p=-1)
 
-    def discrete_generators(ir: 'Rep') -> jnp.ndarray:
-        return ir.p * jnp.eye(ir.dim)[None]
+    def discrete_generators(rep: 'Rep') -> jnp.ndarray:
+        return rep.p * jnp.eye(rep.dim)[None]
 
-    def continuous_generators(ir: 'Rep') -> jnp.ndarray:
-        inds = jnp.arange(0, ir.dim, 1)
-        reversed_inds = jnp.arange(2 * ir.l, -1, -1)
-        frequencies = jnp.arange(ir.l, -ir.l - 1, -1.0)
-        K = _rot90_y(ir.l)
+    def continuous_generators(rep: 'Rep') -> jnp.ndarray:
+        inds = jnp.arange(0, rep.dim, 1)
+        reversed_inds = jnp.arange(2 * rep.l, -1, -1)
+        frequencies = jnp.arange(rep.l, -rep.l - 1, -1.0)
+        K = _rot90_y(rep.l)
 
-        Y = jnp.zeros((ir.dim, ir.dim)).at[..., inds, reversed_inds].set(frequencies)
-        X = Jd[ir.l] @ Y @ Jd[ir.l]
+        Y = jnp.zeros((rep.dim, rep.dim)).at[..., inds, reversed_inds].set(frequencies)
+        X = Jd[rep.l] @ Y @ Jd[rep.l]
         Z = K.T @ X @ K
         return jnp.stack([X, Y, Z], axis=0)
 

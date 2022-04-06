@@ -38,17 +38,17 @@ def commutator(A, B):
 
 @chex.dataclass(frozen=True)
 class AbstractRep:
-    def __mul__(ir1: 'AbstractRep', ir2: 'AbstractRep') -> List['AbstractRep']:
+    def __mul__(rep1: 'AbstractRep', rep2: 'AbstractRep') -> List['AbstractRep']:
         # selection rule
         pass
 
     @classmethod
-    def clebsch_gordan(cls, ir1: 'AbstractRep', ir2: 'AbstractRep', ir3: 'AbstractRep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, ir1.dim, ir2.dim, ir3.dim)``
+    def clebsch_gordan(cls, rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> jnp.ndarray:
+        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         pass
 
     @property
-    def dim(ir: 'AbstractRep') -> int:
+    def dim(rep: 'AbstractRep') -> int:
         pass
 
     @classmethod
@@ -56,12 +56,12 @@ class AbstractRep:
         # not sure if we need this
         pass
 
-    def continuous_generators(ir: 'AbstractRep') -> jnp.ndarray:
-        # return an array of shape ``(lie_group_dimension, ir.dim, ir.dim)``
+    def continuous_generators(rep: 'AbstractRep') -> jnp.ndarray:
+        # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
         pass
 
-    def discrete_generators(ir: 'AbstractRep') -> jnp.ndarray:
-        # return an array of shape ``(num_discrete_generators, ir.dim, ir.dim)``
+    def discrete_generators(rep: 'AbstractRep') -> jnp.ndarray:
+        # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         pass
 
     @classmethod
@@ -69,35 +69,35 @@ class AbstractRep:
         # [X_i, X_j] = A_ijk X_k
         pass
 
-    def exp_map(ir: 'AbstractRep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
-        # return a matrix of shape ``(ir.dim, ir.dim)``
-        discrete = jax.vmap(matrix_power)(ir.discrete_generators(), discrete_params)
-        output = jax.scipy.linalg.expm(jnp.einsum('a,aij->ij', continuous_params, ir.continuous_generators()))
+    def exp_map(rep: 'AbstractRep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+        # return a matrix of shape ``(rep.dim, rep.dim)``
+        discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
+        output = jax.scipy.linalg.expm(jnp.einsum('a,aij->ij', continuous_params, rep.continuous_generators()))
         for x in reversed(discrete):
             output = x @ output
         return output
 
-    def test_algebra(ir: 'AbstractRep', rtol=1e-05, atol=1e-08) -> jnp.ndarray:
-        X = ir.continuous_generators()  # (lie_group_dimension, ir.dim, ir.dim)
+    def test_algebra(rep: 'AbstractRep', rtol=1e-05, atol=1e-08) -> jnp.ndarray:
+        X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
         left_side = jax.vmap(jax.vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
-        right_side = jnp.einsum('ijk,kab->ijab', ir.algebra(), X)
+        right_side = jnp.einsum('ijk,kab->ijab', rep.algebra(), X)
         return jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
-    def test_clebsch_gordan(cls, irs: List['AbstractRep'], rtol=1e-05, atol=1e-08):
-        for ir1 in irs:
-            for ir2 in irs:
-                for ir3 in irs:
-                    X1 = ir1.continuous_generators()  # (lie_group_dimension, ir1.dim, ir1.dim)
-                    X2 = ir2.continuous_generators()  # (lie_group_dimension, ir2.dim, ir2.dim)
-                    X3 = ir3.continuous_generators()  # (lie_group_dimension, ir3.dim, ir3.dim)
+    def test_clebsch_gordan(cls, reps: List['AbstractRep'], rtol=1e-05, atol=1e-08):
+        for rep1 in reps:
+            for rep2 in reps:
+                for rep3 in reps:
+                    X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
+                    X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
+                    X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
 
-                    print(ir1, ir2, ir3)
-                    cg = cls.clebsch_gordan(ir1, ir2, ir3)
-                    assert cg.ndim == 1 + 3, (ir1, ir2, ir3, cg.shape)
-                    assert cg.shape == (cg.shape[0], ir1.dim, ir2.dim, ir3.dim)
+                    print(rep1, rep2, rep3)
+                    cg = cls.clebsch_gordan(rep1, rep2, rep3)
+                    assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
+                    assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
 
-                    if ir3 in ir1 * ir2:
+                    if rep3 in rep1 * rep2:
                         assert cg.shape[0] > 0
                     else:
                         assert cg.shape[0] == 0
