@@ -3,24 +3,25 @@ from typing import Iterator, List
 
 import chex
 import jax.numpy as jnp
+import numpy as np
 
 from . import AbstractRep
 from .su2 import Rep as SU2Rep
 
 
-def change_basis_real_to_complex(l):
-    q = jnp.zeros((2 * l + 1, 2 * l + 1), dtype=jnp.complex64)
+def change_basis_real_to_complex(l: int) -> np.ndarray:
+    q = np.zeros((2 * l + 1, 2 * l + 1), dtype=np.complex64)
     for m in range(-l, 0):
-        w = -1j * 1j**m / jnp.sqrt(2)
-        q = q.at[l + m, l + m].set(w)
-        q = q.at[l - m, l + m].set(-w)
+        w = -1j * 1j**m / np.sqrt(2)
+        q[l + m, l + m] = w
+        q[l - m, l + m] = -w
 
     for m in range(1, l + 1):
         w = 1j**(-m) / jnp.sqrt(2)
-        q = q.at[l + m, l + m].set(w)
-        q = q.at[l - m, l + m].set(w)
+        q[l + m, l + m] = w
+        q[l - m, l + m] = w
 
-    q = q.at[l, l].set(1)
+    q[l, l] = 1
     return q
 
 
