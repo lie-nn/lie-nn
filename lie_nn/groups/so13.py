@@ -11,14 +11,14 @@ from . import AbstractRep
 
 @chex.dataclass(frozen=True)
 class Rep(AbstractRep):
-    l: float  # half integer
-    k: float
+    l: int  # First integer weight
+    k: int  # Second integer weight
 
     def __mul__(ir1: 'Rep', ir2: 'Rep') -> List['Rep']:
         lmin = abs(ir1.l - ir2.l)
         lmax = ir1.l + ir1.l
         kmin = abs(ir2.k - ir2.k)
-        kmax = abs(ir2.k + ir2.k)
+        kmax = ir2.k + ir2.k
         for l in range(lmin, lmax + 1, 2):
             for k in range(kmin, kmax + 1, 2):
                 yield Rep(l=l, k=k)
@@ -97,30 +97,30 @@ class Rep(AbstractRep):
 def clebsch_gordanSO13mat(rep1, rep2, rep3, fastcgmat=clebsch_gordanSU2mat):
     """
     Calculates the Clebsch-Gordon matrix
-    for SO(1,3) coupling (l1,k1) and (l2,k2) to give (l3,k3).
+    for SO(1,3) coupling (l1,l1) and (l2,l2) to give (l3,k3).
     Parameters
     ----------
     rep1 : Tuple(int)
         Weights (l1,k1) of the first representation.
-    j2 : Tuple(int)
-        Weights (l1,k1) of the first representation.
-    j3 : Tuple(int)
-        Weights (l1,k1) of the first representation.
+    rep2 : Tuple(int)
+        Weights (l2,k2) of the first representation.
+    rep3 : Tuple(int)
+        Weights (l,k) of the first representation.
     Returns
     -------
     cg_matrix : numpy.array
         Requested Clebsch-Gordan matrix.
     """
-    k1, n1 = rep1
-    k2, n2 = rep2
-    k, n = rep3
-    B1 = np.concatenate([fastcgmat(k / 2, n / 2, i / 2)
-                         for i in range(abs(k - n), k + n + 1, 2)], axis=-1)
-    B2a = fastcgmat(k1 / 2, k2 / 2, k / 2)
-    B2b = fastcgmat(n1 / 2, n2 / 2, n / 2)
-    B3a = np.concatenate([fastcgmat(k1 / 2, n1 / 2, i1 / 2)
-                          for i1 in range(abs(k1 - n1), k1 + n1 + 1, 2)], axis=-1)
-    B3b = np.concatenate([fastcgmat(k2 / 2, n2 / 2, i2 / 2)
-                          for i2 in range(abs(k2 - n2), k2 + n2 + 1, 2)], axis=-1)
+    l1, k1 = rep1
+    l2, k2 = rep2
+    l, k = rep3
+    B1 = np.concatenate([fastcgmat(l / 2, k / 2, i / 2)
+                         for i in range(abs(l - k), l + k + 1, 2)], axis=-1)
+    B2a = fastcgmat(l1 / 2, l2 / 2, l / 2)
+    B2b = fastcgmat(k1 / 2, k2 / 2, k / 2)
+    B3a = np.concatenate([fastcgmat(l1 / 2, k1 / 2, i1 / 2)
+                          for i1 in range(abs(l1 - k1), l1 + k1 + 1, 2)], axis=-1)
+    B3b = np.concatenate([fastcgmat(l2 / 2, k2 / 2, i2 / 2)
+                          for i2 in range(abs(l2 - k2), l2 + k2 + 1, 2)], axis=-1)
     cg_matrix = np.einsum('cab', np.einsum('abc,dea,ghb,dgk,ehn', B1, B2a, B2b, B3a, B3b))
     return cg_matrix
