@@ -47,9 +47,9 @@ class Rep(AbstractRep):
 
         m = jnp.arange(-j, j + 1)
         return jnp.stack([
-            0.5 * (raising + lowering),
-            0.5j * (raising - lowering),
-            jnp.diag(1j * m)
+            0.5j * (raising - lowering),  # y (usually)
+            jnp.diag(1j * m),  # z (usually)
+            0.5 * (raising + lowering),  # x (usually)
         ], axis=0)
 
     @classmethod
