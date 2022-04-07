@@ -1,17 +1,17 @@
 import itertools
 from typing import Iterator, List
 
-import chex
+from flax import struct
 import jax.numpy as jnp
 
 from ._abstract_rep import AbstractRep
 from ._sl2 import SL2Rep
 
 
-@chex.dataclass(frozen=True)
+@struct.dataclass
 class SO13Rep(AbstractRep):
-    l: int  # First integer weight
-    k: int  # Second integer weight
+    l: int = struct.field(pytree_node=False)  # First integer weight
+    k: int = struct.field(pytree_node=False)  # Second integer weight
 
     def __mul__(rep1: 'SO13Rep', rep2: 'SO13Rep') -> List['SO13Rep']:
         lmin = abs(rep1.l - rep2.l)

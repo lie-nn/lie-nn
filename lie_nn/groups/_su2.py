@@ -1,17 +1,17 @@
 import itertools
 from math import factorial
 from typing import Iterator, List
+from flax import struct
 
-import chex
 import jax.numpy as jnp
 import numpy as np
 
 from ._abstract_rep import AbstractRep
 
 
-@chex.dataclass(frozen=True)
+@struct.dataclass
 class SU2Rep(AbstractRep):
-    j: int
+    j: int = struct.field(pytree_node=False)
 
     def __mul__(rep1: 'SU2Rep', rep2: 'SU2Rep') -> List['SU2Rep']:
         return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]

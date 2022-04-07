@@ -1,7 +1,7 @@
 import itertools
 from typing import Iterator, List
 
-import chex
+from flax import struct
 import jax.numpy as jnp
 
 from ._abstract_rep import AbstractRep
@@ -26,10 +26,10 @@ def branching(weight: list[int], depth: int, pattern: dict):
     return weights
 
 
-@chex.dataclass(frozen=True)
+@struct.dataclass
 class SURep(AbstractRep):
-    n: int  # dimension of the SU(n) group
-    lls: List[int]  # List of weights of the representation
+    n: int = struct.field(pytree_node=False)  # dimension of the SU(n) group
+    lls: List[int] = struct.field(pytree_node=False)  # List of weights of the representation
 
     def __init__(self, n):
         self.n = n

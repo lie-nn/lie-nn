@@ -1,7 +1,7 @@
 import itertools
 from typing import Iterator, List
 
-import chex
+from flax import struct
 import jax.numpy as jnp
 import numpy as np
 from lie_nn.groups._su2 import clebsch_gordanSU2mat
@@ -9,10 +9,10 @@ from lie_nn.groups._su2 import clebsch_gordanSU2mat
 from ._abstract_rep import AbstractRep
 
 
-@chex.dataclass(frozen=True)
+@struct.dataclass
 class SL2Rep(AbstractRep):
-    l: int  # First integer weight
-    k: int  # Second integer weight
+    l: int = struct.field(pytree_node=False)  # First integer weight
+    k: int = struct.field(pytree_node=False)  # Second integer weight
 
     def __mul__(rep1: 'SL2Rep', rep2: 'SL2Rep') -> List['SL2Rep']:
         lmin = abs(rep1.l - rep2.l)

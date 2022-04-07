@@ -1,13 +1,12 @@
-from functools import partial
 from typing import Iterator, List
 
-import chex
 import jax
 import jax.numpy as jnp
 
 
 @jax.jit
-def matrix_power(F, n, upper_limit=32):
+def matrix_power(F, n):
+    upper_limit = 32
     init_carry = n, F, jnp.eye(F.shape[0])
 
     def body(carry, _):
@@ -43,7 +42,7 @@ def kron(A, *BCD):
     return jnp.kron(A, kron(*BCD))
 
 
-@partial(jax.jit, static_argnums=(0, 1, 2))
+@jax.jit
 def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep'):
     X1 = rep1.continuous_generators()
     X2 = rep2.continuous_generators()
@@ -58,7 +57,6 @@ def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3:
     return A
 
 
-@chex.dataclass(frozen=True)
 class AbstractRep:
     def __mul__(rep1: 'AbstractRep', rep2: 'AbstractRep') -> List['AbstractRep']:
         # selection rule

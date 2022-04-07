@@ -1,17 +1,17 @@
 import itertools
 from typing import Iterator, List
 
-import chex
 import jax.numpy as jnp
+from flax import struct
 
 from ._abstract_rep import AbstractRep
 from ._so3_real import SO3Rep
 
 
-@chex.dataclass(frozen=True)
+@struct.dataclass
 class O3Rep(AbstractRep):
-    l: int  # non-negative integer
-    p: int  # 1 or -1
+    l: int = struct.field(pytree_node=False)  # non-negative integer
+    p: int = struct.field(pytree_node=False)  # 1 or -1
 
     def __mul__(rep1: 'O3Rep', rep2: 'O3Rep') -> List['O3Rep']:
         p = rep1.p * rep2.p

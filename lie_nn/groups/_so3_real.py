@@ -1,7 +1,7 @@
 import itertools
 from typing import Iterator, List
 
-import chex
+from flax import struct
 import jax.numpy as jnp
 import numpy as np
 
@@ -23,9 +23,9 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
     return q
 
 
-@chex.dataclass(frozen=True)
+@struct.dataclass
 class SO3Rep(AbstractRep):
-    l: int
+    l: int = struct.field(pytree_node=False)
 
     def __mul__(rep1: 'SO3Rep', rep2: 'SO3Rep') -> List['SO3Rep']:
         return [SO3Rep(l=l) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
