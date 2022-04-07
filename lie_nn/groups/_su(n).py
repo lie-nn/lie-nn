@@ -3,8 +3,6 @@ from typing import Iterator, List
 
 import chex
 import jax.numpy as jnp
-import numpy as np
-from lie_nn.groups._su2 import clebsch_gordanSU2mat
 
 from ._abstract_rep import AbstractRep
 
@@ -15,6 +13,17 @@ def get_egein_value(l: int, lls: List[int]):
     row_sum_lm1 = jnp.cumsum(np_lls[:l - 1])
     row_sum_l = jnp.cumsum(np_lls[:l])
     return row_sum_l - (1 / 2) * (row_sum_lm1 + row_sum_lp1)
+
+
+def branching(weight: list[int], depth: int, pattern: dict):
+    weights = []
+    for node in range(len(weight) - 1):
+        snake_values = []
+        for j in range(weight[node] - weight[node + 1] + 1):
+            snake_values.append(j)
+        pattern[node, depth] = snake_values
+        weights.append(snake_values)
+    return weights
 
 
 @chex.dataclass(frozen=True)
@@ -29,13 +38,21 @@ class SURep(AbstractRep):
         return [get_egein_value(l, rep.lls) for l in range(rep.n)]
 
     def GT_patterns(rep: 'SURep'):
-        pass
+        pattern = {}
+        n = rep.n
+        for i in range(n):
+            if i == 0:
+                rep = branching(rep, 1)
+        else:
+            for weights in tuple(itertools.product(*rep)):
+                rep = branching(weights, i + 1)
+        return pattern
 
     def __mul__(rep1: 'SURep', rep2: 'SURep') -> List['SURep']:
         assert rep1.n == rep1.n
         n = rep1.n
         l = rep1.n
-        patterns = GT_patterns(rep1)
+        patterns = rep1.GT_patterns()
         condition = True
         for k in range(1, n + 1):
             l -= 1
