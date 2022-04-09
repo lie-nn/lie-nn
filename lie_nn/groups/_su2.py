@@ -45,9 +45,9 @@ class SU2Rep(AbstractRep):
 
         m = np.arange(-hj, hj + 1)
         return np.stack([
-            0.5j * (raising - lowering),  # y (usually)
-            np.diag(1j * m),  # z (usually)
             0.5 * (raising + lowering),  # x (usually)
+            np.diag(1j * m),  # z (usually)
+            -0.5j * (raising - lowering),  # -y (usually)
         ], axis=0)
 
     @classmethod
