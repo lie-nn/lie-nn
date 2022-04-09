@@ -61,7 +61,7 @@ class SURep(AbstractRep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         pass
 
     @property

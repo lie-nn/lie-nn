@@ -25,7 +25,7 @@ class SL2Rep(AbstractRep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SL2Rep', rep2: 'SL2Rep', rep3: 'SL2Rep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))
         else:

@@ -17,7 +17,7 @@ class SU2Rep(AbstractRep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SU2Rep', rep2: 'SU2Rep', rep3: 'SU2Rep') -> np.ndarray:
-        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordanSU2mat(rep1.j / 2, rep2.j / 2, rep3.j / 2)[None]
         else:
