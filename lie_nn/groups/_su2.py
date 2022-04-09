@@ -3,7 +3,6 @@ from math import factorial
 from typing import Iterator, List
 from flax import struct
 
-import jax.numpy as jnp
 import numpy as np
 
 from ._abstract_rep import AbstractRep
@@ -17,12 +16,12 @@ class SU2Rep(AbstractRep):
         return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'SU2Rep', rep2: 'SU2Rep', rep3: 'SU2Rep') -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: 'SU2Rep', rep2: 'SU2Rep', rep3: 'SU2Rep') -> np.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordanSU2mat(rep1.j / 2, rep2.j / 2, rep3.j / 2)[None]
         else:
-            return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
+            return np.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
     def dim(rep: 'SU2Rep') -> int:
@@ -33,28 +32,28 @@ class SU2Rep(AbstractRep):
         for j in itertools.count(0):
             yield SU2Rep(j=j)
 
-    def discrete_generators(rep: 'SU2Rep') -> jnp.ndarray:
-        return jnp.zeros((0, rep.dim, rep.dim))
+    def discrete_generators(rep: 'SU2Rep') -> np.ndarray:
+        return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: 'SU2Rep') -> jnp.ndarray:
+    def continuous_generators(rep: 'SU2Rep') -> np.ndarray:
         hj = rep.j / 2.0  # half-j
-        m = jnp.arange(-hj, hj)
-        raising = jnp.diag(-jnp.sqrt(hj * (hj + 1) - m * (m + 1)), k=-1)
+        m = np.arange(-hj, hj)
+        raising = np.diag(-np.sqrt(hj * (hj + 1) - m * (m + 1)), k=-1)
 
-        m = jnp.arange(-hj + 1, hj + 1)
-        lowering = jnp.diag(jnp.sqrt(hj * (hj + 1) - m * (m - 1)), k=1)
+        m = np.arange(-hj + 1, hj + 1)
+        lowering = np.diag(np.sqrt(hj * (hj + 1) - m * (m - 1)), k=1)
 
-        m = jnp.arange(-hj, hj + 1)
-        return jnp.stack([
+        m = np.arange(-hj, hj + 1)
+        return np.stack([
             0.5j * (raising - lowering),  # y (usually)
-            jnp.diag(1j * m),  # z (usually)
+            np.diag(1j * m),  # z (usually)
             0.5 * (raising + lowering),  # x (usually)
         ], axis=0)
 
     @classmethod
-    def algebra(cls) -> jnp.ndarray:
+    def algebra(cls) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        return jnp.array([
+        return np.array([
             [
                 [0, 0, 0],
                 [0, 0, 1],
@@ -124,14 +123,16 @@ def clebsch_gordanSU2mat(j1, j2, j3):
     cg_matrix : numpy.array
         Requested Clebsch-Gordan matrix.
     """
+    assert isinstance(j1, (int, float))
+    assert isinstance(j2, (int, float))
+    assert isinstance(j3, (int, float))
     mat = np.zeros((int(2 * j1 + 1), int(2 * j2 + 1), int(2 * j3 + 1)))
     if int(2 * j3) in range(int(2 * abs(j1 - j2)), int(2 * (j1 + j2)) + 1, 2):
         for m1 in (x / 2 for x in range(-int(2 * j1), int(2 * j1) + 1, 2)):
             for m2 in (x / 2 for x in range(-int(2 * j2), int(2 * j2) + 1, 2)):
                 if abs(m1 + m2) <= j3:
-                    mat[int(j1 + m1), int(j2 + m2), int(j3 + m1 + m2)
-                        ] = clebsch_gordanSU2coeffs((j1, m1), (j2, m2), (j3, m1 + m2))
-    return np.array(mat)
+                    mat[int(j1 + m1), int(j2 + m2), int(j3 + m1 + m2)] = clebsch_gordanSU2coeffs((j1, m1), (j2, m2), (j3, m1 + m2))
+    return mat
 
 
 def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
@@ -156,26 +157,33 @@ def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
     cg_coeff : float
         Requested Clebsch-Gordan coefficient.
     """
+    from fractions import Fraction
+
     j1, m1 = idx1
     j2, m2 = idx2
     j3, m3 = idx3
 
     if m3 != m1 + m2:
         return 0
-    vmin = int(np.max([-j1 + j2 + m3, -j1 + m1, 0]))
-    vmax = int(np.min([j2 + j3 + m1, j3 - j1 + j2, j3 + m3]))
+    vmin = int(max([-j1 + j2 + m3, -j1 + m1, 0]))
+    vmax = int(min([j2 + j3 + m1, j3 - j1 + j2, j3 + m3]))
 
     def f(n):
         assert n == round(n)
         return factorial(round(n))
 
-    C = np.sqrt((2.0 * j3 + 1.0) * f(j3 + j1 - j2) * f(j3 - j1 + j2) * f(j1 + j2 - j3) * f(j3 + m3) * f(j3 - m3) /  # noqa: W504
-                (f(j1 + j2 + j3 + 1) * f(j1 - m1) * f(j1 + m1) * f(j2 - m2) * f(j2 + m2)))
+    C = (
+        (2.0 * j3 + 1.0) * Fraction(
+            f(j3 + j1 - j2) * f(j3 - j1 + j2) * f(j1 + j2 - j3) * f(j3 + m3) * f(j3 - m3),
+            f(j1 + j2 + j3 + 1) * f(j1 - m1) * f(j1 + m1) * f(j2 - m2) * f(j2 + m2)
+        )
+    )**0.5
+
     S = 0
     for v in range(vmin, vmax + 1):
-        S += (-1.0) ** (v + j2 + m2) / f(v) * f(j2 + j3 + m1 - v) * f(j1 - m1 + v) / \
-            f(j3 - j1 + j2 - v) / \
-            f(j3 + m3 - v) / \
-            f(v + j1 - j2 - m3)
+        S += (-1.0)**(v + j2 + m2) * Fraction(
+            f(j2 + j3 + m1 - v) * f(j1 - m1 + v),
+            f(v) * f(j3 - j1 + j2 - v) * f(j3 + m3 - v) * f(v + j1 - j2 - m3)
+        )
     C = C * S
     return C
