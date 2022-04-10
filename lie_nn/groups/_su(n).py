@@ -1,10 +1,9 @@
 import itertools
 from typing import Iterator, List
 
-from flax import struct
 import jax.numpy as jnp
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 
 
 def get_egein_value(l: int, lls: List[int]):
@@ -26,10 +25,10 @@ def branching(weight: list[int], depth: int, pattern: dict):
     return weights
 
 
-@struct.dataclass
+@static_jax_pytree
 class SURep(AbstractRep):
-    n: int = struct.field(pytree_node=False)  # dimension of the SU(n) group
-    lls: List[int] = struct.field(pytree_node=False)  # List of weights of the representation
+    n: int  # dimension of the SU(n) group
+    lls: List[int]  # List of weights of the representation
 
     def __init__(self, n):
         self.n = n

@@ -1,10 +1,9 @@
 import itertools
 from typing import Iterator, List
 
-from flax import struct
 import numpy as np
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 from ._su2 import SU2Rep
 
 
@@ -21,11 +20,12 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
     return (-1j)**l * q  # Added factor of 1j**l to make the Clebsch-Gordan coefficients real
 
 
-@struct.dataclass
+@static_jax_pytree
 class SO3Rep(AbstractRep):
-    l: int = struct.field(pytree_node=False)
+    l: int
 
     def __mul__(rep1: 'SO3Rep', rep2: 'SO3Rep') -> List['SO3Rep']:
+        assert isinstance(rep2, SO3Rep)
         return [SO3Rep(l=l) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
 
     @classmethod

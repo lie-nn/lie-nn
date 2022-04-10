@@ -2,18 +2,18 @@ import itertools
 from typing import Iterator, List
 
 import jax.numpy as jnp
-from flax import struct
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 from ._so3_real import SO3Rep
 
 
-@struct.dataclass
+@static_jax_pytree
 class O3Rep(AbstractRep):
-    l: int = struct.field(pytree_node=False)  # non-negative integer
-    p: int = struct.field(pytree_node=False)  # 1 or -1
+    l: int  # non-negative integer
+    p: int  # 1 or -1
 
     def __mul__(rep1: 'O3Rep', rep2: 'O3Rep') -> List['O3Rep']:
+        assert isinstance(rep2, O3Rep)
         p = rep1.p * rep2.p
         return [O3Rep(l=l, p=p) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
 

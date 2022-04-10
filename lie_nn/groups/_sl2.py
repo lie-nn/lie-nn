@@ -1,20 +1,20 @@
 import itertools
 from typing import Iterator, List
 
-from flax import struct
 import jax.numpy as jnp
 import numpy as np
 from lie_nn.groups._su2 import clebsch_gordanSU2mat
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 
 
-@struct.dataclass
+@static_jax_pytree
 class SL2Rep(AbstractRep):
-    l: int = struct.field(pytree_node=False)  # First integer weight
-    k: int = struct.field(pytree_node=False)  # Second integer weight
+    l: int  # First integer weight
+    k: int  # Second integer weight
 
     def __mul__(rep1: 'SL2Rep', rep2: 'SL2Rep') -> List['SL2Rep']:
+        assert isinstance(rep2, SL2Rep)
         lmin = abs(rep1.l - rep2.l)
         lmax = rep1.l + rep1.l
         kmin = abs(rep2.k - rep2.k)

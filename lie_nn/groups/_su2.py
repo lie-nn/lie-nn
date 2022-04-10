@@ -1,18 +1,18 @@
 import itertools
 from math import factorial
 from typing import Iterator, List
-from flax import struct
 
 import numpy as np
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 
 
-@struct.dataclass
+@static_jax_pytree
 class SU2Rep(AbstractRep):
-    j: int = struct.field(pytree_node=False)
+    j: int
 
     def __mul__(rep1: 'SU2Rep', rep2: 'SU2Rep') -> List['SU2Rep']:
+        assert isinstance(rep2, SU2Rep)
         return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
 
     @classmethod

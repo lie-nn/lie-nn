@@ -4,6 +4,11 @@ import jax
 import jax.numpy as jnp
 
 
+def static_jax_pytree(cls):
+    jax.tree_util.register_pytree_node(cls, lambda x: ((), x), lambda x, _: x)
+    return cls
+
+
 @jax.jit
 def matrix_power(F, n):
     upper_limit = 32
@@ -57,6 +62,7 @@ def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3:
     return A
 
 
+@static_jax_pytree
 class AbstractRep:
     def __mul__(rep1: 'AbstractRep', rep2: 'AbstractRep') -> List['AbstractRep']:
         # selection rule
