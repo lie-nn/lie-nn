@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Iterator, List
 
 import jax
@@ -5,6 +6,7 @@ import jax.numpy as jnp
 
 
 def static_jax_pytree(cls):
+    cls = dataclass(frozen=True)(cls)
     jax.tree_util.register_pytree_node(cls, lambda x: ((), x), lambda x, _: x)
     return cls
 
