@@ -1,9 +1,10 @@
 import itertools
 from typing import Iterator, List
 
+import chex
 import jax.numpy as jnp
 
-from ._abstract_rep import AbstractRep, static_jax_pytree
+from ._abstract_rep import AbstractRep
 
 
 def get_egein_value(l: int, lls: List[int]):
@@ -25,7 +26,7 @@ def branching(weight: list[int], depth: int, pattern: dict):
     return weights
 
 
-@static_jax_pytree
+@chex.dataclass(frozen=True)
 class SURep(AbstractRep):
     n: int  # dimension of the SU(n) group
     lls: List[int]  # List of weights of the representation
@@ -52,7 +53,7 @@ class SURep(AbstractRep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
-        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
+        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         pass
 
     @property
@@ -61,13 +62,13 @@ class SURep(AbstractRep):
         # Clebsch-Gordan coefficients Arne Alex, Matthias Kalus, Alan Huckleberry
         # and Jan von Delft Eq 22.
         numerator = 1
-        denomiator = 1
+        denominator = 1
         for i in range(self.n):
             for sum in range(self.n):
                 j = sum - i
                 numerator *= rep.lls[j] - rep.lls[i + j] + i
-                denomiator *= i
-        i += i
+                denominator *= i
+        return numerator / denominator
 
     @classmethod
     def iterator(self, cls) -> Iterator['SURep']:
