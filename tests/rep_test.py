@@ -1,7 +1,8 @@
 import itertools
 
+import numpy as np
 import pytest
-from lie_nn.groups import O3Rep, SO3Rep, SU2Rep, SL2Rep, SO13Rep
+from lie_nn.groups import AbstractRep, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep
 
 REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep]  # TODO add SL2Rep and SO13Rep
 
@@ -11,6 +12,16 @@ def test_cg(Rep):
     reps = list(itertools.islice(Rep.iterator(), 4))
 
     Rep.test_clebsch_gordan(reps, atol=1e-3, rtol=1e-3)
+
+
+@pytest.mark.parametrize('Rep', REPRESENTATIONS)
+def test_recompute_cg(Rep):
+    reps = list(itertools.islice(Rep.iterator(), 4))
+
+    for rep1, rep2, rep3 in itertools.product(reps, reps, reps):
+        C1 = AbstractRep.clebsch_gordan(rep1, rep2, rep3)
+        C2 = Rep.clebsch_gordan(rep1, rep2, rep3)
+        assert np.allclose(C1, C2, atol=1e-3, rtol=1e-3) or np.allclose(C1, -C2, atol=1e-3, rtol=1e-3)
 
 
 @pytest.mark.parametrize('Rep', REPRESENTATIONS)

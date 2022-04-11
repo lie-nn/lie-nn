@@ -88,9 +88,9 @@ class AbstractRep:
         val, vec = jnp.linalg.eigh(clebsch_gordan_linear_system(rep1, rep2, rep3))
 
         cg = vec.T[jnp.abs(val) < epsilon]
-        cg = jax.vmap(lambda x: x / x[jnp.nonzero(jnp.abs(x) > epsilon, size=1, fill_value=0)[0][0]])(cg)  # fix the phase
+        cg = jax.vmap(lambda x: x / x[jnp.nonzero(jnp.abs(x) > epsilon, size=1, fill_value=0)[0][0]])(cg)  # TODO fix better the phase, now in the test we check both signs
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
-        cg = cg * rep3.dim**0.5
+        cg = jax.vmap(lambda x: rep3.dim**0.5 * x / jnp.linalg.norm(x))(cg)
         return cg
 
     @property
