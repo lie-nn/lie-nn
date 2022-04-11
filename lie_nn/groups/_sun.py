@@ -49,15 +49,7 @@ class SURep(AbstractRep):
         return pattern
 
     def __mul__(rep1: 'SURep', rep2: 'SURep') -> List['SURep']:
-        assert rep1.n == rep1.n
-        n = rep1.n
-        l = rep1.n
-        patterns = rep1.GT_patterns()
-        condition = True
-        for k in range(1, n + 1):
-            l -= 1
-            if k <= l:
-                pass
+        pass
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
