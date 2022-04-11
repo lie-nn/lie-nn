@@ -33,7 +33,7 @@ class SL2Rep(AbstractRep):
 
     @property
     def dim(rep: 'SL2Rep') -> int:
-        return round((rep.l + 1) * (rep.k + 1))
+        return (rep.l + 1) * (rep.k + 1)
 
     @classmethod
     def iterator(cls) -> Iterator['SL2Rep']:

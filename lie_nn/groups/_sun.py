@@ -1,10 +1,99 @@
 import itertools
-from typing import Iterator, List
+from fractions import Fraction
+from typing import Iterator, List, Tuple
 
-import chex
 import jax.numpy as jnp
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
+
+
+def _assert_valid_S(S: Tuple[int, ...]):
+    """
+    (3, 3, 2) is a valid S.
+    (3, 2, 3) is not a valid S.
+    """
+    assert len(S) > 0
+    assert all(s1 >= s2 for s1, s2 in zip(S, S[1:]))
+
+
+def dim(S: Tuple[int, ...]) -> int:
+    """Return the number of possible GT-patterns with first line S."""
+    _assert_valid_S(S)
+    d = 1
+    for i in range(len(S)):
+        for j in range(i + 1, len(S)):
+            d *= 1 + Fraction(S[i] - S[j], j - i)
+    assert d.denominator == 1
+    return int(d)
+
+
+assert dim((3, 3, 1, 0)) == sum(dim((3, a, b)) for a in [3, 2, 1] for b in [1, 0])
+
+
+def S_to_Ss(S: Tuple[int, ...]) -> Iterator[Tuple[int, ...]]:
+    """Produce all possible next lines of S.
+
+    >>> list(S_to_Ss((3, 3, 1, 0)))
+    [(3, 3, 1), (3, 3, 0), (3, 2, 1), (3, 2, 0), (3, 1, 1), (3, 1, 0)]
+    """
+    _assert_valid_S(S)
+    if len(S) == 1:
+        return
+    diff = [s1 - s2 for s1, s2 in zip(S, S[1:])]
+    for x in itertools.product(*[range(s + 1) for s in diff]):
+        yield tuple(S[i] - x[i] for i in range(len(S) - 1))
+
+
+def S_to_Ms(S: Tuple[int, ...]) -> Iterator[Tuple[Tuple[int, ...], ...]]:
+    """Produce all possible GT-patterns with first line S.
+
+    >>> list(S_to_Ms((2, 1, 0)))
+    [((2, 2, 0), (2, 2), (2,)),
+     ((2, 2, 0), (2, 1), (2,)),
+     ((2, 2, 0), (2, 1), (1,)),
+     ((2, 2, 0), (2, 0), (2,)),
+     ((2, 2, 0), (2, 0), (1,)),
+     ((2, 2, 0), (2, 0), (0,))]
+    """
+    _assert_valid_S(S)
+    if len(S) == 1:
+        yield (S,)
+    for Snext in S_to_Ss(S):
+        for M in S_to_Ms(Snext):
+            yield (S,) + M
+
+
+assert dim((3, 3, 1, 0)) == len(list(S_to_Ms((3, 3, 1, 0))))
+
+
+def index_to_M(S: Tuple[int, ...], index: int) -> Tuple[Tuple[int, ...], ...]:
+    """Given an index, return the corresponding GT-pattern."""
+    _assert_valid_S(S)
+    assert index < dim(S)
+    if len(S) == 1:
+        return (S,)
+    for Snext in S_to_Ss(S):
+        d = dim(Snext)
+        if index < d:
+            return (S,) + index_to_M(Snext, index)
+        index -= d
+
+
+def M_to_index(M: Tuple[Tuple[int, ...], ...]) -> int:
+    """Given a GT-pattern, return the corresponding index."""
+    S = M[0]
+    _assert_valid_S(S)
+    if len(S) == 1:
+        return 0
+    index = 0
+    for Snext in S_to_Ss(S):
+        if M[1] == Snext:
+            return index + M_to_index(M[1:])
+        index += dim(Snext)
+
+
+for i in range(dim((3, 2, 0))):
+    assert M_to_index(index_to_M((3, 2, 0), i)) == i
 
 
 def get_egein_value(l: int, lls: List[int]):
@@ -26,7 +115,7 @@ def branching(weight: list[int], depth: int, pattern: dict):
     return weights
 
 
-@chex.dataclass(frozen=True)
+@static_jax_pytree
 class SURep(AbstractRep):
     n: int  # dimension of the SU(n) group
     lls: List[int]  # List of weights of the representation
