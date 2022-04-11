@@ -1,10 +1,9 @@
 import itertools
 from typing import Iterator, List
 
-import chex
 import jax.numpy as jnp
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 
 
 def get_egein_value(l: int, lls: List[int]):
@@ -26,7 +25,7 @@ def branching(weight: list[int], depth: int, pattern: dict):
     return weights
 
 
-@chex.dataclass(frozen=True)
+@static_jax_pytree
 class SURep(AbstractRep):
     n: int  # dimension of the SU(n) group
     lls: List[int]  # List of weights of the representation
@@ -53,7 +52,7 @@ class SURep(AbstractRep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         pass
 
     @property

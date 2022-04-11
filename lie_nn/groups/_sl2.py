@@ -1,20 +1,20 @@
 import itertools
 from typing import Iterator, List
 
-import chex
 import jax.numpy as jnp
 import numpy as np
 from lie_nn.groups._su2 import clebsch_gordanSU2mat
 
-from ._abstract_rep import AbstractRep
+from ._abstract_rep import AbstractRep, static_jax_pytree
 
 
-@chex.dataclass(frozen=True)
+@static_jax_pytree
 class SL2Rep(AbstractRep):
     l: int  # First integer weight
     k: int  # Second integer weight
 
     def __mul__(rep1: 'SL2Rep', rep2: 'SL2Rep') -> List['SL2Rep']:
+        assert isinstance(rep2, SL2Rep)
         lmin = abs(rep1.l - rep2.l)
         lmax = rep1.l + rep1.l
         kmin = abs(rep2.k - rep2.k)
@@ -25,7 +25,7 @@ class SL2Rep(AbstractRep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SL2Rep', rep2: 'SL2Rep', rep3: 'SL2Rep') -> jnp.ndarray:
-        # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
+        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))
         else:
