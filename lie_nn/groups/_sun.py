@@ -47,7 +47,7 @@ def S_to_Ss(S: Tuple[int, ...]) -> Iterator[Tuple[int, ...]]:
 def S_to_Ms(S: Tuple[int, ...]) -> Iterator[Tuple[Tuple[int, ...], ...]]:
     """Produce all possible GT-patterns with first line S.
 
-    >>> list(S_to_Ms((2, 1, 0)))
+    >>> list(S_to_Ms((2, 2, 0)))
     [((2, 2, 0), (2, 2), (2,)),
      ((2, 2, 0), (2, 1), (2,)),
      ((2, 2, 0), (2, 1), (1,)),
