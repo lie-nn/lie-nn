@@ -90,6 +90,7 @@ class AbstractRep:
         cg = vec.T[jnp.abs(val) < epsilon]
         cg = jax.vmap(lambda x: x / x[jnp.nonzero(jnp.abs(x) > epsilon, size=1, fill_value=0)[0][0]])(cg)  # fix the phase
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
+        cg = cg * rep3.dim**0.5
         return cg
 
     @property
@@ -141,6 +142,11 @@ class AbstractRep:
                     cg = cls.clebsch_gordan(rep1, rep2, rep3)
                     assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
                     assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
+
+                    # Orthogonality
+                    left_side = jnp.einsum('zijk,wijl->zkwl', cg, jnp.conj(cg))
+                    right_side = jnp.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
+                    assert jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
                     if rep3 in rep1 * rep2:
                         assert cg.shape[0] > 0

@@ -41,8 +41,6 @@ class SO3Rep(AbstractRep):
         assert np.all(np.abs(np.imag(C)) < 1e-5)
         C = np.real(C)
 
-        # normalization
-        C = C / np.linalg.norm(C)
         return C
 
     @property
