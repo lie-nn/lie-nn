@@ -1,15 +1,10 @@
 import jax
-from groups import AbstractRep as Rep
-from dataclasses import dataclass
 
-
-def static_jax_pytree(cls):
-    jax.tree_util.register_pytree_node(cls, lambda x: ((), x), lambda x, _: x)
-    return cls
+from .groups import AbstractRep as Rep
+from .groups import static_jax_pytree
 
 
 @static_jax_pytree
-@dataclass(frozen=True)
 class MulRep:
     mul: int
     rep: Rep
@@ -26,7 +21,6 @@ class MulRep:
         return f"{self.mul}x{self.rep}"
 
 
-@static_jax_pytree
 class Reps(tuple):
     def __new__(cls, reps=None):
         if isinstance(reps, Reps):
@@ -94,3 +88,6 @@ class Reps(tuple):
 
     def __repr__(self):
         return "+".join(f"{mul_rep}" for mul_rep in self)
+
+
+jax.tree_util.register_pytree_node(Reps, lambda x: ((), x), lambda x, _: x)
