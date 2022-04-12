@@ -99,23 +99,16 @@ def unique_pairs(n: int):
 
 
 def M_to_sigma(M: Tuple[Tuple[int, ...], ...]) -> Tuple[int, ...]:
-    sigma = []
-    n = len(M)
-    for row in M:
-        sum = 0
-        for val in row:
-            sum += val
-        sigma.append(sum)
-    sigma.append(0)
-    return list(reversed(sigma))
+    sigma = [sum(row) for row in M] + [0]
+    return sigma[::-1]
 
 
 def Ms_to_p_weight(Ms: List[Tuple[Tuple[int, ...], ...]]) -> Tuple[Tuple[int, ...], ...]:
     p_weights = []
     for M in Ms:
         sigma = M_to_sigma(M)
-        p_weight = [sigma[i + 1] - sigma[i] for i in range(len(sigma) - 1)]
-        p_weights.append(tuple(p_weight))
+        p_weight = tuple(s2 - s1 for s1, s2 in zip(sigma, sigma[1:]))
+        p_weights.append(p_weight)
     return tuple(p_weights)
 
 
@@ -124,9 +117,8 @@ class SURep(AbstractRep):
     S: Tuple[int]  # List of weights of the representation
 
     def __mul__(rep1: 'SURep', rep2: 'SURep') -> List['SURep']:
-        Ms = list(S_to_Ms(rep1.S))
         n = len(rep2.S)
-        for pattern in Ms:
+        for pattern in S_to_Ms(rep1.S):
             t_weight = list(rep2.S)
             for l, k in unique_pairs(n):
                 try:
@@ -137,8 +129,7 @@ class SURep(AbstractRep):
                     t_weight = []
                     break
             if t_weight:
-                S = tuple(map(lambda x: x - t_weight[-1], t_weight))
-                yield SURep(S=S)
+                yield SURep(S=tuple(x - t_weight[-1] for x in t_weight))
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
