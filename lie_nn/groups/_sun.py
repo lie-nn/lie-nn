@@ -91,18 +91,33 @@ for i in range(dim((3, 2, 0))):
     assert M_to_index(index_to_M((3, 2, 0), i)) == i
 
 
+def unique_pairs(n: int):
+    """Produce pairs of indexes in range(n)"""
+    for i in range(n):
+        for j in range(n - i):
+            yield i, j
+
+
 @static_jax_pytree
 class SURep(AbstractRep):
     S: Tuple[int]  # List of weights of the representation
 
-    def __init__(self, n):
-        self.n = n
-
-    def GT_patterns(rep: 'SURep'):
-        return S_to_Ss(rep.S)
-
     def __mul__(rep1: 'SURep', rep2: 'SURep') -> List['SURep']:
-        pass
+        Ms = list(S_to_Ms(rep1.S))
+        n = len(rep2.S)
+        for pattern in Ms:
+            t_weight = list(rep2.S)
+            for l, k in unique_pairs(n):
+                try:
+                    t_weight[n - k - 1] += pattern[k][l] - pattern[k + 1][l]
+                except IndexError:
+                    t_weight[n - k - 1] += pattern[k][l]
+                if n - k - 1 >= 1 and t_weight[n - k - 1] > t_weight[n - k - 2]:
+                    t_weight = []
+                    break
+            if t_weight:
+                S = tuple(map(lambda x: x - t_weight[-1], t_weight))
+                yield SURep(S=S)
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
