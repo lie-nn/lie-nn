@@ -98,6 +98,27 @@ def unique_pairs(n: int):
             yield i, j
 
 
+def M_to_sigma(M: Tuple[Tuple[int, ...], ...]) -> Tuple[int, ...]:
+    sigma = []
+    n = len(M)
+    for row in M:
+        sum = 0
+        for val in row:
+            sum += val
+        sigma.append(sum)
+    sigma.append(0)
+    return list(reversed(sigma))
+
+
+def Ms_to_p_weight(Ms: List[Tuple[Tuple[int, ...], ...]]) -> Tuple[Tuple[int, ...], ...]:
+    p_weights = []
+    for M in Ms:
+        sigma = M_to_sigma(M)
+        p_weight = [sigma[i + 1] - sigma[i] for i in range(len(sigma) - 1)]
+        p_weights.append(tuple(p_weight))
+    return tuple(p_weights)
+
+
 @static_jax_pytree
 class SURep(AbstractRep):
     S: Tuple[int]  # List of weights of the representation
