@@ -91,6 +91,20 @@ for i in range(dim((3, 2, 0))):
     assert M_to_index(index_to_M((3, 2, 0), i)) == i
 
 
+def triangular_triplet(M: Tuple[Tuple[int, ...], ...]):
+    n = len(M)
+    for i in range(1, n):
+        for j in range(n - i):
+            yield (M[i - 1][j], M[i - 1][j + 1], M[i][j])
+
+
+def _assert_valid_M(M: Tuple[Tuple[int, ...], ...]):
+    if all(m1 >= m3 >= m2 for m1, m2, m3 in triangular_triplet(M)):
+        return True
+    else:
+        return False
+
+
 def unique_pairs(n: int):
     """Produce pairs of indexes in range(n)"""
     for i in range(n):
@@ -117,6 +131,31 @@ def Ms_to_p_weight(Ms: List[Tuple[Tuple[int, ...], ...]]) -> Tuple[Tuple[int, ..
         p_weight = [sigma[i + 1] - sigma[i] for i in range(len(sigma) - 1)]
         p_weights.append(tuple(p_weight))
     return tuple(p_weights)
+
+
+def compute_coff_lower(M: Tuple[Tuple[int, ...], ...], k, l) -> float:
+    num_1 = 1
+    for k_p in range(l + 1):
+        num_1 *= M[l + 1][k_p] - M[l][k] + k - k_p + 1
+    num_2 = 1
+    for k_p in range(l - 1):
+        num_1 *= M[l - 1][k_p] - M[l][k] + k - k_p
+    den = 1
+    for k_p in range(l - 1) and k_p != k:
+        den *= (M[l][k_p] - M[l][k] + k - k_p + 1) * (M[l][k_p] - M[l][k] + k - k_p)
+    return (-(num_1 * num_2) / den) ** 0.5
+
+
+def lower_ladder(M: Tuple[Tuple[int, ...], ...]) -> Tuple[int, Tuple[Tuple[int, ...], ...]]:
+    instructions = []
+    for l, k in unique_pairs(len(M)):
+        M_kl = list(M)
+        M_kl[k][l] -= 1
+        if not _assert_valid_M(M_kl):
+            continue
+        else:
+            coeff = compute_coff_lower(M, k, l)
+        instructions.append((coeff, M_kl))
 
 
 @static_jax_pytree
