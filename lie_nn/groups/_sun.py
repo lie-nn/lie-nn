@@ -133,16 +133,17 @@ def Ms_to_p_weight(Ms: List[Tuple[Tuple[int, ...], ...]]) -> Tuple[Tuple[int, ..
     return tuple(p_weights)
 
 
-def compute_coff_lower(M: Tuple[Tuple[int, ...], ...], k, l) -> float:
+def compute_coeff_lower(M: Tuple[Tuple[int, ...], ...], k, l) -> float:
     num_1 = 1
     for k_p in range(l + 1):
         num_1 *= M[l + 1][k_p] - M[l][k] + k - k_p + 1
     num_2 = 1
     for k_p in range(l - 1):
-        num_1 *= M[l - 1][k_p] - M[l][k] + k - k_p
+        num_2 *= M[l - 1][k_p] - M[l][k] + k - k_p
     den = 1
-    for k_p in range(l - 1) and k_p != k:
-        den *= (M[l][k_p] - M[l][k] + k - k_p + 1) * (M[l][k_p] - M[l][k] + k - k_p)
+    for k_p in range(l - 1):
+        if k_p != k:
+            den *= (M[l][k_p] - M[l][k] + k - k_p + 1) * (M[l][k_p] - M[l][k] + k - k_p)
     return (-(num_1 * num_2) / den) ** 0.5
 
 
@@ -154,7 +155,7 @@ def lower_ladder(M: Tuple[Tuple[int, ...], ...]) -> Tuple[int, Tuple[Tuple[int, 
         if not _assert_valid_M(M_kl):
             continue
         else:
-            coeff = compute_coff_lower(M, k, l)
+            coeff = compute_coeff_lower(M, k, l)
         instructions.append((coeff, M_kl))
 
 
@@ -185,7 +186,7 @@ class SURep(AbstractRep):
         pass
 
     @property
-    def dim(self, rep: 'SURep') -> int:
+    def dim(rep: 'SURep') -> int:
         # A numerical algorithm for the explicit calculation of SU(N) and SL(N, C)
         # Clebsch-Gordan coefficients Arne Alex, Matthias Kalus, Alan Huckleberry
         # and Jan von Delft Eq 22.
