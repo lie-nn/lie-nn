@@ -1,13 +1,17 @@
 import itertools
 from fractions import Fraction
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Tuple, Optional
 
 import jax.numpy as jnp
 
 from ._abstract_rep import AbstractRep, static_jax_pytree
 
 
-def _assert_valid_S(S: Tuple[int, ...]):
+WEIGHT = Tuple[int, ...]
+GT_PATTERN = Tuple[WEIGHT, ...]
+
+
+def _assert_valid_S(S: WEIGHT):
     """
     (3, 3, 2) is a valid S.
     (3, 2, 3) is not a valid S.
@@ -16,7 +20,7 @@ def _assert_valid_S(S: Tuple[int, ...]):
     assert all(s1 >= s2 for s1, s2 in zip(S, S[1:]))
 
 
-def dim(S: Tuple[int, ...]) -> int:
+def dim(S: WEIGHT) -> int:
     """Return the number of possible GT-patterns with first line S."""
     _assert_valid_S(S)
     d = 1
@@ -30,7 +34,7 @@ def dim(S: Tuple[int, ...]) -> int:
 assert dim((3, 3, 1, 0)) == sum(dim((3, a, b)) for a in [3, 2, 1] for b in [1, 0])
 
 
-def S_to_Ss(S: Tuple[int, ...]) -> Iterator[Tuple[int, ...]]:
+def S_to_Ss(S: WEIGHT) -> Iterator[WEIGHT]:
     """Produce all possible next lines of S.
 
     >>> list(S_to_Ss((3, 3, 1, 0)))
@@ -44,7 +48,7 @@ def S_to_Ss(S: Tuple[int, ...]) -> Iterator[Tuple[int, ...]]:
         yield tuple(S[i] - x[i] for i in range(len(S) - 1))
 
 
-def S_to_Ms(S: Tuple[int, ...]) -> Iterator[Tuple[Tuple[int, ...], ...]]:
+def S_to_Ms(S: WEIGHT) -> Iterator[GT_PATTERN]:
     """Produce all possible GT-patterns with first line S.
 
     >>> list(S_to_Ms((2, 0)))
@@ -61,7 +65,7 @@ def S_to_Ms(S: Tuple[int, ...]) -> Iterator[Tuple[Tuple[int, ...], ...]]:
 assert dim((3, 3, 1, 0)) == len(list(S_to_Ms((3, 3, 1, 0))))
 
 
-def index_to_M(S: Tuple[int, ...], index: int) -> Tuple[Tuple[int, ...], ...]:
+def index_to_M(S: WEIGHT, index: int) -> GT_PATTERN:
     """Given an index, return the corresponding GT-pattern."""
     _assert_valid_S(S)
     assert index < dim(S)
@@ -74,7 +78,7 @@ def index_to_M(S: Tuple[int, ...], index: int) -> Tuple[Tuple[int, ...], ...]:
         index -= d
 
 
-def M_to_index(M: Tuple[Tuple[int, ...], ...]) -> int:
+def M_to_index(M: GT_PATTERN) -> int:
     """Given a GT-pattern, return the corresponding index."""
     S = M[0]
     _assert_valid_S(S)
@@ -91,72 +95,70 @@ for i in range(dim((3, 2, 0))):
     assert M_to_index(index_to_M((3, 2, 0), i)) == i
 
 
-def triangular_triplet(M: Tuple[Tuple[int, ...], ...]):
+def triangular_triplet(M: GT_PATTERN) -> Iterator[Tuple[int, int, int]]:
     n = len(M)
     for i in range(1, n):
         for j in range(n - i):
             yield (M[i - 1][j], M[i - 1][j + 1], M[i][j])
 
 
-def _assert_valid_M(M: Tuple[Tuple[int, ...], ...]):
-    if all(m1 >= m3 >= m2 for m1, m2, m3 in triangular_triplet(M)):
-        return True
-    else:
-        return False
+def is_valid_M(M: GT_PATTERN):
+    return all(m1 >= m3 >= m2 for m1, m2, m3 in triangular_triplet(M))
 
 
-def unique_pairs(n: int):
+def unique_pairs(n: int) -> Iterator[Tuple[int, int]]:
     """Produce pairs of indexes in range(n)"""
     for i in range(n):
         for j in range(n - i):
             yield i, j
 
 
-def M_to_sigma(M: Tuple[Tuple[int, ...], ...]) -> Tuple[int, ...]:
-    sigma = []
-    n = len(M)
-    for row in M:
-        sum = 0
-        for val in row:
-            sum += val
-        sigma.append(sum)
-    sigma.append(0)
-    return list(reversed(sigma))
+def M_to_sigma(M: GT_PATTERN) -> WEIGHT:
+    sigma = [sum(row) for row in M] + [0]
+    return sigma[::-1]
 
 
-def Ms_to_p_weight(Ms: List[Tuple[Tuple[int, ...], ...]]) -> Tuple[Tuple[int, ...], ...]:
-    p_weights = []
-    for M in Ms:
-        sigma = M_to_sigma(M)
-        p_weight = [sigma[i + 1] - sigma[i] for i in range(len(sigma) - 1)]
-        p_weights.append(tuple(p_weight))
-    return tuple(p_weights)
+def M_to_p_weight(M: GT_PATTERN) -> WEIGHT:
+    """The pattern weight of a GT-pattern."""
+    sigma = M_to_sigma(M)
+    return tuple(s2 - s1 for s1, s2 in zip(sigma, sigma[1:]))
 
 
-def compute_coeff_lower(M: Tuple[Tuple[int, ...], ...], k, l) -> float:
-    num_1 = 1
+def Ms_to_p_weight(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
+    return [M_to_p_weight(M) for M in Ms]
+
+
+def compute_coff_lower(M: GT_PATTERN, k, l) -> float:
+    num = 1
     for k_p in range(l + 1):
-        num_1 *= M[l + 1][k_p] - M[l][k] + k - k_p + 1
-    num_2 = 1
+        num *= M[l + 1][k_p] - M[l][k] + k - k_p + 1
     for k_p in range(l - 1):
-        num_2 *= M[l - 1][k_p] - M[l][k] + k - k_p
+        num *= M[l - 1][k_p] - M[l][k] + k - k_p
     den = 1
     for k_p in range(l - 1):
         if k_p != k:
             den *= (M[l][k_p] - M[l][k] + k - k_p + 1) * (M[l][k_p] - M[l][k] + k - k_p)
-    return (-(num_1 * num_2) / den) ** 0.5
+    return (-num / den) ** 0.5
 
 
-def lower_ladder(M: Tuple[Tuple[int, ...], ...]) -> Tuple[int, Tuple[Tuple[int, ...], ...]]:
+def M_add_at_kl(M: GT_PATTERN, k: int, l: int, increment: int) -> Optional[GT_PATTERN]:
+    M = tuple(
+        tuple(
+            M[i][j] + increment if (i, j) == (k, l) else M[i][j]
+            for j in range(len(M[i]))
+        )
+        for i in range(len(M))
+    )
+    return M if is_valid_M(M) else None
+
+
+def lower_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
     instructions = []
     for l, k in unique_pairs(len(M)):
-        M_kl = list(M)
-        M_kl[k][l] -= 1
-        if not _assert_valid_M(M_kl):
-            continue
-        else:
-            coeff = compute_coeff_lower(M, k, l)
-        instructions.append((coeff, M_kl))
+        M_kl = M_add_at_kl(M, k, l, -1)
+        if M_kl is not None:
+            instructions.append((compute_coff_lower(M, k, l), M_kl))
+    return instructions
 
 
 @static_jax_pytree
@@ -164,9 +166,8 @@ class SURep(AbstractRep):
     S: Tuple[int]  # List of weights of the representation
 
     def __mul__(rep1: 'SURep', rep2: 'SURep') -> List['SURep']:
-        Ms = list(S_to_Ms(rep1.S))
         n = len(rep2.S)
-        for pattern in Ms:
+        for pattern in S_to_Ms(rep1.S):
             t_weight = list(rep2.S)
             for l, k in unique_pairs(n):
                 try:
@@ -177,8 +178,7 @@ class SURep(AbstractRep):
                     t_weight = []
                     break
             if t_weight:
-                S = tuple(map(lambda x: x - t_weight[-1], t_weight))
-                yield SURep(S=S)
+                yield SURep(S=tuple(x - t_weight[-1] for x in t_weight))
 
     @classmethod
     def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
