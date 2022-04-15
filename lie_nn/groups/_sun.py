@@ -128,16 +128,33 @@ def Ms_to_p_weight(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
     return [M_to_p_weight(M) for M in Ms]
 
 
-def compute_coff_lower(M: GT_PATTERN, k, l) -> float:
+def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
+    n = len(M)
     num = 1
     for k_p in range(l + 1):
-        num *= M[l + 1][k_p] - M[l][k] + k - k_p + 1
+        num *= M[n - l - 1][k_p] - M[n - l][k] + k - k_p + 1
     for k_p in range(l - 1):
-        num *= M[l - 1][k_p] - M[l][k] + k - k_p
+        num *= M[n - l + 1][k_p] - M[n - l][k] + k - k_p
     den = 1
+    for k_p in range(l):
+        if k_p == k:
+            continue
+        den *= (M[n - l][k_p] - M[n - l][k] + k - k_p + 1) * (M[n - l][k_p] - M[n - l][k] + k - k_p)
+    return (-num / den) ** 0.5
+
+
+def compute_coeff_upper(M: GT_PATTERN, k, l) -> float:
+    n = len(M)
+    num = 1
+    for k_p in range(l + 1):
+        num *= M[n - l - 1][k_p] - M[n - l][k] + k - k_p
     for k_p in range(l - 1):
-        if k_p != k:
-            den *= (M[l][k_p] - M[l][k] + k - k_p + 1) * (M[l][k_p] - M[l][k] + k - k_p)
+        num *= M[n - l + 1][k_p] - M[n - l][k] + k - k_p - 1
+    den = 1
+    for k_p in range(l):
+        if k_p == k:
+            continue
+        den *= (M[n - l][k_p] - M[n - l][k] + k - k_p) * (M[n - l][k_p] - M[n - l][k] + k - k_p - 1)
     return (-num / den) ** 0.5
 
 
@@ -157,7 +174,7 @@ def lower_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
     for l, k in unique_pairs(len(M)):
         M_kl = M_add_at_kl(M, k, l, -1)
         if M_kl is not None:
-            instructions.append((compute_coff_lower(M, k, l), M_kl))
+            instructions.append((compute_coeff_lower(M, k, l), M_kl))
     return instructions
 
 
