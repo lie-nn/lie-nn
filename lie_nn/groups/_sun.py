@@ -170,11 +170,24 @@ def M_add_at_kl(M: GT_PATTERN, k: int, l: int, increment: int) -> Optional[GT_PA
 
 
 def lower_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
+    n = len(M)
     instructions = []
-    for l, k in unique_pairs(len(M)):
+    for l, k in unique_pairs(n - 1):
         M_kl = M_add_at_kl(M, k, l, -1)
-        if M_kl is not None:
-            instructions.append((compute_coeff_lower(M, k, l), M_kl))
+        coeff = compute_coeff_lower(M, k, n - l - 1)
+        if M_kl is not None and coeff != 0:
+            instructions.append((coeff, M_kl))
+    return instructions
+
+
+def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
+    n = len(M)
+    instructions = []
+    for l, k in unique_pairs(n - 1):
+        M_kl = M_add_at_kl(M, k, l, -1)
+        coeff = compute_coeff_upper(M, k, n - l - 1)
+        if M_kl is not None and coeff != 0:
+            instructions.append((coeff, M_kl))
     return instructions
 
 
