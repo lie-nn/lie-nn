@@ -3,6 +3,7 @@ from typing import Iterator, List
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 
 def static_jax_pytree(cls):
@@ -46,21 +47,40 @@ def commutator(A, B):
 def kron(A, *BCD):
     if len(BCD) == 0:
         return A
-    return jnp.kron(A, kron(*BCD))
+    return np.kron(A, kron(*BCD))
 
 
-@jax.jit
-def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep'):
+def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+    """
+    Orthogonalize a matrix using the Gram-Schmidt process.
+    """
+    assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
+    assert A.dtype in [np.float64, np.complex128], "Gram-Schmidt process only works for float64 matrices."
+    Q = []
+    for i in range(A.shape[0]):
+        v = A[i]
+        for w in Q:
+            v -= np.dot(np.conj(w), v) * w
+        norm = np.linalg.norm(v)
+        if norm > epsilon:
+            Q += [v / norm]
+    return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
+
+
+def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> np.ndarray:
     X1 = rep1.continuous_generators()
     X2 = rep2.continuous_generators()
     X3 = rep3.continuous_generators()
 
-    I1 = jnp.eye(rep1.dim)
-    I2 = jnp.eye(rep2.dim)
-    I3 = jnp.eye(rep3.dim)
+    I1 = np.eye(rep1.dim)
+    I2 = np.eye(rep2.dim)
+    I3 = np.eye(rep3.dim)
 
-    A = jax.vmap(lambda X1, X2, X3: kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T))(X1, X2, X3)
-    A = jnp.sum(jnp.conj(A.swapaxes(1, 2)) @ A, axis=0)
+    A = np.stack([
+        kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T)
+        for X1, X2, X3 in zip(X1, X2, X3)
+    ])
+    A = np.sum(np.conj(A.swapaxes(1, 2)) @ A, axis=0)
     return A
 
 
@@ -71,7 +91,7 @@ class AbstractRep:
         pass
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
         Args:
@@ -85,12 +105,20 @@ class AbstractRep:
         """
         epsilon = 1e-4
 
-        val, vec = jnp.linalg.eigh(clebsch_gordan_linear_system(rep1, rep2, rep3))
+        A = clebsch_gordan_linear_system(rep1, rep2, rep3)
+        assert A.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
+        val, vec = np.linalg.eigh(A)
 
-        cg = vec.T[jnp.abs(val) < epsilon]
-        cg = jax.vmap(lambda x: x / x[jnp.nonzero(jnp.abs(x) > epsilon, size=1, fill_value=0)[0][0]])(cg)  # TODO fix better the phase, now in the test we check both signs
+        cg = vec.T[np.abs(val) < epsilon]
+        # cg = jax.vmap(lambda x: rep3.dim**0.5 * x / jnp.linalg.norm(x))(cg)
+
+        # _, r = np.linalg.qr(cg.T @ cg)
+        # cg = r[np.linalg.norm(r, axis=1) > 0.5]
+
+        cg = gram_schmidt(cg.T @ cg)
+
+        cg = cg * np.sqrt(rep3.dim)
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
-        cg = jax.vmap(lambda x: rep3.dim**0.5 * x / jnp.linalg.norm(x))(cg)
         return cg
 
     @property
@@ -144,15 +172,15 @@ class AbstractRep:
                     assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
 
                     # Orthogonality
-                    left_side = jnp.einsum('zijk,wijl->zkwl', cg, jnp.conj(cg))
-                    right_side = jnp.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
-                    assert jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
+                    # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
+                    # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
+                    # assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
                     if rep3 in rep1 * rep2:
                         assert cg.shape[0] > 0
                     else:
                         assert cg.shape[0] == 0
 
-                    left_side = jnp.einsum('zijk,dlk->zdijl', cg, X3)
-                    right_side = jnp.einsum('dil,zijk->zdljk', X1, cg) + jnp.einsum('djl,zijk->zdilk', X2, cg)
-                    assert jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
+                    left_side = np.einsum('zijk,dlk->zdijl', cg, X3)
+                    right_side = np.einsum('dil,zijk->zdljk', X1, cg) + np.einsum('djl,zijk->zdilk', X2, cg)
+                    assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)

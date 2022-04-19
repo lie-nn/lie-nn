@@ -2,13 +2,13 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn.groups import AbstractRep, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep
+from lie_nn.groups import AbstractRep, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep, SU2RealRep
 
-REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep]  # TODO add SL2Rep and SO13Rep
+REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SU2RealRep]  # TODO add SL2Rep and SO13Rep
 
 
 @pytest.mark.parametrize('Rep', REPRESENTATIONS)
-def test_cg(Rep):
+def test_cg_equivariance(Rep):
     reps = list(itertools.islice(Rep.iterator(), 4))
 
     Rep.test_clebsch_gordan(reps, atol=1e-3, rtol=1e-3)
