@@ -1,3 +1,4 @@
+import fractions
 import itertools
 from typing import Iterator, List
 
@@ -32,6 +33,12 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
     raise ValueError(f'j={j} is not an integer')
 
 
+@np.vectorize
+def round_to_sqrt_rational(x: float) -> float:
+    sign = 1 if x >= 0 else -1
+    return sign * fractions.Fraction(x**2).limit_denominator()**0.5
+
+
 @static_jax_pytree
 class SU2RealRep(AbstractRep):
     j: float  # j is a half-integer
@@ -51,6 +58,7 @@ class SU2RealRep(AbstractRep):
             C = np.einsum('ij,kl,mn,zikn->zjlm', Q1, Q2, np.conj(Q3.T), C)
         else:
             C = AbstractRep.clebsch_gordan(rep1, rep2, rep3)
+            C = round_to_sqrt_rational(C)
 
         assert np.all(np.abs(np.imag(C)) < 1e-5)
         return np.real(C)
@@ -77,10 +85,11 @@ class SU2RealRep(AbstractRep):
             assert np.all(np.abs(np.imag(X)) < 1e-5)
             return np.real(X)
 
-        return np.concatenate([
-            np.concatenate([np.real(X), -np.imag(X)], axis=2),
-            np.concatenate([np.imag(X), np.real(X)], axis=2),
-        ], axis=1)
+        # convert complex array [d, i, j] to real array [d, i, 2, j, 2]
+        return np.stack([
+            np.stack([np.real(X), -np.imag(X)], axis=3),
+            np.stack([np.imag(X), np.real(X)], axis=3),
+        ], axis=2).reshape((-1, rep.dim, rep.dim))
 
     def discrete_generators(rep: 'SU2RealRep') -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
