@@ -1,5 +1,6 @@
 import fractions
 import itertools
+from functools import partial
 from typing import Iterator, List
 
 import numpy as np
@@ -33,7 +34,7 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
     raise ValueError(f'j={j} is not an integer')
 
 
-@np.vectorize
+@partial(np.vectorize, otypes=[np.float64])
 def round_to_sqrt_rational(x: float) -> float:
     sign = 1 if x >= 0 else -1
     return sign * fractions.Fraction(x**2).limit_denominator()**0.5
