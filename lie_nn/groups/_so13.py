@@ -12,7 +12,7 @@ class SO13Rep(AbstractRep):
     l: int  # First integer weight
     k: int  # Second integer weight
 
-    def __mul__(rep1: 'SO13Rep', rep2: 'SO13Rep') -> List['SO13Rep']:
+    def __mul__(rep1: "SO13Rep", rep2: "SO13Rep") -> List["SO13Rep"]:
         assert isinstance(rep2, SO13Rep)
         lmin = abs(rep1.l - rep2.l)
         lmax = rep1.l + rep1.l
@@ -23,23 +23,23 @@ class SO13Rep(AbstractRep):
                 yield SO13Rep(l=l, k=k)
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'SO13Rep', rep2: 'SO13Rep', rep3: 'SO13Rep') -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: "SO13Rep", rep2: "SO13Rep", rep3: "SO13Rep") -> jnp.ndarray:
         return SL2Rep.clebsch_gordan(rep1, rep2, rep3)
 
     @property
-    def dim(rep: 'SO13Rep') -> int:
+    def dim(rep: "SO13Rep") -> int:
         return round((rep.l + 1) * (rep.k + 1))
 
     @classmethod
-    def iterator(cls) -> Iterator['SO13Rep']:
+    def iterator(cls) -> Iterator["SO13Rep"]:
         for sum in itertools.count(0, 2):
             for l in range(0, sum + 1):
                 yield SO13Rep(l=l, k=sum - l)
 
-    def discrete_generators(rep: 'SO13Rep') -> jnp.ndarray:
+    def discrete_generators(rep: "SO13Rep") -> jnp.ndarray:
         return jnp.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: 'SO13Rep') -> jnp.ndarray:
+    def continuous_generators(rep: "SO13Rep") -> jnp.ndarray:
         return SL2Rep.continuous_generators(rep)
 
     @classmethod

@@ -46,7 +46,7 @@ class Reps(tuple):
                     rep = None
 
                 if not (isinstance(mul, int) and mul >= 0 and rep is not None):
-                    raise ValueError(f"Unable to interpret \"{mul_rep}\" as a MulRep.")
+                    raise ValueError(f'Unable to interpret "{mul_rep}" as a MulRep.')
 
                 list.append(MulRep(mul=mul, rep=rep))
         return super().__new__(cls, list)

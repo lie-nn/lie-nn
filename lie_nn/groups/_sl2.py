@@ -27,7 +27,7 @@ class SL2Rep(AbstractRep):
     l: int  # First integer weight
     k: int  # Second integer weight
 
-    def __mul__(rep1: 'SL2Rep', rep2: 'SL2Rep') -> List['SL2Rep']:
+    def __mul__(rep1: "SL2Rep", rep2: "SL2Rep") -> List["SL2Rep"]:
         assert isinstance(rep2, SL2Rep)
         lmin = abs(rep1.l - rep2.l)
         lmax = rep1.l + rep1.l
@@ -38,7 +38,7 @@ class SL2Rep(AbstractRep):
                 yield SL2Rep(l=l, k=k)
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'SL2Rep', rep2: 'SL2Rep', rep3: 'SL2Rep') -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: "SL2Rep", rep2: "SL2Rep", rep3: "SL2Rep") -> jnp.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))[None]
@@ -46,19 +46,19 @@ class SL2Rep(AbstractRep):
             return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
-    def dim(rep: 'SL2Rep') -> int:
+    def dim(rep: "SL2Rep") -> int:
         return (rep.l + 1) * (rep.k + 1)
 
     @classmethod
-    def iterator(cls) -> Iterator['SL2Rep']:
+    def iterator(cls) -> Iterator["SL2Rep"]:
         for sum in itertools.count(0):
             for l in range(0, sum + 1):
                 yield SL2Rep(l=l, k=sum - l)
 
-    def discrete_generators(rep: 'SL2Rep') -> jnp.ndarray:
+    def discrete_generators(rep: "SL2Rep") -> jnp.ndarray:
         return jnp.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: 'SL2Rep') -> jnp.ndarray:
+    def continuous_generators(rep: "SL2Rep") -> jnp.ndarray:
         def id_like(x):
             return jnp.eye(x.shape[0])
 
@@ -70,7 +70,9 @@ class SL2Rep(AbstractRep):
         real = jax.vmap(kron_add)(Xl, Xk)
         imag = jax.vmap(kron_add)(Xl, -Xk)
         X = jnp.concatenate([real, imag], axis=0)
-        C = SL2Rep.clebsch_gordan(SL2Rep(l=rep.l, k=0), SL2Rep(l=0, k=rep.k), SL2Rep(l=rep.l, k=rep.k)).reshape(rep.dim, rep.dim)  # [d, d]
+        C = SL2Rep.clebsch_gordan(SL2Rep(l=rep.l, k=0), SL2Rep(l=0, k=rep.k), SL2Rep(l=rep.l, k=rep.k)).reshape(
+            rep.dim, rep.dim
+        )  # [d, d]
         return C.T @ X @ jnp.conj(C)
 
     @classmethod
@@ -91,6 +93,7 @@ class SL2Rep(AbstractRep):
             algebra[i, j, k] = sign((i, j, k))
 
         return algebra
+
 
 # From Lorentz group equivariant network Bogatskiy
 
@@ -128,13 +131,10 @@ def clebsch_gordansl2mat(rep1, rep2, rep3, fastcgmat=clebsch_gordanSU2mat):
     l1, k1 = rep1
     l2, k2 = rep2
     l, k = rep3
-    B1 = np.concatenate([fastcgmat(l / 2, k / 2, i / 2)
-                         for i in range(abs(l - k), l + k + 1, 2)], axis=-1)
+    B1 = np.concatenate([fastcgmat(l / 2, k / 2, i / 2) for i in range(abs(l - k), l + k + 1, 2)], axis=-1)
     B2a = fastcgmat(l1 / 2, l2 / 2, l / 2)
     B2b = fastcgmat(k1 / 2, k2 / 2, k / 2)
-    B3a = np.concatenate([fastcgmat(l1 / 2, k1 / 2, i1 / 2)
-                          for i1 in range(abs(l1 - k1), l1 + k1 + 1, 2)], axis=-1)
-    B3b = np.concatenate([fastcgmat(l2 / 2, k2 / 2, i2 / 2)
-                          for i2 in range(abs(l2 - k2), l2 + k2 + 1, 2)], axis=-1)
-    cg_matrix = np.einsum('cab', np.einsum('abc,dea,ghb,dgk,ehn', B1, B2a, B2b, B3a, B3b))
+    B3a = np.concatenate([fastcgmat(l1 / 2, k1 / 2, i1 / 2) for i1 in range(abs(l1 - k1), l1 + k1 + 1, 2)], axis=-1)
+    B3b = np.concatenate([fastcgmat(l2 / 2, k2 / 2, i2 / 2) for i2 in range(abs(l2 - k2), l2 + k2 + 1, 2)], axis=-1)
+    cg_matrix = np.einsum("cab", np.einsum("abc,dea,ghb,dgk,ehn", B1, B2a, B2b, B3a, B3b))
     return cg_matrix

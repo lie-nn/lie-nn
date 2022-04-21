@@ -30,12 +30,7 @@ def matrix_power(F, n):
 
         return (new_n, new_z, new_result), None
 
-    result = jax.lax.cond(
-        n == 1,
-        lambda _: F,
-        lambda _: jax.lax.scan(body, init_carry, None, length=upper_limit)[0][2],
-        None
-    )
+    result = jax.lax.cond(n == 1, lambda _: F, lambda _: jax.lax.scan(body, init_carry, None, length=upper_limit)[0][2], None)
 
     return result
 
@@ -67,7 +62,7 @@ def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
     return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
 
 
-def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> np.ndarray:
+def clebsch_gordan_linear_system(rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep") -> np.ndarray:
     X1 = rep1.continuous_generators()
     X2 = rep2.continuous_generators()
     X3 = rep3.continuous_generators()
@@ -76,22 +71,19 @@ def clebsch_gordan_linear_system(rep1: 'AbstractRep', rep2: 'AbstractRep', rep3:
     I2 = np.eye(rep2.dim)
     I3 = np.eye(rep3.dim)
 
-    A = np.stack([
-        kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T)
-        for X1, X2, X3 in zip(X1, X2, X3)
-    ])
+    A = np.stack([kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T) for X1, X2, X3 in zip(X1, X2, X3)])
     A = np.sum(np.conj(A.swapaxes(1, 2)) @ A, axis=0)
     return A
 
 
 @static_jax_pytree
 class AbstractRep:
-    def __mul__(rep1: 'AbstractRep', rep2: 'AbstractRep') -> List['AbstractRep']:
+    def __mul__(rep1: "AbstractRep", rep2: "AbstractRep") -> List["AbstractRep"]:
         # selection rule
         pass
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'AbstractRep', rep2: 'AbstractRep', rep3: 'AbstractRep') -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep") -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
         Args:
@@ -122,19 +114,19 @@ class AbstractRep:
         return cg
 
     @property
-    def dim(rep: 'AbstractRep') -> int:
+    def dim(rep: "AbstractRep") -> int:
         pass
 
     @classmethod
-    def iterator(cls) -> Iterator['AbstractRep']:
+    def iterator(cls) -> Iterator["AbstractRep"]:
         # not sure if we need this
         pass
 
-    def continuous_generators(rep: 'AbstractRep') -> jnp.ndarray:
+    def continuous_generators(rep: "AbstractRep") -> jnp.ndarray:
         # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
         pass
 
-    def discrete_generators(rep: 'AbstractRep') -> jnp.ndarray:
+    def discrete_generators(rep: "AbstractRep") -> jnp.ndarray:
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         pass
 
@@ -143,22 +135,22 @@ class AbstractRep:
         # [X_i, X_j] = A_ijk X_k
         pass
 
-    def exp_map(rep: 'AbstractRep', continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+    def exp_map(rep: "AbstractRep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
         # return a matrix of shape ``(rep.dim, rep.dim)``
         discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
-        output = jax.scipy.linalg.expm(jnp.einsum('a,aij->ij', continuous_params, rep.continuous_generators()))
+        output = jax.scipy.linalg.expm(jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators()))
         for x in reversed(discrete):
             output = x @ output
         return output
 
-    def test_algebra(rep: 'AbstractRep', rtol=1e-05, atol=1e-08) -> jnp.ndarray:
+    def test_algebra(rep: "AbstractRep", rtol=1e-05, atol=1e-08) -> jnp.ndarray:
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
         left_side = jax.vmap(jax.vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
-        right_side = jnp.einsum('ijk,kab->ijab', rep.algebra(), X)
+        right_side = jnp.einsum("ijk,kab->ijab", rep.algebra(), X)
         return jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
-    def test_clebsch_gordan(cls, reps: List['AbstractRep'], rtol=1e-05, atol=1e-08):
+    def test_clebsch_gordan(cls, reps: List["AbstractRep"], rtol=1e-05, atol=1e-08):
         for rep1 in reps:
             for rep2 in reps:
                 for rep3 in reps:
@@ -181,6 +173,6 @@ class AbstractRep:
                     else:
                         assert cg.shape[0] == 0
 
-                    left_side = np.einsum('zijk,dlk->zdijl', cg, X3)
-                    right_side = np.einsum('dil,zijk->zdljk', X1, cg) + np.einsum('djl,zijk->zdilk', X2, cg)
+                    left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
+                    right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
                     assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)

@@ -159,13 +159,7 @@ def compute_coeff_upper(M: GT_PATTERN, k, l) -> float:
 
 
 def M_add_at_kl(M: GT_PATTERN, k: int, l: int, increment: int) -> Optional[GT_PATTERN]:
-    M = tuple(
-        tuple(
-            M[i][j] + increment if (i, j) == (k, l) else M[i][j]
-            for j in range(len(M[i]))
-        )
-        for i in range(len(M))
-    )
+    M = tuple(tuple(M[i][j] + increment if (i, j) == (k, l) else M[i][j] for j in range(len(M[i]))) for i in range(len(M)))
     return M if is_valid_M(M) else None
 
 
@@ -195,7 +189,7 @@ def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
 class SURep(AbstractRep):
     S: Tuple[int]  # List of weights of the representation
 
-    def __mul__(rep1: 'SURep', rep2: 'SURep') -> List['SURep']:
+    def __mul__(rep1: "SURep", rep2: "SURep") -> List["SURep"]:
         n = len(rep2.S)
         for pattern in S_to_Ms(rep1.S):
             t_weight = list(rep2.S)
@@ -211,32 +205,32 @@ class SURep(AbstractRep):
                 yield SURep(S=tuple(x - t_weight[-1] for x in t_weight))
 
     @classmethod
-    def clebsch_gordan(cls, rep1: 'SURep', rep2: 'SURep', rep3: 'SURep') -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: "SURep", rep2: "SURep", rep3: "SURep") -> jnp.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         pass
 
     @property
-    def dim(rep: 'SURep') -> int:
+    def dim(rep: "SURep") -> int:
         # A numerical algorithm for the explicit calculation of SU(N) and SL(N, C)
         # Clebsch-Gordan coefficients Arne Alex, Matthias Kalus, Alan Huckleberry
         # and Jan von Delft Eq 22.
         return dim(rep.S)
 
     @classmethod
-    def iterator(self, cls) -> Iterator['SURep']:
+    def iterator(self, cls) -> Iterator["SURep"]:
         pass
 
-    def discrete_generators(rep: 'SURep') -> jnp.ndarray:
+    def discrete_generators(rep: "SURep") -> jnp.ndarray:
         return jnp.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: 'SURep') -> jnp.ndarray:
+    def continuous_generators(rep: "SURep") -> jnp.ndarray:
         pass
 
     @classmethod
     def algebra(self, cls) -> jnp.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        lie_algebra_real = jnp.zeros((self.n**2 - 1, self.n, self.n))
-        lie_algebra_imag = jnp.zeros((self.n**2 - 1, self.n, self.n))
+        lie_algebra_real = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
+        lie_algebra_imag = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
         k = 0
         for i in range(self.n):
             for j in range(i):

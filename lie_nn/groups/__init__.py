@@ -8,13 +8,12 @@ from ._so13 import SO13Rep
 from ._sun import SURep
 
 __all__ = [
-    'AbstractRep'
-    'static_jax_pytree',
-    'SU2Rep',
-    'SU2RealRep',
-    'O3Rep',
-    'SO3Rep',
-    'SL2Rep',
-    'SO13Rep',
-    'SURep',
+    "AbstractRep" "static_jax_pytree",
+    "SU2Rep",
+    "SU2RealRep",
+    "O3Rep",
+    "SO3Rep",
+    "SL2Rep",
+    "SO13Rep",
+    "SURep",
 ]
