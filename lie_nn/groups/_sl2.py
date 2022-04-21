@@ -1,11 +1,25 @@
 import itertools
 from typing import Iterator, List
 
+import jax
 import jax.numpy as jnp
 import numpy as np
-from lie_nn.groups._su2 import clebsch_gordanSU2mat
+from lie_nn.groups._su2 import SU2Rep, clebsch_gordanSU2mat
 
 from ._abstract_rep import AbstractRep, static_jax_pytree
+
+
+def sign(p):
+    if len(p) == 1:
+        return True
+
+    trans = 0
+    for i in range(0, len(p)):
+        for j in range(i + 1, len(p)):
+            if p[i] > p[j]:
+                trans += 1
+
+    return 1 if (trans % 2) == 0 else -1
 
 
 @static_jax_pytree
@@ -27,7 +41,7 @@ class SL2Rep(AbstractRep):
     def clebsch_gordan(cls, rep1: 'SL2Rep', rep2: 'SL2Rep', rep3: 'SL2Rep') -> jnp.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
-            return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))
+            return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))[None]
         else:
             return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
@@ -45,40 +59,38 @@ class SL2Rep(AbstractRep):
         return jnp.zeros((0, rep.dim, rep.dim))
 
     def continuous_generators(rep: 'SL2Rep') -> jnp.ndarray:
-        pass
+        def id_like(x):
+            return jnp.eye(x.shape[0])
+
+        def kron_add(x, y):
+            return jnp.kron(x, id_like(y)) + jnp.conj(jnp.kron(id_like(x), y))
+
+        Xl = SU2Rep(j=rep.l).continuous_generators()
+        Xk = SU2Rep(j=rep.k).continuous_generators()
+        real = jax.vmap(kron_add)(Xl, Xk)
+        imag = jax.vmap(kron_add)(Xl, -Xk)
+        X = jnp.concatenate([real, imag], axis=0)
+        C = SL2Rep.clebsch_gordan(SL2Rep(l=rep.l, k=0), SL2Rep(l=0, k=rep.k), SL2Rep(l=rep.l, k=rep.k)).reshape(rep.dim, rep.dim)  # [d, d]
+        return C.T @ X @ jnp.conj(C)
 
     @classmethod
     def algebra(cls) -> jnp.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        return jnp.array([[[0., 1., 0., 0.],
-                           [1., 0., 0., 0.],
-                           [0., 0., 0., 0.],
-                           [0., 0., 0., 0.]],
+        algebra = np.zeros((6, 6, 6))
 
-                          [[0., 0., 1., 0.],
-                           [0., 0., 0., 0.],
-                           [1., 0., 0., 0.],
-                           [0., 0., 0., 0.]],
+        for i, j, k in itertools.permutations((0, 1, 2)):
+            algebra[i, j, k] = sign((i, j, k))
 
-                          [[0., 0., 0., 1.],
-                           [0., 0., 0., 0.],
-                           [0., 0., 0., 0.],
-                           [1., 0., 0., 0.]],
+        for i, j, k in itertools.permutations((0, 4, 5)):
+            algebra[i, j, k] = sign((i, j, k))
 
-                          [[0., 0., 0., 0.],
-                           [0., 0., -1., 0.],
-                           [0., 1., 0., 0.],
-                           [0., 0., 0., 0.]],
+        for i, j, k in itertools.permutations((1, 3, 5)):
+            algebra[i, j, k] = -sign((i, j, k))
 
-                          [[0., 0., 0., 0.],
-                           [0., 0., 0., -1.],
-                           [0., 0., 0., 0.],
-                           [0., 1., 0., 0.]],
+        for i, j, k in itertools.permutations((2, 3, 4)):
+            algebra[i, j, k] = sign((i, j, k))
 
-                          [[0., 0., 0., 0.],
-                           [0., 0., 0., 0.],
-                           [0., 0., 0., -1.],
-                           [0., 0., 1., 0.]]])
+        return algebra
 
 # From Lorentz group equivariant network Bogatskiy
 

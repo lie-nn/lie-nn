@@ -40,7 +40,7 @@ class SO13Rep(AbstractRep):
         return jnp.zeros((0, rep.dim, rep.dim))
 
     def continuous_generators(rep: 'SO13Rep') -> jnp.ndarray:
-        pass
+        return SL2Rep.continuous_generators(rep)
 
     @classmethod
     def algebra(cls) -> jnp.ndarray:
