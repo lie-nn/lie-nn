@@ -4,6 +4,7 @@ from typing import Iterator, List
 import jax
 import jax.numpy as jnp
 import numpy as np
+from lie_nn.util import vmap
 
 
 def static_jax_pytree(cls):
@@ -102,11 +103,6 @@ class AbstractRep:
         val, vec = np.linalg.eigh(A)
 
         cg = vec.T[np.abs(val) < epsilon]
-        # cg = jax.vmap(lambda x: rep3.dim**0.5 * x / jnp.linalg.norm(x))(cg)
-
-        # _, r = np.linalg.qr(cg.T @ cg)
-        # cg = r[np.linalg.norm(r, axis=1) > 0.5]
-
         cg = gram_schmidt(cg.T @ cg)
 
         cg = cg * np.sqrt(rep3.dim)
@@ -122,16 +118,16 @@ class AbstractRep:
         # not sure if we need this
         pass
 
-    def continuous_generators(rep: "AbstractRep") -> jnp.ndarray:
+    def continuous_generators(rep: "AbstractRep") -> np.ndarray:
         # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
         pass
 
-    def discrete_generators(rep: "AbstractRep") -> jnp.ndarray:
+    def discrete_generators(rep: "AbstractRep") -> np.ndarray:
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         pass
 
     @classmethod
-    def algebra(cls) -> jnp.ndarray:
+    def algebra(cls) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         pass
 
@@ -143,11 +139,11 @@ class AbstractRep:
             output = x @ output
         return output
 
-    def test_algebra(rep: "AbstractRep", rtol=1e-05, atol=1e-08) -> jnp.ndarray:
+    def test_algebra(rep: "AbstractRep", rtol=1e-05, atol=1e-08):
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
-        left_side = jax.vmap(jax.vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
-        right_side = jnp.einsum("ijk,kab->ijab", rep.algebra(), X)
-        return jnp.allclose(left_side, right_side, rtol=rtol, atol=atol)
+        left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
+        right_side = np.einsum("ijk,kab->ijab", rep.algebra(), X)
+        assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
     def test_clebsch_gordan(cls, reps: List["AbstractRep"], rtol=1e-05, atol=1e-08):
@@ -158,7 +154,6 @@ class AbstractRep:
                     X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
                     X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
 
-                    print(rep1, rep2, rep3)
                     cg = cls.clebsch_gordan(rep1, rep2, rep3)
                     assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
                     assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)

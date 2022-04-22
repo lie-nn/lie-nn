@@ -1,10 +1,9 @@
 import itertools
 from typing import Iterator, List
 
-import jax
-import jax.numpy as jnp
 import numpy as np
 from lie_nn.groups._su2 import SU2Rep, clebsch_gordanSU2mat
+from lie_nn.util import vmap
 
 from ._abstract_rep import AbstractRep, static_jax_pytree
 
@@ -39,12 +38,12 @@ class SL2Rep(AbstractRep):
                 yield SL2Rep(l=l, k=k)
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SL2Rep", rep2: "SL2Rep", rep3: "SL2Rep") -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: "SL2Rep", rep2: "SL2Rep", rep3: "SL2Rep") -> np.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))[None]
         else:
-            return jnp.zeros((0, rep1.dim, rep2.dim, rep3.dim))
+            return np.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
     def dim(rep: "SL2Rep") -> int:
@@ -56,28 +55,28 @@ class SL2Rep(AbstractRep):
             for l in range(0, sum + 1):
                 yield SL2Rep(l=l, k=sum - l)
 
-    def discrete_generators(rep: "SL2Rep") -> jnp.ndarray:
-        return jnp.zeros((0, rep.dim, rep.dim))
+    def discrete_generators(rep: "SL2Rep") -> np.ndarray:
+        return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SL2Rep") -> jnp.ndarray:
+    def continuous_generators(rep: "SL2Rep") -> np.ndarray:
         def id_like(x):
-            return jnp.eye(x.shape[0])
+            return np.eye(x.shape[0])
 
         def kron_add(x, y):
-            return jnp.kron(x, id_like(y)) + jnp.conj(jnp.kron(id_like(x), y))
+            return np.kron(x, id_like(y)) + np.conj(np.kron(id_like(x), y))
 
         Xl = SU2Rep(j=rep.l).continuous_generators()
         Xk = SU2Rep(j=rep.k).continuous_generators()
-        real = jax.vmap(kron_add)(Xl, Xk)
-        imag = jax.vmap(kron_add)(Xl, -Xk)
-        X = jnp.concatenate([real, imag], axis=0)
+        real = vmap(kron_add)(Xl, Xk)
+        imag = vmap(kron_add)(Xl, -Xk)
+        X = np.concatenate([real, imag], axis=0)
         C = SL2Rep.clebsch_gordan(SL2Rep(l=rep.l, k=0), SL2Rep(l=0, k=rep.k), SL2Rep(l=rep.l, k=rep.k)).reshape(
             rep.dim, rep.dim
         )  # [d, d]
-        return C.T @ X @ jnp.conj(C)
+        return C.T @ X @ np.conj(C)
 
     @classmethod
-    def algebra(cls) -> jnp.ndarray:
+    def algebra(cls) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         algebra = np.zeros((6, 6, 6))
 

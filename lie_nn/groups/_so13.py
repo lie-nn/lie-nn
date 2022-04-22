@@ -1,7 +1,7 @@
 import itertools
 from typing import Iterator, List
 
-import jax.numpy as jnp
+import numpy as np
 
 from ._abstract_rep import AbstractRep, static_jax_pytree
 from ._sl2 import SL2Rep
@@ -24,7 +24,7 @@ class SO13Rep(AbstractRep):  # TODO: think if this class shoulb be a subclass of
             yield SO13Rep(l=rep.l, k=rep.k)
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SO13Rep", rep2: "SO13Rep", rep3: "SO13Rep") -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: "SO13Rep", rep2: "SO13Rep", rep3: "SO13Rep") -> np.ndarray:
         return SL2Rep.clebsch_gordan(rep1, rep2, rep3)
 
     @property
@@ -37,13 +37,13 @@ class SO13Rep(AbstractRep):  # TODO: think if this class shoulb be a subclass of
             for l in range(0, sum + 1):
                 yield SO13Rep(l=l, k=sum - l)
 
-    def discrete_generators(rep: "SO13Rep") -> jnp.ndarray:
-        return jnp.zeros((0, rep.dim, rep.dim))
+    def discrete_generators(rep: "SO13Rep") -> np.ndarray:
+        return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SO13Rep") -> jnp.ndarray:
+    def continuous_generators(rep: "SO13Rep") -> np.ndarray:
         return SL2Rep.continuous_generators(rep)
 
     @classmethod
-    def algebra(cls) -> jnp.ndarray:
+    def algebra(cls) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         return SL2Rep.algebra()
