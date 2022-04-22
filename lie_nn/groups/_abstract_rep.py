@@ -4,7 +4,7 @@ from typing import Iterator, List
 import jax
 import jax.numpy as jnp
 import numpy as np
-from lie_nn.util import commutator, kron, null_space, vmap
+from lie_nn.util import commutator, kron, vmap, change_of_basis
 
 
 def static_jax_pytree(cls):
@@ -36,19 +36,6 @@ def matrix_power(F, n):
     return result
 
 
-def clebsch_gordan_linear_system(rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep") -> np.ndarray:
-    X1 = rep1.continuous_generators()
-    X2 = rep2.continuous_generators()
-    X3 = rep3.continuous_generators()
-
-    I1 = np.eye(rep1.dim)
-    I2 = np.eye(rep2.dim)
-    I3 = np.eye(rep3.dim)
-
-    A = np.concatenate([kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T) for X1, X2, X3 in zip(X1, X2, X3)])
-    return A
-
-
 @static_jax_pytree
 class AbstractRep:
     def __mul__(rep1: "AbstractRep", rep2: "AbstractRep") -> List["AbstractRep"]:
@@ -68,10 +55,14 @@ class AbstractRep:
             The Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
             It is an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``.
         """
-        A = clebsch_gordan_linear_system(rep1, rep2, rep3)
-        assert A.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
+        i1 = np.eye(rep1.dim)
+        i2 = np.eye(rep2.dim)
 
-        cg = null_space(A)
+        X_in = vmap(lambda x1, x2: kron(x1, i2) + kron(i1, x2))(rep1.continuous_generators(), rep2.continuous_generators())
+        X_out = rep3.continuous_generators()
+        cg = change_of_basis(X_in, X_out)
+
+        assert cg.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
 
         cg = cg * np.sqrt(rep3.dim)
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))

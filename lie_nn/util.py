@@ -110,7 +110,7 @@ def change_of_basis(X1: np.ndarray, X2: np.ndarray, epsilon=1e-4) -> np.ndarray:
     Compute the change of basis matrix from X1 to X2.
 
     .. math::
-        \mathbf{X_1} = \mathbf{S} \mathbf{X_2} \mathbf{S}^{-1}
+        \mathbf{X_1} \mathbf{S} = \mathbf{S} \mathbf{X_2}
 
     Args:
         X1: Ensemble of matrices.
@@ -122,17 +122,16 @@ def change_of_basis(X1: np.ndarray, X2: np.ndarray, epsilon=1e-4) -> np.ndarray:
     assert X1.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
     assert X2.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
 
-    n, d, _ = X1.shape
-    assert X1.shape == (n, d, d)
-    assert X2.shape == (n, d, d)
+    n, d1, _ = X1.shape
+    _, d2, _ = X2.shape
+    assert X1.shape == (n, d1, d1)
+    assert X2.shape == (n, d2, d2)
 
-    id = np.eye(d)
-
-    A = vmap(lambda x1, x2: kron(id, x1) - kron(x2.T, id))(X1, X2)
-    A = A.reshape(n * d * d, d * d)
+    A = vmap(lambda x1, x2: kron(np.eye(d2), x1) - kron(x2.T, np.eye(d1)))(X1, X2)
+    A = A.reshape(n * d2 * d1, d2 * d1)
     S = null_space(A, epsilon)
-    S = S.reshape(-1, d, d)
+    S = S.reshape(-1, d2, d1)
     S = np.swapaxes(S, 1, 2)
 
-    # assert np.allclose(X1, S[0] @ X2 @ np.linalg.inv(S[0]))
+    # assert np.allclose(X1 @ S[0], S[0] @ X2)
     return S
