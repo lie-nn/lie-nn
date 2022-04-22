@@ -1,20 +1,11 @@
-import fractions
 import itertools
-from functools import partial
 from typing import Iterator, List
 
 import numpy as np
+from lie_nn.util import is_half_integer, is_integer, round_to_sqrt_rational
 
 from ._abstract_rep import AbstractRep, static_jax_pytree
 from ._su2 import SU2Rep
-
-
-def is_integer(x: float) -> bool:
-    return x == round(x)
-
-
-def is_half_integer(x: float) -> bool:
-    return 2 * x == round(2 * x)
 
 
 def change_basis_real_to_complex(j: float) -> np.ndarray:
@@ -34,15 +25,14 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
     raise ValueError(f"j={j} is not an integer")
 
 
-@partial(np.vectorize, otypes=[np.float64])
-def round_to_sqrt_rational(x: float) -> float:
-    sign = 1 if x >= 0 else -1
-    return sign * fractions.Fraction(x ** 2).limit_denominator() ** 0.5
-
-
 @static_jax_pytree
 class SU2RealRep(AbstractRep):
     j: float  # j is a half-integer
+
+    def __post_init__(rep):
+        assert isinstance(rep.j, (float, int))
+        assert is_half_integer(rep.j)
+        assert rep.j >= 0
 
     def __mul__(rep1: "SU2RealRep", rep2: "SU2RealRep") -> List["SU2RealRep"]:
         assert isinstance(rep2, SU2RealRep)

@@ -1,4 +1,21 @@
+import fractions
+from functools import partial
+
 import numpy as np
+
+
+def is_integer(x: float) -> bool:
+    return x == round(x)
+
+
+def is_half_integer(x: float) -> bool:
+    return 2 * x == round(2 * x)
+
+
+@partial(np.vectorize, otypes=[np.float64])
+def round_to_sqrt_rational(x: float) -> float:
+    sign = 1 if x >= 0 else -1
+    return sign * fractions.Fraction(x ** 2).limit_denominator() ** 0.5
 
 
 def vmap(
@@ -29,3 +46,50 @@ def vmap(
         return np.stack(output, axis=out_axes)
 
     return f
+
+
+def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+    """
+    Orthogonalize a matrix using the Gram-Schmidt process.
+    """
+    assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
+    assert A.dtype in [np.float64, np.complex128], "Gram-Schmidt process only works for float64 matrices."
+    Q = []
+    for i in range(A.shape[0]):
+        v = A[i]
+        for w in Q:
+            v -= np.dot(np.conj(w), v) * w
+        norm = np.linalg.norm(v)
+        if norm > epsilon:
+            Q += [v / norm]
+    return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
+
+
+def null_space(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+    r"""
+    Compute the null space of a matrix.
+
+    .. math::
+        \mathbf{A} \mathbf{X}^T = 0
+
+    Args:
+        A: Matrix to compute null space of.
+        epsilon: The tolerance for the eigenvalue.
+
+    Returns:
+        The null space of A.
+    """
+    assert A.ndim == 2, "Null space only works for matrices."
+    assert A.dtype in [np.float64, np.complex128], "Null space only works for float64 matrices."
+
+    # Q, R = np.linalg.qr(A.T)
+    # # assert np.allclose(R.T @ Q.T, S)
+    # X = Q.T[np.abs(np.diag(R)) < epsilon]
+    # X = np.conj(X)
+
+    A = np.conj(A.T) @ A
+    val, vec = np.linalg.eigh(A)
+    X = vec.T[np.abs(val) < epsilon]
+
+    X = gram_schmidt(X.T @ X)
+    return X

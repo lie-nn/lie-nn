@@ -4,7 +4,7 @@ from typing import Iterator, List
 import jax
 import jax.numpy as jnp
 import numpy as np
-from lie_nn.util import vmap
+from lie_nn.util import vmap, null_space
 
 
 def static_jax_pytree(cls):
@@ -46,23 +46,6 @@ def kron(A, *BCD):
     return np.kron(A, kron(*BCD))
 
 
-def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
-    """
-    Orthogonalize a matrix using the Gram-Schmidt process.
-    """
-    assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
-    assert A.dtype in [np.float64, np.complex128], "Gram-Schmidt process only works for float64 matrices."
-    Q = []
-    for i in range(A.shape[0]):
-        v = A[i]
-        for w in Q:
-            v -= np.dot(np.conj(w), v) * w
-        norm = np.linalg.norm(v)
-        if norm > epsilon:
-            Q += [v / norm]
-    return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
-
-
 def clebsch_gordan_linear_system(rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep") -> np.ndarray:
     X1 = rep1.continuous_generators()
     X2 = rep2.continuous_generators()
@@ -72,8 +55,7 @@ def clebsch_gordan_linear_system(rep1: "AbstractRep", rep2: "AbstractRep", rep3:
     I2 = np.eye(rep2.dim)
     I3 = np.eye(rep3.dim)
 
-    A = np.stack([kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T) for X1, X2, X3 in zip(X1, X2, X3)])
-    A = np.sum(np.conj(A.swapaxes(1, 2)) @ A, axis=0)
+    A = np.concatenate([kron(X1, I2, I3) + kron(I1, X2, I3) + kron(I1, I2, -X3.T) for X1, X2, X3 in zip(X1, X2, X3)])
     return A
 
 
@@ -96,14 +78,10 @@ class AbstractRep:
             The Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
             It is an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``.
         """
-        epsilon = 1e-4
-
         A = clebsch_gordan_linear_system(rep1, rep2, rep3)
         assert A.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
-        val, vec = np.linalg.eigh(A)
 
-        cg = vec.T[np.abs(val) < epsilon]
-        cg = gram_schmidt(cg.T @ cg)
+        cg = null_space(A)
 
         cg = cg * np.sqrt(rep3.dim)
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
