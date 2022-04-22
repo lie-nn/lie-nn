@@ -9,6 +9,11 @@ class MulRep:
     mul: int
     rep: Rep
 
+    def __post_init__(self):
+        assert isinstance(self.mul, int)
+        assert self.mul >= 0
+        assert isinstance(self.rep, Rep)
+
     @property
     def dim(self):
         return self.mul * self.rep.dim

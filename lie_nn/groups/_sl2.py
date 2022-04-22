@@ -27,14 +27,15 @@ class SL2Rep(AbstractRep):
     l: int  # First integer weight
     k: int  # Second integer weight
 
+    def __post_init__(rep):
+        assert isinstance(rep.l, int)
+        assert isinstance(rep.k, int)
+        assert rep.l >= 0
+        assert rep.k >= 0
+
     def __mul__(rep1: "SL2Rep", rep2: "SL2Rep") -> List["SL2Rep"]:
-        assert isinstance(rep2, SL2Rep)
-        lmin = abs(rep1.l - rep2.l)
-        lmax = rep1.l + rep1.l
-        kmin = abs(rep2.k - rep2.k)
-        kmax = rep2.k + rep2.k
-        for l in range(lmin, lmax + 1):
-            for k in range(kmin, kmax + 1):
+        for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 2):
+            for k in range(abs(rep1.k - rep2.k), rep1.k + rep2.k + 1, 2):
                 yield SL2Rep(l=l, k=k)
 
     @classmethod
