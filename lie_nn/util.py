@@ -48,6 +48,16 @@ def vmap(
     return f
 
 
+def commutator(A, B):
+    return A @ B - B @ A
+
+
+def kron(A, *BCD):
+    if len(BCD) == 0:
+        return A
+    return np.kron(A, kron(*BCD))
+
+
 def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
     """
     Orthogonalize a matrix using the Gram-Schmidt process.
@@ -93,3 +103,36 @@ def null_space(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
 
     X = gram_schmidt(X.T @ X)
     return X
+
+
+def change_of_basis(X1: np.ndarray, X2: np.ndarray, epsilon=1e-4) -> np.ndarray:
+    r"""
+    Compute the change of basis matrix from X1 to X2.
+
+    .. math::
+        \mathbf{X_1} = \mathbf{S} \mathbf{X_2} \mathbf{S}^{-1}
+
+    Args:
+        X1: Ensemble of matrices.
+        X2: Ensemble of matrices.
+
+    Returns:
+        The change of basis S.
+    """
+    assert X1.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
+    assert X2.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
+
+    n, d, _ = X1.shape
+    assert X1.shape == (n, d, d)
+    assert X2.shape == (n, d, d)
+
+    id = np.eye(d)
+
+    A = vmap(lambda x1, x2: kron(id, x1) - kron(x2.T, id))(X1, X2)
+    A = A.reshape(n * d * d, d * d)
+    S = null_space(A, epsilon)
+    S = S.reshape(-1, d, d)
+    S = np.swapaxes(S, 1, 2)
+
+    # assert np.allclose(X1, S[0] @ X2 @ np.linalg.inv(S[0]))
+    return S

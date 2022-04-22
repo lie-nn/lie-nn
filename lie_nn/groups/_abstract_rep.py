@@ -4,7 +4,7 @@ from typing import Iterator, List
 import jax
 import jax.numpy as jnp
 import numpy as np
-from lie_nn.util import vmap, null_space
+from lie_nn.util import commutator, kron, null_space, vmap
 
 
 def static_jax_pytree(cls):
@@ -34,16 +34,6 @@ def matrix_power(F, n):
     result = jax.lax.cond(n == 1, lambda _: F, lambda _: jax.lax.scan(body, init_carry, None, length=upper_limit)[0][2], None)
 
     return result
-
-
-def commutator(A, B):
-    return A @ B - B @ A
-
-
-def kron(A, *BCD):
-    if len(BCD) == 0:
-        return A
-    return np.kron(A, kron(*BCD))
 
 
 def clebsch_gordan_linear_system(rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep") -> np.ndarray:
