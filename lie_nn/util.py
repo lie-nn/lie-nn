@@ -13,9 +13,15 @@ def is_half_integer(x: float) -> bool:
 
 
 @partial(np.vectorize, otypes=[np.float64])
-def round_to_sqrt_rational(x: float) -> float:
+def _round_to_sqrt_rational(x: float) -> float:
     sign = 1 if x >= 0 else -1
     return sign * fractions.Fraction(x ** 2).limit_denominator() ** 0.5
+
+
+def round_to_sqrt_rational(x: np.ndarray) -> np.ndarray:
+    if np.iscomplex(x).any():
+        return _round_to_sqrt_rational(np.real(x)) + 1j * _round_to_sqrt_rational(np.imag(x))
+    return _round_to_sqrt_rational(x)
 
 
 def vmap(
@@ -75,6 +81,21 @@ def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
     return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
 
 
+def extend_basis(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+    """
+    Add rows to A to make it full rank.
+    """
+    Q = gram_schmidt(A, epsilon=epsilon)
+    Q = [q for q in Q]
+    for v in np.eye(A.shape[1], dtype=A.dtype):
+        for w in Q:
+            v -= np.dot(np.conj(w), v) * w
+        norm = np.linalg.norm(v)
+        if norm > epsilon:
+            Q += [v / norm]
+    return np.stack(Q)
+
+
 def null_space(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
     r"""
     Compute the null space of a matrix.
@@ -101,7 +122,7 @@ def null_space(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
     val, vec = np.linalg.eigh(A)
     X = vec.T[np.abs(val) < epsilon]
 
-    X = gram_schmidt(X.T @ X)
+    X = gram_schmidt(np.conj(X.T) @ X)
     return X
 
 
