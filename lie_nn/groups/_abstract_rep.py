@@ -43,7 +43,7 @@ class AbstractRep:
         pass
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep") -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep", *, round_fn=lambda x: x) -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
         Args:
@@ -60,7 +60,7 @@ class AbstractRep:
 
         X_in = vmap(lambda x1, x2: kron(x1, i2) + kron(i1, x2))(rep1.continuous_generators(), rep2.continuous_generators())
         X_out = rep3.continuous_generators()
-        cg = change_of_basis(X_in, X_out)
+        cg = change_of_basis(X_in, X_out, round_fn=round_fn)
 
         assert cg.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
 
@@ -98,14 +98,14 @@ class AbstractRep:
             output = x @ output
         return output
 
-    def test_algebra(rep: "AbstractRep", rtol=1e-05, atol=1e-08):
+    def test_algebra(rep: "AbstractRep", rtol=1e-10, atol=1e-10):
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
         left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
         right_side = np.einsum("ijk,kab->ijab", rep.algebra(), X)
         assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
-    def test_clebsch_gordan(cls, reps: List["AbstractRep"], rtol=1e-05, atol=1e-08):
+    def test_clebsch_gordan(cls, reps: List["AbstractRep"], rtol=1e-10, atol=1e-10):
         for rep1 in reps:
             for rep2 in reps:
                 for rep3 in reps:

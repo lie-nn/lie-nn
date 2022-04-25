@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import pytest
 from lie_nn.groups import AbstractRep, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep, SU2RealRep
+from lie_nn.util import round_to_sqrt_rational
 
 
 def first_reps(Rep, n):
@@ -16,22 +17,23 @@ REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SU2RealRep, SL2Rep, SO13Rep]
 def test_cg_equivariance(Rep):
     reps = first_reps(Rep, 4)
 
-    Rep.test_clebsch_gordan(reps, atol=1e-3, rtol=1e-3)
+    Rep.test_clebsch_gordan(reps)
 
 
 @pytest.mark.parametrize("Rep", REPRESENTATIONS)
 def test_recompute_cg(Rep):
     reps = first_reps(Rep, 4)
+    tol = 1e-14
 
     for rep1, rep2, rep3 in itertools.product(reps, reps, reps):
-        C1 = AbstractRep.clebsch_gordan(rep1, rep2, rep3)
+        C1 = AbstractRep.clebsch_gordan(rep1, rep2, rep3, round_fn=round_to_sqrt_rational)
         C2 = Rep.clebsch_gordan(rep1, rep2, rep3)
-        assert np.allclose(C1, C2, atol=1e-3, rtol=1e-3) or np.allclose(C1, -C2, atol=1e-3, rtol=1e-3)
+        assert np.allclose(C1, C2, atol=tol, rtol=tol) or np.allclose(C1, -C2, atol=tol, rtol=tol)
 
 
 @pytest.mark.parametrize("rep", sum((first_reps(Rep, 6) for Rep in REPRESENTATIONS), []))
 def test_algebra(rep):
-    rep.test_algebra(atol=1e-3, rtol=1e-3)
+    rep.test_algebra()
 
 
 @pytest.mark.parametrize("Rep", REPRESENTATIONS)

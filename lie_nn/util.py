@@ -30,6 +30,7 @@ def _as_approx_integer_ratio(x):
 
 
 def as_approx_integer_ratio(x):
+    assert x.dtype == np.float64
     sign = np.sign(x).astype(np.int64)
     x = np.abs(x)
 
@@ -76,7 +77,7 @@ def _round_to_sqrt_rational(x):
 def round_to_sqrt_rational(x: np.ndarray) -> np.ndarray:
     if np.iscomplex(x).any():
         return _round_to_sqrt_rational(np.real(x)) + 1j * _round_to_sqrt_rational(np.imag(x))
-    return _round_to_sqrt_rational(x)
+    return _round_to_sqrt_rational(np.real(x))
 
 
 def vmap(
@@ -119,7 +120,7 @@ def kron(A, *BCD):
     return np.kron(A, kron(*BCD))
 
 
-def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     """
     Orthogonalize a matrix using the Gram-Schmidt process.
     """
@@ -132,26 +133,28 @@ def gram_schmidt(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
             v -= np.dot(np.conj(w), v) * w
         norm = np.linalg.norm(v)
         if norm > epsilon:
-            Q += [v / norm]
+            v = round_fn(v / norm)
+            Q += [v]
     return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
 
 
-def extend_basis(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     """
     Add rows to A to make it full rank.
     """
-    Q = gram_schmidt(A, epsilon=epsilon)
+    Q = gram_schmidt(A, epsilon=epsilon, round_fn=round_fn)
     Q = [q for q in Q]
     for v in np.eye(A.shape[1], dtype=A.dtype):
         for w in Q:
             v -= np.dot(np.conj(w), v) * w
         norm = np.linalg.norm(v)
         if norm > epsilon:
-            Q += [v / norm]
+            v = round_fn(v / norm)
+            Q += [v]
     return np.stack(Q)
 
 
-def null_space(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
+def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     r"""
     Compute the null space of a matrix.
 
@@ -174,14 +177,16 @@ def null_space(A: np.ndarray, epsilon=1e-4) -> np.ndarray:
     # X = np.conj(X)
 
     A = np.conj(A.T) @ A
+    A = round_fn(A)
     val, vec = np.linalg.eigh(A)
     X = vec.T[np.abs(val) < epsilon]
-
-    X = gram_schmidt(np.conj(X.T) @ X)
+    X = np.conj(X.T) @ X
+    X = round_fn(X)
+    X = gram_schmidt(X, round_fn=round_fn)
     return X
 
 
-def change_of_basis(X1: np.ndarray, X2: np.ndarray, epsilon=1e-4) -> np.ndarray:
+def change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     r"""
     Compute the change of basis matrix from X1 to X2.
 
@@ -205,7 +210,7 @@ def change_of_basis(X1: np.ndarray, X2: np.ndarray, epsilon=1e-4) -> np.ndarray:
 
     A = vmap(lambda x1, x2: kron(np.eye(d2), x1) - kron(x2.T, np.eye(d1)))(X1, X2)
     A = A.reshape(n * d2 * d1, d2 * d1)
-    S = null_space(A, epsilon)
+    S = null_space(A, epsilon=epsilon, round_fn=round_fn)
     S = S.reshape(-1, d2, d1)
     S = np.swapaxes(S, 1, 2)
 

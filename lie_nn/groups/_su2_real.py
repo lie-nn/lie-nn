@@ -48,8 +48,7 @@ class SU2RealRep(AbstractRep):
             Q3 = change_basis_real_to_complex(rep3.j)
             C = np.einsum("ij,kl,mn,zikn->zjlm", Q1, Q2, np.conj(Q3.T), C)
         else:
-            C = AbstractRep.clebsch_gordan(rep1, rep2, rep3)
-            C = round_to_sqrt_rational(C)
+            C = AbstractRep.clebsch_gordan(rep1, rep2, rep3, round_fn=round_to_sqrt_rational)
 
         assert np.all(np.abs(np.imag(C)) < 1e-5)
         return np.real(C)
