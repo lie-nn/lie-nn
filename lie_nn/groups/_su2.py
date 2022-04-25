@@ -11,7 +11,7 @@ from ._abstract_rep import AbstractRep, static_jax_pytree
 class SU2Rep(AbstractRep):
     j: int
 
-    def __mul__(rep1: "SU2Rep", rep2: "SU2Rep") -> List["SU2Rep"]:
+    def __mul__(rep1: "SU2Rep", rep2: "SU2Rep") -> Iterator["SU2Rep"]:
         assert isinstance(rep2, SU2Rep)
         return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
 

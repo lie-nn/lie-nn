@@ -19,7 +19,7 @@ class SO13Rep(AbstractRep):  # TODO: think if this class shoulb be a subclass of
         assert rep.k >= 0
         assert (rep.l + rep.k) % 2 == 0
 
-    def __mul__(rep1: "SO13Rep", rep2: "SO13Rep") -> List["SO13Rep"]:
+    def __mul__(rep1: "SO13Rep", rep2: "SO13Rep") -> Iterator["SO13Rep"]:
         for rep in SL2Rep.__mul__(rep1, rep2):
             yield SO13Rep(l=rep.l, k=rep.k)
 

@@ -32,7 +32,7 @@ class SL2Rep(AbstractRep):
         assert rep.l >= 0
         assert rep.k >= 0
 
-    def __mul__(rep1: "SL2Rep", rep2: "SL2Rep") -> List["SL2Rep"]:
+    def __mul__(rep1: "SL2Rep", rep2: "SL2Rep") -> Iterator["SL2Rep"]:
         for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 2):
             for k in range(abs(rep1.k - rep2.k), rep1.k + rep2.k + 1, 2):
                 yield SL2Rep(l=l, k=k)

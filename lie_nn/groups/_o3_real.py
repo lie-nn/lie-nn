@@ -12,7 +12,7 @@ class O3Rep(AbstractRep):
     l: int  # non-negative integer
     p: int  # 1 or -1
 
-    def __mul__(rep1: "O3Rep", rep2: "O3Rep") -> List["O3Rep"]:
+    def __mul__(rep1: "O3Rep", rep2: "O3Rep") -> Iterator["O3Rep"]:
         assert isinstance(rep2, O3Rep)
         p = rep1.p * rep2.p
         return [O3Rep(l=l, p=p) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]

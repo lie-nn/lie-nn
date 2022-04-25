@@ -34,7 +34,7 @@ class SU2RealRep(AbstractRep):
         assert is_half_integer(rep.j)
         assert rep.j >= 0
 
-    def __mul__(rep1: "SU2RealRep", rep2: "SU2RealRep") -> List["SU2RealRep"]:
+    def __mul__(rep1: "SU2RealRep", rep2: "SU2RealRep") -> Iterator["SU2RealRep"]:
         assert isinstance(rep2, SU2RealRep)
         return [SU2RealRep(j=float(j)) for j in np.arange(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 1)]
 

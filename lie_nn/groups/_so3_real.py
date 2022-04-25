@@ -24,7 +24,7 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
 class SO3Rep(AbstractRep):
     l: int
 
-    def __mul__(rep1: "SO3Rep", rep2: "SO3Rep") -> List["SO3Rep"]:
+    def __mul__(rep1: "SO3Rep", rep2: "SO3Rep") -> Iterator["SO3Rep"]:
         assert isinstance(rep2, SO3Rep)
         return [SO3Rep(l=l) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
 

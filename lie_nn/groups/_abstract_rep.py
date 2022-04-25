@@ -38,12 +38,14 @@ def matrix_power(F, n):
 
 @static_jax_pytree
 class AbstractRep:
-    def __mul__(rep1: "AbstractRep", rep2: "AbstractRep") -> List["AbstractRep"]:
+    def __mul__(rep1: "AbstractRep", rep2: "AbstractRep") -> Iterator["AbstractRep"]:
         # selection rule
         pass
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep", *, round_fn=lambda x: x) -> np.ndarray:
+    def clebsch_gordan(
+        cls, rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep", *, round_fn=lambda x: x
+    ) -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
         Args:
