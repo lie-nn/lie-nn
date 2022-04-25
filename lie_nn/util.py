@@ -12,10 +12,64 @@ def is_half_integer(x: float) -> bool:
     return 2 * x == round(2 * x)
 
 
-@partial(np.vectorize, otypes=[np.float64])
-def _round_to_sqrt_rational(x: float) -> float:
-    sign = 1 if x >= 0 else -1
-    return sign * fractions.Fraction(x ** 2).limit_denominator() ** 0.5
+def normalize_integer_ratio(n, d):
+    g = np.gcd(n, d)
+    g = np.where(d < 0, -g, g)
+    return n // g, d // g
+
+
+def _as_approx_integer_ratio(x):
+    # only for 0 <= x <= 1
+    big = 1 << 52 - 1  # mantissa is 52 bits
+
+    n = np.floor(x * big).astype(np.int64)
+    with np.errstate(invalid="ignore"):
+        d = np.round(n / x).astype(np.int64)
+    return n, d
+
+
+def as_approx_integer_ratio(x):
+    sign = np.sign(x).astype(np.int64)
+    x = np.abs(x)
+
+    with np.errstate(divide="ignore", over="ignore"):
+        n, d = np.where(
+            x <= 1,
+            _as_approx_integer_ratio(x),
+            _as_approx_integer_ratio(1 / x)[::-1],
+        )
+    return normalize_integer_ratio(sign * n, d)
+
+
+def limit_denominator(n, d, max_denominator=1_000_000):
+    # (n, d) = must be normalized
+    n0, d0 = n, d
+    p0, q0, p1, q1 = np.zeros_like(n), np.ones_like(n), np.ones_like(n), np.zeros_like(n)
+    while True:
+        a = n // d
+        q2 = q0 + a * q1
+        stop = (q2 > max_denominator) | (d0 < max_denominator)
+        if np.all(stop):
+            break
+        p0, q0, p1, q1 = np.where(stop, (p0, q0, p1, q1), (p1, q1, p0 + a * p1, q2))
+        n, d = np.where(stop, (n, d), (d, n - a * d))
+
+    with np.errstate(divide="ignore"):
+        k = (max_denominator - q0) // q1
+    n1, d1 = p0 + k * p1, q0 + k * q1
+    n2, d2 = p1, q1
+    return np.where(
+        d0 < max_denominator,
+        (n0, d0),
+        np.where(np.abs(d1 * (n2 * d0 - n0 * d2)) <= np.abs(d2 * (n1 * d0 - n0 * d1)), (n2, d2), (n1, d1)),
+    )
+
+
+def _round_to_sqrt_rational(x):
+    sign = np.sign(x)
+    n, d = as_approx_integer_ratio(x ** 2)
+    n, d = limit_denominator(n, d)
+    return sign * np.sqrt(n / d)
 
 
 def round_to_sqrt_rational(x: np.ndarray) -> np.ndarray:
