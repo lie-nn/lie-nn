@@ -25,6 +25,7 @@ def _as_approx_integer_ratio(x):
     n = np.floor(x * big).astype(np.int64)
     with np.errstate(invalid="ignore"):
         d = np.round(n / x).astype(np.int64)
+    d = np.where(n == 0, np.ones(d.shape, dtype=np.int64), d)
     return n, d
 
 

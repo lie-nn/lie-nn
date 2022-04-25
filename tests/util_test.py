@@ -70,4 +70,4 @@ def test_round_to_sqrt_rational():
 
     y = round_to_sqrt_rational(x)
     y_ = _round_to_sqrt_rational(x)
-    assert np.all(np.abs(y_ - y) < 1e-15), np.max(np.abs(y_ - y))
+    assert np.all(np.abs(y_ - y) < 5e-15), np.max(np.abs(y_ - y))
