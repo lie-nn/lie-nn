@@ -46,7 +46,8 @@ def test_as_integer_ratio():
 def test_limit_denominator():
     @partial(np.vectorize)
     def _limit_denominator(n, d) -> float:
-        return Fraction(n, d).limit_denominator().as_integer_ratio()
+        x = Fraction(n, d).limit_denominator()
+        return x.numerator, x.denominator
 
     n = np.random.randint(-1_000_000_000, 1_000_000_000, size=(30000,))
     d = np.random.randint(1, 1_000_000_000, size=n.shape)
