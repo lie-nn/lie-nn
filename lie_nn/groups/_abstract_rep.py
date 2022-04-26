@@ -57,12 +57,20 @@ class AbstractRep:
             The Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
             It is an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``.
         """
+        # Check the group structure
+        assert np.allclose(rep1.algebra(), rep2.algebra())
+        assert np.allclose(rep2.algebra(), rep3.algebra())
+
         i1 = np.eye(rep1.dim)
         i2 = np.eye(rep2.dim)
 
         X_in = vmap(lambda x1, x2: kron(x1, i2) + kron(i1, x2))(rep1.continuous_generators(), rep2.continuous_generators())
         X_out = rep3.continuous_generators()
-        cg = change_of_basis(X_in, X_out, round_fn=round_fn)
+
+        H_in = vmap(lambda x1, x2: kron(x1, x2), out_shape=(rep1.dim * rep2.dim, rep1.dim * rep2.dim))(rep1.discrete_generators(), rep2.discrete_generators())
+        H_out = rep3.discrete_generators()
+
+        cg = change_of_basis(np.concatenate([X_in, H_in]), np.concatenate([X_out, H_out]), round_fn=round_fn)
 
         assert cg.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
 
