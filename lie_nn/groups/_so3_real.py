@@ -1,5 +1,5 @@
 import itertools
-from typing import Iterator, List
+from typing import Iterator
 
 import numpy as np
 

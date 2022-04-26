@@ -1,5 +1,5 @@
 import itertools
-from typing import Iterator, List
+from typing import Iterator
 
 import numpy as np
 from lie_nn.groups._su2 import SU2Rep, clebsch_gordanSU2mat

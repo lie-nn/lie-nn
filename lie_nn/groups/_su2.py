@@ -1,6 +1,6 @@
 import itertools
 from math import factorial
-from typing import Iterator, List
+from typing import Iterator
 
 import numpy as np
 
