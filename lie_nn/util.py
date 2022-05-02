@@ -47,7 +47,7 @@ def limit_denominator(n, d, max_denominator=1_000_000):
     while True:
         a = n // d
         q2 = q0 + a * q1
-        stop = (q2 > max_denominator) | (d0 < max_denominator)
+        stop = (q2 > max_denominator) | (d0 <= max_denominator)
         if np.all(stop):
             break
         p0, q0, p1, q1 = np.where(stop, (p0, q0, p1, q1), (p1, q1, p0 + a * p1, q2))
@@ -64,17 +64,18 @@ def limit_denominator(n, d, max_denominator=1_000_000):
     )
 
 
-def _round_to_sqrt_rational(x):
+def _round_to_sqrt_rational(x, max_denominator=1024):
     sign = np.sign(x)
     n, d = as_approx_integer_ratio(x ** 2)
-    n, d = limit_denominator(n, d)
+    n, d = limit_denominator(n, d, max_denominator ** 2 + 1)
     return sign * np.sqrt(n / d)
 
 
-def round_to_sqrt_rational(x: np.ndarray) -> np.ndarray:
+def round_to_sqrt_rational(x: np.ndarray, max_denominator=1024) -> np.ndarray:
+    x = np.array(x)
     if np.iscomplex(x).any():
-        return _round_to_sqrt_rational(np.real(x)) + 1j * _round_to_sqrt_rational(np.imag(x))
-    return _round_to_sqrt_rational(np.real(x))
+        return _round_to_sqrt_rational(np.real(x), max_denominator) + 1j * _round_to_sqrt_rational(np.imag(x), max_denominator)
+    return _round_to_sqrt_rational(np.real(x), max_denominator)
 
 
 def vmap(

@@ -67,7 +67,9 @@ class AbstractRep:
         X_in = vmap(lambda x1, x2: kron(x1, i2) + kron(i1, x2))(rep1.continuous_generators(), rep2.continuous_generators())
         X_out = rep3.continuous_generators()
 
-        H_in = vmap(lambda x1, x2: kron(x1, x2), out_shape=(rep1.dim * rep2.dim, rep1.dim * rep2.dim))(rep1.discrete_generators(), rep2.discrete_generators())
+        H_in = vmap(lambda x1, x2: kron(x1, x2), out_shape=(rep1.dim * rep2.dim, rep1.dim * rep2.dim))(
+            rep1.discrete_generators(), rep2.discrete_generators()
+        )
         H_out = rep3.discrete_generators()
 
         cg = change_of_basis(np.concatenate([X_in, H_in]), np.concatenate([X_out, H_out]), round_fn=round_fn)
