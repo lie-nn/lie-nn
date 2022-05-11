@@ -1,7 +1,7 @@
 import jax
 
-from .groups import IrrepFamily as Rep
-from .groups import static_jax_pytree
+from . import IrrepFamily as Rep
+from . import static_jax_pytree
 
 
 @static_jax_pytree

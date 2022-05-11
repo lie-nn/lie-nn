@@ -2,8 +2,8 @@ import itertools
 from typing import Iterator
 
 import numpy as np
-from lie_nn.groups._su2 import SU2Rep, clebsch_gordanSU2mat
-from lie_nn.util import vmap
+from ._su2 import SU2Rep, clebsch_gordanSU2mat
+from .util import vmap
 
 from . import IrrepFamily, static_jax_pytree
 

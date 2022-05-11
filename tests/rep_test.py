@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn.groups import IrrepFamily, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep, SU2RealRep
+from lie_nn import IrrepFamily, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep, SU2RealRep
 from lie_nn.util import round_to_sqrt_rational
 
 
