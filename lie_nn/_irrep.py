@@ -43,9 +43,7 @@ class Irrep:
         pass
 
     @classmethod
-    def clebsch_gordan(
-        cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep", *, round_fn=lambda x: x
-    ) -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep", *, round_fn=lambda x: x) -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
         Args:
