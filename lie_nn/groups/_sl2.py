@@ -5,7 +5,7 @@ import numpy as np
 from lie_nn.groups._su2 import SU2Rep, clebsch_gordanSU2mat
 from lie_nn.util import vmap
 
-from ._abstract_rep import AbstractRep, static_jax_pytree
+from . import IrrepFamily, static_jax_pytree
 
 
 def sign(p):
@@ -22,7 +22,7 @@ def sign(p):
 
 
 @static_jax_pytree
-class SL2Rep(AbstractRep):
+class SL2Rep(IrrepFamily):
     l: int  # First integer weight
     k: int  # Second integer weight
 

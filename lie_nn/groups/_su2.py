@@ -4,11 +4,11 @@ from typing import Iterator
 
 import numpy as np
 
-from ._abstract_rep import AbstractRep, static_jax_pytree
+from . import IrrepFamily, static_jax_pytree
 
 
 @static_jax_pytree
-class SU2Rep(AbstractRep):
+class SU2Rep(IrrepFamily):
     j: int
 
     def __mul__(rep1: "SU2Rep", rep2: "SU2Rep") -> Iterator["SU2Rep"]:

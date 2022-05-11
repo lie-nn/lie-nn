@@ -3,7 +3,7 @@ from typing import Iterator
 
 import numpy as np
 
-from ._abstract_rep import AbstractRep, static_jax_pytree
+from . import IrrepFamily, static_jax_pytree
 from ._su2 import SU2Rep
 
 
@@ -21,7 +21,7 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
 
 
 @static_jax_pytree
-class SO3Rep(AbstractRep):
+class SO3Rep(IrrepFamily):
     l: int
 
     def __mul__(rep1: "SO3Rep", rep2: "SO3Rep") -> Iterator["SO3Rep"]:

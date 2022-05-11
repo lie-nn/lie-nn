@@ -37,14 +37,14 @@ def matrix_power(F, n):
 
 
 @static_jax_pytree
-class AbstractRep:
-    def __mul__(rep1: "AbstractRep", rep2: "AbstractRep") -> Iterator["AbstractRep"]:
+class IrrepFamily:
+    def __mul__(rep1: "IrrepFamily", rep2: "IrrepFamily") -> Iterator["IrrepFamily"]:
         # selection rule
         pass
 
     @classmethod
     def clebsch_gordan(
-        cls, rep1: "AbstractRep", rep2: "AbstractRep", rep3: "AbstractRep", *, round_fn=lambda x: x
+        cls, rep1: "IrrepFamily", rep2: "IrrepFamily", rep3: "IrrepFamily", *, round_fn=lambda x: x
     ) -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
@@ -80,29 +80,34 @@ class AbstractRep:
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
         return cg
 
+    @classmethod
     @property
-    def dim(rep: "AbstractRep") -> int:
-        pass
+    def lie_dim(cls) -> int:
+        raise NotImplementedError
+
+    @property
+    def dim(rep: "IrrepFamily") -> int:
+        raise NotImplementedError
 
     @classmethod
-    def iterator(cls) -> Iterator["AbstractRep"]:
+    def iterator(cls) -> Iterator["IrrepFamily"]:
         # not sure if we need this
-        pass
+        raise NotImplementedError
 
-    def continuous_generators(rep: "AbstractRep") -> np.ndarray:
+    def continuous_generators(rep: "IrrepFamily") -> np.ndarray:
         # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
-        pass
+        raise NotImplementedError
 
-    def discrete_generators(rep: "AbstractRep") -> np.ndarray:
+    def discrete_generators(rep: "IrrepFamily") -> np.ndarray:
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
-        pass
+        raise NotImplementedError
 
     @classmethod
     def algebra(cls) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         pass
 
-    def exp_map(rep: "AbstractRep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+    def exp_map(rep: "IrrepFamily", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
         # return a matrix of shape ``(rep.dim, rep.dim)``
         discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
         output = jax.scipy.linalg.expm(jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators()))
@@ -110,14 +115,14 @@ class AbstractRep:
             output = x @ output
         return output
 
-    def test_algebra(rep: "AbstractRep", rtol=1e-10, atol=1e-10):
+    def test_algebra(rep: "IrrepFamily", rtol=1e-10, atol=1e-10):
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
         left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
         right_side = np.einsum("ijk,kab->ijab", rep.algebra(), X)
         assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
-    def test_clebsch_gordan(cls, reps: List["AbstractRep"], rtol=1e-10, atol=1e-10):
+    def test_clebsch_gordan(cls, reps: List["IrrepFamily"], rtol=1e-10, atol=1e-10):
         for rep1 in reps:
             for rep2 in reps:
                 for rep3 in reps:

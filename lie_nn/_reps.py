@@ -1,6 +1,6 @@
 import jax
 
-from .groups import AbstractRep as Rep
+from .groups import IrrepFamily as Rep
 from .groups import static_jax_pytree
 
 
