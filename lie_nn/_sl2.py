@@ -5,7 +5,7 @@ import numpy as np
 from ._su2 import SU2Rep, clebsch_gordanSU2mat
 from .util import vmap
 
-from . import IrrepFamily, static_jax_pytree
+from . import Irrep, static_jax_pytree
 
 
 def sign(p):
@@ -22,7 +22,7 @@ def sign(p):
 
 
 @static_jax_pytree
-class SL2Rep(IrrepFamily):
+class SL2Rep(Irrep):
     l: int  # First integer weight
     k: int  # Second integer weight
 

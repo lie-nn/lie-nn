@@ -1,6 +1,6 @@
 import jax
 
-from . import IrrepFamily as Rep
+from . import Irrep as Rep
 from . import static_jax_pytree
 
 

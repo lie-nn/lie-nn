@@ -3,12 +3,12 @@ from typing import Iterator
 
 import numpy as np
 
-from . import IrrepFamily, static_jax_pytree
+from . import Irrep, static_jax_pytree
 from ._sl2 import SL2Rep
 
 
 @static_jax_pytree
-class SO13Rep(IrrepFamily):  # TODO: think if this class shoulb be a subclass of SL2Rep
+class SO13Rep(Irrep):  # TODO: think if this class shoulb be a subclass of SL2Rep
     l: int  # First integer weight
     k: int  # Second integer weight
 

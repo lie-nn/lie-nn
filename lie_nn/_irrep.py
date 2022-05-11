@@ -37,14 +37,14 @@ def matrix_power(F, n):
 
 
 @static_jax_pytree
-class IrrepFamily:
-    def __mul__(rep1: "IrrepFamily", rep2: "IrrepFamily") -> Iterator["IrrepFamily"]:
+class Irrep:
+    def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
         # selection rule
         pass
 
     @classmethod
     def clebsch_gordan(
-        cls, rep1: "IrrepFamily", rep2: "IrrepFamily", rep3: "IrrepFamily", *, round_fn=lambda x: x
+        cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep", *, round_fn=lambda x: x
     ) -> np.ndarray:
         r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
@@ -83,22 +83,22 @@ class IrrepFamily:
     @classmethod
     @property
     def lie_dim(cls) -> int:
-        raise NotImplementedError
+        return cls.algebra().shape[0]
 
     @property
-    def dim(rep: "IrrepFamily") -> int:
+    def dim(rep: "Irrep") -> int:
         raise NotImplementedError
 
     @classmethod
-    def iterator(cls) -> Iterator["IrrepFamily"]:
+    def iterator(cls) -> Iterator["Irrep"]:
         # not sure if we need this
         raise NotImplementedError
 
-    def continuous_generators(rep: "IrrepFamily") -> np.ndarray:
+    def continuous_generators(rep: "Irrep") -> np.ndarray:
         # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
         raise NotImplementedError
 
-    def discrete_generators(rep: "IrrepFamily") -> np.ndarray:
+    def discrete_generators(rep: "Irrep") -> np.ndarray:
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         raise NotImplementedError
 
@@ -107,7 +107,7 @@ class IrrepFamily:
         # [X_i, X_j] = A_ijk X_k
         pass
 
-    def exp_map(rep: "IrrepFamily", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+    def exp_map(rep: "Irrep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
         # return a matrix of shape ``(rep.dim, rep.dim)``
         discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
         output = jax.scipy.linalg.expm(jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators()))
@@ -115,14 +115,14 @@ class IrrepFamily:
             output = x @ output
         return output
 
-    def test_algebra(rep: "IrrepFamily", rtol=1e-10, atol=1e-10):
+    def test_algebra(rep: "Irrep", rtol=1e-10, atol=1e-10):
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
         left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
         right_side = np.einsum("ijk,kab->ijab", rep.algebra(), X)
         assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
-    def test_clebsch_gordan(cls, reps: List["IrrepFamily"], rtol=1e-10, atol=1e-10):
+    def test_clebsch_gordan(cls, reps: List["Irrep"], rtol=1e-10, atol=1e-10):
         for rep1 in reps:
             for rep2 in reps:
                 for rep3 in reps:

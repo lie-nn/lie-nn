@@ -4,7 +4,7 @@ from typing import Iterator, List, Tuple, Optional
 
 import jax.numpy as jnp
 
-from . import IrrepFamily, static_jax_pytree
+from . import Irrep, static_jax_pytree
 
 
 WEIGHT = Tuple[int, ...]
@@ -186,7 +186,7 @@ def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
 
 
 @static_jax_pytree
-class SURep(IrrepFamily):
+class SURep(Irrep):
     S: Tuple[int]  # List of weights of the representation
 
     def __mul__(rep1: "SURep", rep2: "SURep") -> List["SURep"]:
