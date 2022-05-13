@@ -34,6 +34,7 @@ setup(
     install_requires=[
         "torch>=1.8.0",
         "jax",
+        "multipledispatch",
     ],
     extras_require={
         "dev": [

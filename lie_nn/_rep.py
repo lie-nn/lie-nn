@@ -12,11 +12,21 @@ class Rep:
 
     @property
     def lie_dim(self) -> int:
-        return self.algebra().shape[0]
+        A = self.algebra()
+        d = A.shape[0]
+        assert A.shape == (d, d, d)
+        # X = self.continuous_generators()
+        # assert X.shape[0] == d
+        return d
 
     @property
     def dim(self) -> int:
-        raise NotImplementedError
+        X = self.continuous_generators()
+        d = X.shape[1]
+        # H = self.discrete_generators()
+        # assert X.shape[1:] == (d, d)
+        # assert H.shape[1:] == (d, d)
+        return d
 
     def algebra(self) -> np.ndarray:
         raise NotImplementedError
@@ -79,10 +89,6 @@ class UnknownRep(Rep):
     X: np.ndarray
     H: np.ndarray
 
-    @property
-    def dim(self) -> int:
-        return self.X.shape[1]
-
     def algebra(self) -> np.ndarray:
         return self.A
 
@@ -93,13 +99,13 @@ class UnknownRep(Rep):
         return self.H
 
 
-@dispatch(UnknownRep, object)
-def change_basis(rep: UnknownRep, Q: np.ndarray) -> UnknownRep:
+@dispatch(Rep, object)
+def change_basis(rep: Rep, Q: np.ndarray) -> UnknownRep:
     iQ = np.linalg.inv(Q)
-    return dataclasses.replace(
-        rep,
-        X=Q @ rep.X @ iQ,
-        H=Q @ rep.H @ iQ,
+    return UnknownRep(
+        A=rep.algebra(),
+        X=Q @ rep.continuous_generators() @ iQ,
+        H=Q @ rep.discrete_generators() @ iQ,
     )
 
 
@@ -121,3 +127,50 @@ def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
 @dispatch(Irrep, object)
 def change_basis(rep: Irrep, Q: np.ndarray) -> ReducedRep:
     return change_basis(MulIrrep(mul=1, rep=rep), Q)
+
+
+@dispatch(Rep, Rep)
+def tensor_product(rep1: Rep, rep2: Rep) -> UnknownRep:
+    assert np.allclose(rep1.algebra(), rep2.algebra())  # same lie algebra
+    X1, H1 = rep1.continuous_generators(), rep1.discrete_generators()
+    X2, H2 = rep2.continuous_generators(), rep2.discrete_generators()
+    assert H1.shape[0] == H2.shape[0]  # same discrete dimension
+    d = rep1.dim * rep2.dim
+    return UnknownRep(
+        A=rep1.algebra(),
+        X=np.einsum("aij,akl->aikjl", X1, X2).reshape(X1.shape[0], d, d),
+        H=np.einsum("aij,akl->aikjl", H1, H2).reshape(H1.shape[0], d, d),
+    )
+
+
+@dispatch(ReducedRep, ReducedRep)
+def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
+    raise NotImplementedError
+
+
+@dispatch(Rep, int)
+def tensor_power(rep: Rep, n: int) -> UnknownRep:
+    X, H = rep.continuous_generators(), rep.discrete_generators()
+    result = UnknownRep(
+        A=rep.algebra(),
+        X=np.ones((X.shape[0], 1, 1)),
+        H=np.ones((H.shape[0], 1, 1)),
+    )
+
+    while True:
+        if n & 1:
+            result = tensor_product(rep, result)
+        n >>= 1
+
+        if n == 0:
+            return result
+
+        rep = tensor_product(rep, rep)
+
+
+@dispatch(ReducedRep, int)
+def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
+    # TODO reduce into irreps and wrap with the change of basis that maps to the usual tensor product
+    # TODO as well reduce into irreps of S_n
+    # and diagonalize irreps of S_n in the same basis that diagonalizes irreps of S_{n-1} (unclear how to do this)
+    raise NotImplementedError
