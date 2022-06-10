@@ -127,6 +127,18 @@ def kron(A, *BCD):
     return np.kron(A, kron(*BCD))
 
 
+def direct_sum(A, *BCD):
+    if len(BCD) == 0:
+        return A
+    B = direct_sum(*BCD)
+    a = A.shape[0]
+    b = B.shape[0]
+    output = np.zeros_like(A, shape=(a + b, a + b))
+    output[:a, :a] = A
+    output[a:, a:] = B
+    return output
+
+
 def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     """
     Orthogonalize a matrix using the Gram-Schmidt process.
@@ -209,6 +221,11 @@ def change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=la
     """
     assert X1.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
     assert X2.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
+
+    if X1.ndim == 2:
+        X1 = X1[np.newaxis]
+    if X2.ndim == 2:
+        X2 = X2[np.newaxis]
 
     n, d1, _ = X1.shape
     _, d2, _ = X2.shape
