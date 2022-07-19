@@ -4,6 +4,7 @@ from typing import Iterator, List
 import jax
 import jax.numpy as jnp
 import numpy as np
+from . import Rep
 from lie_nn.util import commutator, kron, vmap, change_of_basis
 
 
@@ -37,7 +38,7 @@ def matrix_power(F, n):
 
 
 @static_jax_pytree
-class Irrep:
+class Irrep(Rep):
     def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
         # selection rule
         pass
