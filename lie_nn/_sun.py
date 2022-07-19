@@ -229,8 +229,8 @@ class SURep(Irrep):
     @classmethod
     def algebra(self, cls) -> jnp.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        lie_algebra_real = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
-        lie_algebra_imag = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
+        lie_algebra_real = jnp.zeros((self.n**2 - 1, self.n, self.n))
+        lie_algebra_imag = jnp.zeros((self.n**2 - 1, self.n, self.n))
         k = 0
         for i in range(self.n):
             for j in range(i):

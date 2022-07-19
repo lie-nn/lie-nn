@@ -66,8 +66,8 @@ def limit_denominator(n, d, max_denominator=1_000_000):
 
 def _round_to_sqrt_rational(x, max_denominator=1024):
     sign = np.sign(x)
-    n, d = as_approx_integer_ratio(x ** 2)
-    n, d = limit_denominator(n, d, max_denominator ** 2 + 1)
+    n, d = as_approx_integer_ratio(x**2)
+    n, d = limit_denominator(n, d, max_denominator**2 + 1)
     return sign * np.sqrt(n / d)
 
 

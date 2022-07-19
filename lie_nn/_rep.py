@@ -53,19 +53,13 @@ class MulIrrep(Rep):
 
     def continuous_generators(self) -> np.ndarray:
         X = self.rep.continuous_generators()
-        return np.stack([
-            direct_sum(*[x for _ in range(self.mul)])
-            for x in X
-        ], axis=0)
+        return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in X], axis=0)
 
     def discrete_generators(self) -> np.ndarray:
         H = self.rep.discrete_generators()
         if H.shape[0] == 0:
             return np.empty((0, self.dim, self.dim))
-        return np.stack([
-            direct_sum(*[x for _ in range(self.mul)])
-            for x in H
-        ], axis=0)
+        return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in H], axis=0)
 
 
 @dataclasses.dataclass
@@ -79,7 +73,7 @@ class ReducedRep(Rep):
     irreps: Tuple[MulIrrep, ...]
     Q: Optional[np.ndarray]  # change of basis matrix
 
-    @ property
+    @property
     def dim(self) -> int:
         return sum(irrep.dim for irrep in self.irreps)
 
@@ -106,7 +100,7 @@ class ReducedRep(Rep):
         return np.stack(Xs)
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class UnknownRep(Rep):
     r"""Unknown representation"""
     A: np.ndarray
@@ -123,7 +117,7 @@ class UnknownRep(Rep):
         return self.H
 
 
-@ dispatch(UnknownRep)
+@dispatch(UnknownRep)
 def reduce(rep: UnknownRep) -> ReducedRep:
     r"""Reduce an unknown representation to a reduced form.
     This operation is slow and should be avoided if possible.
@@ -131,7 +125,7 @@ def reduce(rep: UnknownRep) -> ReducedRep:
     raise NotImplementedError
 
 
-@ dispatch(Rep, object)
+@dispatch(Rep, object)
 def change_basis(rep: Rep, Q: np.ndarray) -> UnknownRep:
     iQ = np.linalg.inv(Q)
     return UnknownRep(
@@ -141,13 +135,13 @@ def change_basis(rep: Rep, Q: np.ndarray) -> UnknownRep:
     )
 
 
-@ dispatch(ReducedRep, object)
+@dispatch(ReducedRep, object)
 def change_basis(rep: ReducedRep, Q: np.ndarray) -> ReducedRep:
     Q = Q if rep.Q is None else Q @ rep.Q
     return dataclasses.replace(rep, Q=Q)
 
 
-@ dispatch(MulIrrep, object)
+@dispatch(MulIrrep, object)
 def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
     return ReducedRep(
         A=rep.algebra(),
@@ -156,12 +150,12 @@ def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
     )
 
 
-@ dispatch(Irrep, object)
+@dispatch(Irrep, object)
 def change_basis(rep: Irrep, Q: np.ndarray) -> ReducedRep:
     return change_basis(MulIrrep(mul=1, rep=rep), Q)
 
 
-@ dispatch(Rep, Rep)
+@dispatch(Rep, Rep)
 def tensor_product(rep1: Rep, rep2: Rep) -> UnknownRep:
     assert np.allclose(rep1.algebra(), rep2.algebra())  # same lie algebra
     X1, H1 = rep1.continuous_generators(), rep1.discrete_generators()
@@ -175,12 +169,12 @@ def tensor_product(rep1: Rep, rep2: Rep) -> UnknownRep:
     )
 
 
-@ dispatch(ReducedRep, ReducedRep)
+@dispatch(ReducedRep, ReducedRep)
 def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
     raise NotImplementedError
 
 
-@ dispatch(Rep, int)
+@dispatch(Rep, int)
 def tensor_power(rep: Rep, n: int) -> UnknownRep:
     X, H = rep.continuous_generators(), rep.discrete_generators()
     result = UnknownRep(
@@ -200,7 +194,7 @@ def tensor_power(rep: Rep, n: int) -> UnknownRep:
         rep = tensor_product(rep, rep)
 
 
-@ dispatch(ReducedRep, int)
+@dispatch(ReducedRep, int)
 def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
     # TODO reduce into irreps and wrap with the change of basis that maps to the usual tensor product
     # TODO as well reduce into irreps of S_n

@@ -63,7 +63,7 @@ def test_round_to_sqrt_rational():
     @partial(np.vectorize, otypes=[np.float64])
     def _round_to_sqrt_rational(x: float) -> float:
         sign = 1 if x >= 0 else -1
-        return sign * Fraction(x ** 2).limit_denominator() ** 0.5
+        return sign * Fraction(x**2).limit_denominator() ** 0.5
 
     n = np.random.randint(-1_000_000, 1_000_000, size=(30000,))
     d = np.random.randint(1, 1_000_000, size=n.shape)
