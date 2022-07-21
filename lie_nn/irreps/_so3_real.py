@@ -3,7 +3,7 @@ from typing import Iterator
 
 import numpy as np
 
-from .. import Irrep, static_jax_pytree
+from .. import Irrep
 from ._su2 import SU2Rep
 
 
@@ -20,7 +20,6 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
     return (-1j) ** l * q  # Added factor of 1j**l to make the Clebsch-Gordan coefficients real
 
 
-@static_jax_pytree
 class SO3Rep(Irrep):
     l: int
 

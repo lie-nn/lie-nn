@@ -3,11 +3,10 @@ from typing import Iterator
 
 import numpy as np
 
-from .. import Irrep, static_jax_pytree
+from .. import Irrep
 from ._so3_real import SO3Rep
 
 
-@static_jax_pytree
 class O3Rep(Irrep):
     l: int  # non-negative integer
     p: int  # 1 or -1

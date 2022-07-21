@@ -5,7 +5,7 @@ from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
-from .. import Irrep, static_jax_pytree
+from .. import Irrep
 from ..util import round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
@@ -97,6 +97,7 @@ for i in range(dim((3, 2, 0))):
 
 
 def triangular_triplet(M: GT_PATTERN) -> Iterator[Tuple[int, int, int]]:
+    """Produce all possible triplets of indices in M"""
     n = len(M)
     for i in range(1, n):
         for j in range(n - i):
@@ -108,7 +109,7 @@ def is_valid_M(M: GT_PATTERN):
 
 
 def unique_pairs(n: int, start: int = 0) -> Iterator[Tuple[int, int]]:
-    """Produce pairs of indexes in range(n)"""
+    """Produce pairs of indexes in range(start,n)"""
     for i in range(start, n):
         for j in range(n - i):
             yield i, j
@@ -131,6 +132,7 @@ def M_to_z_weight(M: GT_PATTERN) -> WEIGHT:
 
 
 def compute_coeff_upper(M: GT_PATTERN, k: int, l: int) -> float:
+    """Compute the coefficient of the upper ladder operator."""
     n = len(M)
     num = 1
     for k_p in range(n - k + 1):
@@ -147,6 +149,7 @@ def compute_coeff_upper(M: GT_PATTERN, k: int, l: int) -> float:
 
 
 def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
+    """Compute the coefficient of the lower ladder."""
     n = len(M)
     num = 1
     for k_p in range(n - k + 1):
@@ -163,6 +166,7 @@ def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
 
 
 def M_add_at_lk(M: GT_PATTERN, l: int, k: int, increment: int) -> Optional[GT_PATTERN]:
+    """Add increment to the l-th row and k-th column of M."""
     M = tuple(tuple(M[i][j] + increment if (i, j) == (l, k) else M[i][j] for j in range(len(M[i]))) for i in range(len(M)))
     return M if is_valid_M(M) else None
 
@@ -260,7 +264,6 @@ def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_3_eldest
     return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(rep1.dim * rep2.dim, -1).T)
 
 
-@static_jax_pytree
 class SURep(Irrep):
     S: Tuple[int]  # List of weights of the representation
 
