@@ -6,6 +6,7 @@ from typing import Iterator, List, Optional, Tuple
 import numpy as np
 
 from .. import Irrep, static_jax_pytree
+from ..util import round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
 GT_PATTERN = Tuple[WEIGHT, ...]
@@ -164,7 +165,6 @@ def compute_coeff_upper(M: GT_PATTERN, k, l) -> float:
     for k_p in range(n - k):
         if k_p == l:
             continue
-        print(f"k,k_p{k,k_p}")
         den *= (M[k][k_p] - M[k][l] + l - k_p) * (M[k][k_p] - M[k][l] + l - k_p - 1)
     assert (-num / den) >= 0
     return (-num / den) ** 0.5
@@ -224,8 +224,7 @@ def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_eldest: 
                 A = np.zeros((rep1.dim, rep2.dim, 1))
                 A[i, j, :] += 1
                 A_list.append(A)
-    out = np.concatenate((A_1, *A_list), axis=-1)
-    return out
+    return round_to_sqrt_rational(np.concatenate((A_1, *A_list), axis=-1))
 
 
 @static_jax_pytree
