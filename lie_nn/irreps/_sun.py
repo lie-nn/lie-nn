@@ -4,7 +4,8 @@ from typing import Iterator, List, Tuple, Optional
 
 import jax.numpy as jnp
 
-from .. import Irrep, static_jax_pytree
+from . import Irrep, static_jax_pytree
+from operator import add
 
 
 WEIGHT = Tuple[int, ...]
@@ -103,12 +104,12 @@ def triangular_triplet(M: GT_PATTERN) -> Iterator[Tuple[int, int, int]]:
 
 
 def is_valid_M(M: GT_PATTERN):
-    return all(m1 >= m3 >= m2 for m1, m2, m3 in triangular_triplet(M))
+    return all(m1 >= m3 >= m2 >= 0 for m1, m2, m3 in triangular_triplet(M))
 
 
-def unique_pairs(n: int) -> Iterator[Tuple[int, int]]:
+def unique_pairs(n: int, start: int = 0) -> Iterator[Tuple[int, int]]:
     """Produce pairs of indexes in range(n)"""
-    for i in range(n):
+    for i in range(start, n):
         for j in range(n - i):
             yield i, j
 
@@ -116,6 +117,16 @@ def unique_pairs(n: int) -> Iterator[Tuple[int, int]]:
 def M_to_sigma(M: GT_PATTERN) -> WEIGHT:
     sigma = [sum(row) for row in M] + [0]
     return sigma[::-1]
+
+
+def M_to_z_weight(M: GT_PATTERN) -> WEIGHT:
+    """The pattern weight of a GT-pattern."""
+    w = M_to_p_weight(M)
+    return tuple((s2 - s1) / 2 for s1, s2 in zip(w[1:], w))
+
+
+def M_to_z_weights(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
+    return [M_to_z_weight(M) for M in Ms]
 
 
 def M_to_p_weight(M: GT_PATTERN) -> WEIGHT:
@@ -131,30 +142,32 @@ def Ms_to_p_weight(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
 def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
     n = len(M)
     num = 1
-    for k_p in range(l + 1):
-        num *= M[n - l - 1][k_p] - M[n - l][k] + k - k_p + 1
-    for k_p in range(l - 1):
-        num *= M[n - l + 1][k_p] - M[n - l][k] + k - k_p
+    for k_p in range(n - k + 1):
+        num *= M[k - 1][k_p] - M[k][l] + l - k_p + 1
+    for k_p in range(n - k - 1):
+        num *= M[k + 1][k_p] - M[k][l] + l - k_p
     den = 1
-    for k_p in range(l):
-        if k_p == k:
+    for k_p in range(n - k):
+        if k_p == l:
             continue
-        den *= (M[n - l][k_p] - M[n - l][k] + k - k_p + 1) * (M[n - l][k_p] - M[n - l][k] + k - k_p)
+        den *= (M[k][k_p] - M[k][l] + l - k_p + 1) * (M[k][k_p] - M[k][l] + l - k_p)
     return (-num / den) ** 0.5
 
 
 def compute_coeff_upper(M: GT_PATTERN, k, l) -> float:
     n = len(M)
     num = 1
-    for k_p in range(l + 1):
-        num *= M[n - l - 1][k_p] - M[n - l][k] + k - k_p
-    for k_p in range(l - 1):
-        num *= M[n - l + 1][k_p] - M[n - l][k] + k - k_p - 1
+    for k_p in range(n - k + 1):
+        num *= M[k - 1][k_p] - M[k][l] + l - k_p
+    for k_p in range(n - k - 1):
+        num *= M[k + 1][k_p] - M[k][l] + l - k_p - 1
     den = 1
-    for k_p in range(l):
-        if k_p == k:
+    for k_p in range(n - k):
+        if k_p == l:
             continue
-        den *= (M[n - l][k_p] - M[n - l][k] + k - k_p) * (M[n - l][k_p] - M[n - l][k] + k - k_p - 1)
+        print(f"k,k_p{k,k_p}")
+        den *= (M[k][k_p] - M[k][l] + l - k_p) * (M[k][k_p] - M[k][l] + l - k_p - 1)
+    assert (-num / den) >= 0
     return (-num / den) ** 0.5
 
 
@@ -166,23 +179,59 @@ def M_add_at_kl(M: GT_PATTERN, k: int, l: int, increment: int) -> Optional[GT_PA
 def lower_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
     n = len(M)
     instructions = []
-    for l, k in unique_pairs(n - 1):
+    for k, l in unique_pairs(n, 1):
         M_kl = M_add_at_kl(M, k, l, -1)
-        coeff = compute_coeff_lower(M, k, n - l - 1)
-        if M_kl is not None and coeff != 0:
-            instructions.append((coeff, M_kl))
+        if M_kl is not None:
+            coeff = compute_coeff_lower(M, k, l)
+            if coeff != 0:
+                instructions.append((coeff, M_kl))
     return instructions
 
 
 def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
     n = len(M)
     instructions = []
-    for l, k in unique_pairs(n - 1):
-        M_kl = M_add_at_kl(M, k, l, -1)
-        coeff = compute_coeff_upper(M, k, n - l - 1)
-        if M_kl is not None and coeff != 0:
-            instructions.append((coeff, M_kl))
+    for k, l in unique_pairs(n, 1):
+        M_kl = M_add_at_kl(M, k, l, 1)
+        if M_kl is not None:
+            coeff = compute_coeff_upper(M, k, l)
+            if coeff != 0:
+                instructions.append((coeff, M_kl, k - 1))
+        else:
+            instructions.append((0.0, M_kl, k - 1))
     return instructions
+
+
+def construct_highest_weight_constraint(rep1: 'SURep', rep2: 'SURep', M_eldest):
+    n = len(M_eldest)
+    A_list = []
+    for i in range(rep1.dim):
+        for j in range(rep2.dim):
+            M_1 = index_to_M(rep1.S, i)
+            M_2 = index_to_M(rep2.S, j)
+            W_1 = M_to_z_weight(M_1)
+            W_2 = M_to_z_weight(M_2)
+            W_3 = M_to_z_weight(M_eldest)
+            A_1 = jnp.zeros((rep1.dim, rep2.dim, n - 1), dtype=jnp.float64)
+            if tuple(map(add, W_1, W_2)) == W_3:
+                Jup_M = upper_ladder(M_1)
+                Jup_M_p = upper_ladder(M_2)
+                for (instruction, instruction_p) in zip(Jup_M, Jup_M_p):
+                    if instruction[1] is not None:
+                        l_dim, coeff = instruction[2], instruction[0]
+                        idx = M_to_index(instruction[1])
+                        A_1 = A_1.at[idx, j, l_dim].add(coeff)
+                    if instruction_p[1] is not None:
+                        l_dim, coeff = instruction_p[2], instruction_p[0]
+                        idx = M_to_index(instruction_p[1])
+                        A_1 = A_1.at[i, idx, l_dim].add(coeff)
+                A_list.append(A)
+            else:
+                A = jnp.zeros((rep1.dim, rep2.dim, 1))
+                A = A.at[i, j, :].add(1)
+                A_list.append(A)
+    out = jnp.concatenate(A_list, axis=-1)
+    return out
 
 
 @static_jax_pytree
@@ -229,8 +278,8 @@ class SURep(Irrep):
     @classmethod
     def algebra(self, cls) -> jnp.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        lie_algebra_real = jnp.zeros((self.n**2 - 1, self.n, self.n))
-        lie_algebra_imag = jnp.zeros((self.n**2 - 1, self.n, self.n))
+        lie_algebra_real = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
+        lie_algebra_imag = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
         k = 0
         for i in range(self.n):
             for j in range(i):
