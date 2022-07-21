@@ -1,12 +1,11 @@
 import itertools
 from fractions import Fraction
-from typing import Iterator, List, Tuple, Optional
-
-import jax.numpy as jnp
-
-from . import Irrep, static_jax_pytree
 from operator import add
+from typing import Iterator, List, Optional, Tuple
 
+import numpy as np
+
+from .. import Irrep, static_jax_pytree
 
 WEIGHT = Tuple[int, ...]
 GT_PATTERN = Tuple[WEIGHT, ...]
@@ -202,9 +201,9 @@ def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
     return instructions
 
 
-def construct_highest_weight_constraint(rep1: 'SURep', rep2: 'SURep', M_eldest):
+def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_eldest: GT_PATTERN) -> np.ndarray:
     n = len(M_eldest)
-    A_1 = jnp.zeros((rep1.dim, rep2.dim, n - 1), dtype=jnp.float64)
+    A_1 = np.zeros((rep1.dim, rep2.dim, n - 1), dtype=np.float64)
     A_list = []
     for i in range(rep1.dim):
         for j in range(rep2.dim):
@@ -214,20 +213,18 @@ def construct_highest_weight_constraint(rep1: 'SURep', rep2: 'SURep', M_eldest):
             W_2 = M_to_z_weight(M_2)
             W_3 = M_to_z_weight(M_eldest)
             if tuple(map(add, W_1, W_2)) == W_3:
-                Jup_M = upper_ladder(M_1)
-                Jup_M_p = upper_ladder(M_2)
-                for (instruction, instruction_p) in zip(Jup_M, Jup_M_p):
+                for (instruction, instruction_p) in zip(upper_ladder(M_1), upper_ladder(M_2)):
                     if instruction[1] is not None:
                         l_dim, coeff = instruction[2], instruction[0]
-                        A_1 = A_1.at[i, j, l_dim].add(coeff)
+                        A_1[i, j, l_dim] += coeff
                     if instruction_p[1] is not None:
                         l_dim, coeff = instruction_p[2], instruction_p[0]
-                        A_1 = A_1.at[i, j, l_dim].add(coeff)
+                        A_1[i, j, l_dim] += coeff
             else:
-                A = jnp.zeros((rep1.dim, rep2.dim, 1))
-                A = A.at[i, j, :].add(1)
+                A = np.zeros((rep1.dim, rep2.dim, 1))
+                A[i, j, :] += 1
                 A_list.append(A)
-    out = jnp.concatenate((A_1, *A_list), axis=-1)
+    out = np.concatenate((A_1, *A_list), axis=-1)
     return out
 
 
@@ -251,7 +248,7 @@ class SURep(Irrep):
                 yield SURep(S=tuple(x - t_weight[-1] for x in t_weight))
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SURep", rep2: "SURep", rep3: "SURep") -> jnp.ndarray:
+    def clebsch_gordan(cls, rep1: "SURep", rep2: "SURep", rep3: "SURep") -> np.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         pass
 
@@ -266,17 +263,17 @@ class SURep(Irrep):
     def iterator(self, cls) -> Iterator["SURep"]:
         pass
 
-    def discrete_generators(rep: "SURep") -> jnp.ndarray:
-        return jnp.zeros((0, rep.dim, rep.dim))
+    def discrete_generators(rep: "SURep") -> np.ndarray:
+        return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SURep") -> jnp.ndarray:
+    def continuous_generators(rep: "SURep") -> np.ndarray:
         pass
 
     @classmethod
-    def algebra(self, cls) -> jnp.ndarray:
+    def algebra(self, cls) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        lie_algebra_real = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
-        lie_algebra_imag = jnp.zeros((self.n ** 2 - 1, self.n, self.n))
+        lie_algebra_real = np.zeros((self.n**2 - 1, self.n, self.n))
+        lie_algebra_imag = np.zeros((self.n**2 - 1, self.n, self.n))
         k = 0
         for i in range(self.n):
             for j in range(i):
