@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from fractions import Fraction
 from operator import add
@@ -264,6 +265,7 @@ def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_3_eldest
     return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(rep1.dim * rep2.dim, -1).T)
 
 
+@dataclass(frozen=True)
 class SURep(Irrep):
     S: Tuple[int]  # List of weights of the representation
 

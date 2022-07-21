@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from typing import Iterator
 
@@ -20,6 +21,7 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
     return (-1j) ** l * q  # Added factor of 1j**l to make the Clebsch-Gordan coefficients real
 
 
+@dataclass(frozen=True)
 class SO3Rep(Irrep):
     l: int
 

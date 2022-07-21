@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from math import factorial
 from typing import Iterator
@@ -7,6 +8,7 @@ import numpy as np
 from .. import Irrep
 
 
+@dataclass(frozen=True)
 class SU2Rep(Irrep):
     j: int
 

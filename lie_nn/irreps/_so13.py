@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from typing import Iterator
 
@@ -7,6 +8,7 @@ from .. import Irrep
 from ._sl2 import SL2Rep
 
 
+@dataclass(frozen=True)
 class SO13Rep(Irrep):  # TODO: think if this class shoulb be a subclass of SL2Rep
     l: int  # First integer weight
     k: int  # Second integer weight

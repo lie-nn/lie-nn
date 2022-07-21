@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from typing import Iterator
 
@@ -7,6 +8,7 @@ from .. import Irrep
 from ._so3_real import SO3Rep
 
 
+@dataclass(frozen=True)
 class O3Rep(Irrep):
     l: int  # non-negative integer
     p: int  # 1 or -1

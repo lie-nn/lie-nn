@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from typing import Iterator
 
@@ -25,6 +26,7 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
     raise ValueError(f"j={j} is not an integer")
 
 
+@dataclass(frozen=True)
 class SU2RealRep(Irrep):
     j: float  # j is a half-integer
 

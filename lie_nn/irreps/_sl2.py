@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import itertools
 from typing import Iterator
 
@@ -21,6 +22,7 @@ def sign(p):
     return 1 if (trans % 2) == 0 else -1
 
 
+@dataclass(frozen=True)
 class SL2Rep(Irrep):
     l: int  # First integer weight
     k: int  # Second integer weight
