@@ -187,44 +187,57 @@ def lower_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
     return instructions
 
 
-def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
+def upper_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
+    """<N| J^L_+ |M>
+
+    Args:
+        L: The index of the ladder operator. 0 <= L <= len(N)-2.
+        N: The left bracket GT-pattern.
+        M: The right bracket GT-pattern.
+
+    Returns:
+        The coefficient of the ladder operator.
+    """
     n = len(M)
-    instructions = []
+    output = 0.0
     for k, l in unique_pairs(n, 1):
-        M_kl = M_add_at_kl(M, k, l, 1)
-        if M_kl is not None:
-            coeff = compute_coeff_upper(M, k, l)
-            if coeff != 0:
-                instructions.append((coeff, M_kl, k - 1))
-        else:
-            instructions.append((0.0, M_kl, k - 1))
-    return instructions
+        if k - 1 == L:
+            M_kl = M_add_at_kl(M, k, l, 1)
+            if M_kl == N:
+                output += compute_coeff_upper(M, k, l)
+    return output
 
 
-def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_eldest: GT_PATTERN) -> np.ndarray:
-    n = len(M_eldest)
-    A_1 = np.zeros((rep1.dim, rep2.dim, n - 1), dtype=np.float64)
-    A_list = []
-    for i in range(rep1.dim):
-        for j in range(rep2.dim):
-            M_1 = index_to_M(rep1.S, i)
-            M_2 = index_to_M(rep2.S, j)
-            W_1 = M_to_z_weight(M_1)
-            W_2 = M_to_z_weight(M_2)
-            W_3 = M_to_z_weight(M_eldest)
-            if tuple(map(add, W_1, W_2)) == W_3:
-                for (instruction, instruction_p) in zip(upper_ladder(M_1), upper_ladder(M_2)):
-                    if instruction[1] is not None:
-                        l_dim, coeff = instruction[2], instruction[0]
-                        A_1[i, j, l_dim] += coeff
-                    if instruction_p[1] is not None:
-                        l_dim, coeff = instruction_p[2], instruction_p[0]
-                        A_1[i, j, l_dim] += coeff
-            else:
-                A = np.zeros((rep1.dim, rep2.dim, 1))
-                A[i, j, :] += 1
-                A_list.append(A)
-    return round_to_sqrt_rational(np.concatenate((A_1, *A_list), axis=-1))
+def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_3_eldest: GT_PATTERN) -> np.ndarray:
+    n = len(M_3_eldest)  # SU(n)
+
+    A = np.zeros((rep1.dim, rep2.dim, rep1.dim, rep2.dim, n - 1), dtype=np.float64)
+
+    for m1 in range(rep1.dim):
+        for m2 in range(rep2.dim):
+            for n1 in range(rep1.dim):
+                for n2 in range(rep2.dim):
+                    for l in range(n - 1):
+                        if n2 == m2:
+                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(rep1.S, n1), index_to_M(rep1.S, m1))
+                        if n1 == m1:
+                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(rep2.S, n2), index_to_M(rep2.S, m2))
+
+    A = A.reshape(rep1.dim, rep2.dim, -1)
+
+    B = []
+
+    for m1 in range(rep1.dim):
+        for m2 in range(rep2.dim):
+            W_1 = M_to_z_weight(index_to_M(rep1.S, m1))
+            W_2 = M_to_z_weight(index_to_M(rep2.S, m2))
+            W_eldest = M_to_z_weight(M_3_eldest)
+            if tuple(map(add, W_1, W_2)) != W_eldest:
+                b = np.zeros((rep1.dim, rep2.dim, 1))
+                b[m1, m2] = 1
+                B.append(b)
+
+    return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(rep1.dim * rep2.dim, -1).T)
 
 
 @static_jax_pytree
