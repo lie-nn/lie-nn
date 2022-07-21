@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 
 
@@ -115,6 +116,19 @@ def vmap(
         return np.stack(output, axis=out_axes)
 
     return f
+
+
+def block_diagonal(As: List[np.array]):
+    size1 = sum([As[i].shape[1] for i in range(len(As))])
+    size2 = sum([As[i].shape[2] for i in range(len(As))])
+    R = np.zeros((As[0].shape[0], size1, size2))
+    shape_x = 0
+    shape_y = 0
+    for i in range(len(As)):
+        R[:, shape_x:shape_x + As[i].shape[1], shape_y:shape_y + As[i].shape[2]] = As[i]
+        shape_x += As[i].shape[1]
+        shape_y += As[i].shape[2]
+    return R
 
 
 def commutator(A, B):
