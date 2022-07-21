@@ -135,6 +135,22 @@ def M_to_z_weight(M: GT_PATTERN) -> WEIGHT:
     return tuple((s2 - s1) / 2 for s1, s2 in zip(w[1:], w))[::-1]
 
 
+def mul_rep(S1: WEIGHT, S2: WEIGHT) -> Iterator[WEIGHT]:
+    n = len(S1)
+    for pattern in S_to_Ms(S1):
+        t_weight = list(S2)
+        for l, k in unique_pairs(n):
+            try:
+                t_weight[n - k - 1] += pattern[k][l] - pattern[k + 1][l]
+            except IndexError:
+                t_weight[n - k - 1] += pattern[k][l]
+            if n - k - 1 >= 1 and t_weight[n - k - 1] > t_weight[n - k - 2]:
+                t_weight = []
+                break
+        if t_weight:
+            yield tuple(x - t_weight[-1] for x in t_weight)
+
+
 def compute_coeff_upper(M: GT_PATTERN, k: int, l: int) -> float:
     """Compute the coefficient of the upper ladder operator."""
     n = len(M)
@@ -320,19 +336,7 @@ class SURep(Irrep):
     S: Tuple[int]  # List of weights of the representation
 
     def __mul__(rep1: "SURep", rep2: "SURep") -> List["SURep"]:
-        n = len(rep2.S)
-        for pattern in S_to_Ms(rep1.S):
-            t_weight = list(rep2.S)
-            for l, k in unique_pairs(n):
-                try:
-                    t_weight[n - k - 1] += pattern[k][l] - pattern[k + 1][l]
-                except IndexError:
-                    t_weight[n - k - 1] += pattern[k][l]
-                if n - k - 1 >= 1 and t_weight[n - k - 1] > t_weight[n - k - 2]:
-                    t_weight = []
-                    break
-            if t_weight:
-                yield SURep(S=tuple(x - t_weight[-1] for x in t_weight))
+        return map(SURep, sorted(set(mul_rep(rep1.S, rep2.S))))
 
     @classmethod
     def clebsch_gordan(cls, rep1: "SURep", rep2: "SURep", rep3: "SURep") -> np.ndarray:
