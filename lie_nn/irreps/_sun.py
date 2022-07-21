@@ -115,28 +115,19 @@ def unique_pairs(n: int, start: int = 0) -> Iterator[Tuple[int, int]]:
 
 
 def M_to_sigma(M: GT_PATTERN) -> WEIGHT:
-    sigma = [sum(row) for row in M] + [0]
-    return sigma[::-1]
-
-
-def M_to_z_weight(M: GT_PATTERN) -> WEIGHT:
-    """The pattern weight of a GT-pattern."""
-    w = M_to_p_weight(M)
-    return tuple((s2 - s1) / 2 for s1, s2 in zip(w[1:], w))
-
-
-def M_to_z_weights(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
-    return [M_to_z_weight(M) for M in Ms]
+    return [sum(row) for row in M] + [0]
 
 
 def M_to_p_weight(M: GT_PATTERN) -> WEIGHT:
     """The pattern weight of a GT-pattern."""
-    sigma = M_to_sigma(M)
-    return tuple(s2 - s1 for s1, s2 in zip(sigma, sigma[1:]))
+    sigma = M_to_sigma(M)[::-1]
+    return tuple(s2 - s1 for s1, s2 in zip(sigma, sigma[1:]))[::-1]
 
 
-def Ms_to_p_weight(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
-    return [M_to_p_weight(M) for M in Ms]
+def M_to_z_weight(M: GT_PATTERN) -> WEIGHT:
+    """The pattern weight of a GT-pattern."""
+    w = M_to_p_weight(M)[::-1]
+    return tuple((s2 - s1) / 2 for s1, s2 in zip(w[1:], w))[::-1]
 
 
 def compute_coeff_upper(M: GT_PATTERN, k: int, l: int) -> float:
