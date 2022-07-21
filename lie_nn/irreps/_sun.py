@@ -204,6 +204,7 @@ def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
 
 def construct_highest_weight_constraint(rep1: 'SURep', rep2: 'SURep', M_eldest):
     n = len(M_eldest)
+    A_1 = jnp.zeros((rep1.dim, rep2.dim, n - 1), dtype=np.float64)
     A_list = []
     for i in range(rep1.dim):
         for j in range(rep2.dim):
@@ -212,25 +213,21 @@ def construct_highest_weight_constraint(rep1: 'SURep', rep2: 'SURep', M_eldest):
             W_1 = M_to_z_weight(M_1)
             W_2 = M_to_z_weight(M_2)
             W_3 = M_to_z_weight(M_eldest)
-            A_1 = jnp.zeros((rep1.dim, rep2.dim, n - 1), dtype=jnp.float64)
             if tuple(map(add, W_1, W_2)) == W_3:
                 Jup_M = upper_ladder(M_1)
                 Jup_M_p = upper_ladder(M_2)
                 for (instruction, instruction_p) in zip(Jup_M, Jup_M_p):
                     if instruction[1] is not None:
                         l_dim, coeff = instruction[2], instruction[0]
-                        idx = M_to_index(instruction[1])
-                        A_1 = A_1.at[idx, j, l_dim].add(coeff)
+                        A_1 = A_1.at[i, j, l_dim].add(coeff)
                     if instruction_p[1] is not None:
                         l_dim, coeff = instruction_p[2], instruction_p[0]
-                        idx = M_to_index(instruction_p[1])
-                        A_1 = A_1.at[i, idx, l_dim].add(coeff)
-                A_list.append(A)
+                        A_1 = A_1.at[i, j, l_dim].add(coeff)
             else:
                 A = jnp.zeros((rep1.dim, rep2.dim, 1))
                 A = A.at[i, j, :].add(1)
                 A_list.append(A)
-    out = jnp.concatenate(A_list, axis=-1)
+    out = jnp.concatenate((A_1, *A_list), axis=-1)
     return out
 
 
