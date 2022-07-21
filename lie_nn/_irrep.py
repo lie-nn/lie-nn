@@ -40,8 +40,8 @@ def matrix_power(F, n):
 @static_jax_pytree
 class Irrep(Rep):
     def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
-        # selection rule
-        pass
+        # Selection rule
+        raise NotImplementedError
 
     @classmethod
     def clebsch_gordan(cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep", *, round_fn=lambda x: x) -> np.ndarray:
