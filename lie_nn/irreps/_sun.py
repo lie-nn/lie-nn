@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import itertools
+from dataclasses import dataclass
 from fractions import Fraction
 from operator import add
 from typing import Iterator, List, Optional, Tuple
@@ -7,10 +7,14 @@ from typing import Iterator, List, Optional, Tuple
 import numpy as np
 
 from .. import Irrep
-from ..util import round_to_sqrt_rational
+from ..util import commutator, round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
 GT_PATTERN = Tuple[WEIGHT, ...]
+
+
+def _is_valid_S(S: WEIGHT):
+    return len(S) > 0 and all(s1 >= s2 for s1, s2 in zip(S, S[1:]))
 
 
 def _assert_valid_S(S: WEIGHT):
@@ -18,8 +22,7 @@ def _assert_valid_S(S: WEIGHT):
     (3, 3, 2) is a valid S.
     (3, 2, 3) is not a valid S.
     """
-    assert len(S) > 0
-    assert all(s1 >= s2 for s1, s2 in zip(S, S[1:]))
+    assert _is_valid_S(S)
 
 
 def dim(S: WEIGHT) -> int:
@@ -281,6 +284,53 @@ def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_3_eldest
     return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(rep1.dim * rep2.dim, -1).T)
 
 
+def E_basis(k: int, l: int, Jp, Jm):
+    assert k != l
+    if k + 1 == l:
+        return Jp[k]
+    if k < l:
+        return commutator(Jp[k], E_basis(k + 1, l, Jp, Jm))
+    if k == l + 1:
+        return Jm[l]
+    if k > l:
+        return commutator(Jm[k - 1], E_basis(k - 1, l, Jp, Jm))
+
+
+def generators(S):
+    """
+    Returns the generators of the Lie algebra
+    """
+    N = len(S)
+    Jp = upper_ladder_matrices(S)
+    Jm = lower_ladder_matrices(S)
+    Jz = Jz_matrices(S)
+
+    Xi = np.stack([1j * (E_basis(k, l, Jp, Jm) + E_basis(l, k, Jp, Jm)) for k in range(N) for l in range(k + 1, N)], axis=0)
+    Xr = np.stack([E_basis(k, l, Jp, Jm) - E_basis(l, k, Jp, Jm) for k in range(N) for l in range(k + 1, N)], axis=0)
+    Xd = 2j * Jz
+    return np.concatenate([Xi, Xr, Xd], axis=0)
+
+
+def algebra(S):
+    """
+    Returns the Lie algebra
+    """
+    N = len(S)
+    X = generators(S)
+
+    x = X.reshape(N**2 - 1, -1)
+    pix = np.linalg.pinv(x)
+    # np.testing.assert_allclose(x @ pix, np.eye(N**2 - 1), atol=1e-10)
+
+    C = np.einsum("iab,jbc->ijac", X, X) - np.einsum("jab,ibc->ijac", X, X)
+    C = C.reshape(N**2 - 1, N**2 - 1, -1)
+
+    A = np.einsum("ijz,zk->ijk", C, pix)
+    A = np.real(A)
+    A = round_to_sqrt_rational(A)
+    return A
+
+
 @dataclass(frozen=True)
 class SURep(Irrep):
     S: Tuple[int]  # List of weights of the representation
@@ -301,37 +351,22 @@ class SURep(Irrep):
         return dim(rep.S)
 
     @classmethod
-    def iterator(self, cls) -> Iterator["SURep"]:
-        pass
+    def iterator(cls) -> Iterator["SURep"]:
+        yield SURep(S=(0,))
+
+        for n in range(1, 3 + 1):
+            for S in itertools.product(range(3 + 1), repeat=n):
+                S = S + (0,)
+                if _is_valid_S(S):
+                    yield SURep(S=S)
 
     def discrete_generators(rep: "SURep") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
     def continuous_generators(rep: "SURep") -> np.ndarray:
-        pass
+        return generators(rep.S)
 
-    @classmethod
-    def algebra(self, cls) -> np.ndarray:
-        # [X_i, X_j] = A_ijk X_k
-        lie_algebra_real = np.zeros((self.n**2 - 1, self.n, self.n))
-        lie_algebra_imag = np.zeros((self.n**2 - 1, self.n, self.n))
-        k = 0
-        for i in range(self.n):
-            for j in range(i):
-                # Antisymmetric real generators
-                lie_algebra_real[k, i, j] = 1
-                lie_algebra_real[k, j, i] = -1
-                k += 1
-                # symmetric imaginary generators
-                lie_algebra_imag[k, i, j] = 1
-                lie_algebra_imag[k, j, i] = 1
-                k += 1
-        for i in range(self.n - 1):
-            # diagonal traceless imaginary generators
-            lie_algebra_imag[k, i, i] = 1
-            for j in range(self.n):
-                if i == j:
-                    continue
-                lie_algebra_imag[k, j, j] = -1 / (self.n - 1)
-            k += 1
-        return lie_algebra_real + lie_algebra_imag * 1j
+    def algebra(rep: "SURep") -> np.ndarray:
+        if rep.S == (0,):
+            return np.zeros((1, 1, 1))
+        return algebra((1,) + (0,) * (len(rep.S) - 1))
