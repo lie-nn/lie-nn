@@ -2,9 +2,8 @@ import dataclasses
 from typing import Optional, Tuple
 
 import numpy as np
-from multipledispatch import dispatch
 
-from . import GenericRep, Irrep, Rep
+from . import Irrep, Rep
 from .util import direct_sum
 
 
@@ -67,80 +66,3 @@ class ReducedRep(Rep):
             X = self.Q @ X @ np.linalg.inv(self.Q)
             Xs += [X]
         return np.stack(Xs)
-
-
-@dispatch(Rep, object)
-def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
-    iQ = np.linalg.inv(Q)
-    return GenericRep(
-        A=rep.algebra(),
-        X=Q @ rep.continuous_generators() @ iQ,
-        H=Q @ rep.discrete_generators() @ iQ,
-    )
-
-
-@dispatch(ReducedRep, object)
-def change_basis(rep: ReducedRep, Q: np.ndarray) -> ReducedRep:
-    Q = Q if rep.Q is None else Q @ rep.Q
-    return dataclasses.replace(rep, Q=Q)
-
-
-@dispatch(MulIrrep, object)
-def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
-    return ReducedRep(
-        A=rep.algebra(),
-        irreps=(rep,),
-        Q=Q,
-    )
-
-
-@dispatch(Irrep, object)
-def change_basis(rep: Irrep, Q: np.ndarray) -> ReducedRep:
-    return change_basis(MulIrrep(mul=1, rep=rep), Q)
-
-
-@dispatch(Rep, Rep)
-def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
-    assert np.allclose(rep1.algebra(), rep2.algebra())  # same lie algebra
-    X1, H1 = rep1.continuous_generators(), rep1.discrete_generators()
-    X2, H2 = rep2.continuous_generators(), rep2.discrete_generators()
-    assert H1.shape[0] == H2.shape[0]  # same discrete dimension
-    d = rep1.dim * rep2.dim
-    return GenericRep(
-        A=rep1.algebra(),
-        X=np.einsum("aij,akl->aikjl", X1, X2).reshape(X1.shape[0], d, d),
-        H=np.einsum("aij,akl->aikjl", H1, H2).reshape(H1.shape[0], d, d),
-    )
-
-
-@dispatch(ReducedRep, ReducedRep)
-def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
-    raise NotImplementedError
-
-
-@dispatch(Rep, int)
-def tensor_power(rep: Rep, n: int) -> GenericRep:
-    X, H = rep.continuous_generators(), rep.discrete_generators()
-    result = GenericRep(
-        A=rep.algebra(),
-        X=np.ones((X.shape[0], 1, 1)),
-        H=np.ones((H.shape[0], 1, 1)),
-    )
-
-    while True:
-        if n & 1:
-            result = tensor_product(rep, result)
-        n >>= 1
-
-        if n == 0:
-            return result
-
-        rep = tensor_product(rep, rep)
-
-
-@dispatch(ReducedRep, int)
-def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
-    # TODO reduce into irreps and wrap with the change of basis that maps to the usual tensor product
-    # TODO as well reduce into irreps of S_n
-    # and diagonalize irreps of S_n in the same basis that diagonalizes irreps of S_{n-1} (unclear how to do this)
-    raise NotImplementedError
