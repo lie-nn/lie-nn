@@ -64,14 +64,14 @@ def limit_denominator(n, d, max_denominator=1_000_000):
     )
 
 
-def _round_to_sqrt_rational(x, max_denominator=1024):
+def _round_to_sqrt_rational(x, max_denominator):
     sign = np.sign(x)
     n, d = as_approx_integer_ratio(x**2)
     n, d = limit_denominator(n, d, max_denominator**2 + 1)
     return sign * np.sqrt(n / d)
 
 
-def round_to_sqrt_rational(x: np.ndarray, max_denominator=1024) -> np.ndarray:
+def round_to_sqrt_rational(x: np.ndarray, max_denominator=4096) -> np.ndarray:
     x = np.array(x)
     if np.iscomplex(x).any():
         return _round_to_sqrt_rational(np.real(x), max_denominator) + 1j * _round_to_sqrt_rational(np.imag(x), max_denominator)
