@@ -15,13 +15,13 @@ def test_highest_weight_constraint_with_su2(j1: int, j2: int, j3: int):
     S2 = SURep((j2, 0))
     S3 = SURep((j3, 0))
 
-    eldest_weight = next(S_to_Ms(S3.S))
+    eldest_weight = list(S_to_Ms(S3.S))[-1]
 
     A = construct_highest_weight_constraint(S1, S2, eldest_weight)
-    C1 = null_space(A, round_fn=round_to_sqrt_rational)  # [dim_null_space, dim_solution]
+    C1 = null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1]  # [dim_null_space, dim_solution]
     C1 = C1.reshape(-1, S1.dim, S2.dim)
 
     C2 = SU2Rep.clebsch_gordan(SU2Rep(j1), SU2Rep(j2), SU2Rep(j3))
-    C2 = C2[:, ::-1, ::-1, -1]  # eldest weight is the last index
+    C2 = C2[:, :, :, -1]  # eldest weight is the last index
 
     np.testing.assert_allclose(C1, C2)

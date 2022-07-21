@@ -39,13 +39,13 @@ def S_to_Ss(S: WEIGHT) -> Iterator[WEIGHT]:
     """Produce all possible next lines of S.
 
     >>> list(S_to_Ss((3, 3, 1, 0)))
-    [(3, 3, 1), (3, 3, 0), (3, 2, 1), (3, 2, 0), (3, 1, 1), (3, 1, 0)]
+    [(3, 1, 0), (3, 1, 1), (3, 2, 0), (3, 2, 1), (3, 3, 0), (3, 3, 1)]
     """
     _assert_valid_S(S)
     if len(S) == 1:
         return
     diff = [s1 - s2 for s1, s2 in zip(S, S[1:])]
-    for x in itertools.product(*[range(s + 1) for s in diff]):
+    for x in itertools.product(*[reversed(range(s + 1)) for s in diff]):
         yield tuple(S[i] - x[i] for i in range(len(S) - 1))
 
 
@@ -139,6 +139,22 @@ def Ms_to_p_weight(Ms: List[GT_PATTERN]) -> List[WEIGHT]:
     return [M_to_p_weight(M) for M in Ms]
 
 
+def compute_coeff_upper(M: GT_PATTERN, k: int, l: int) -> float:
+    n = len(M)
+    num = 1
+    for k_p in range(n - k + 1):
+        num *= M[k - 1][k_p] - M[k][l] + l - k_p
+    for k_p in range(n - k - 1):
+        num *= M[k + 1][k_p] - M[k][l] + l - k_p - 1
+    den = 1
+    for k_p in range(n - k):
+        if k_p == l:
+            continue
+        den *= (M[k][k_p] - M[k][l] + l - k_p) * (M[k][k_p] - M[k][l] + l - k_p - 1)
+    assert -num / den >= 0
+    return (-num / den) ** 0.5
+
+
 def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
     n = len(M)
     num = 1
@@ -151,22 +167,7 @@ def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
         if k_p == l:
             continue
         den *= (M[k][k_p] - M[k][l] + l - k_p + 1) * (M[k][k_p] - M[k][l] + l - k_p)
-    return (-num / den) ** 0.5
-
-
-def compute_coeff_upper(M: GT_PATTERN, k, l) -> float:
-    n = len(M)
-    num = 1
-    for k_p in range(n - k + 1):
-        num *= M[k - 1][k_p] - M[k][l] + l - k_p
-    for k_p in range(n - k - 1):
-        num *= M[k + 1][k_p] - M[k][l] + l - k_p - 1
-    den = 1
-    for k_p in range(n - k):
-        if k_p == l:
-            continue
-        den *= (M[k][k_p] - M[k][l] + l - k_p) * (M[k][k_p] - M[k][l] + l - k_p - 1)
-    assert (-num / den) >= 0
+    assert -num / den >= 0
     return (-num / den) ** 0.5
 
 
