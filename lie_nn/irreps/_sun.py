@@ -162,16 +162,23 @@ def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
     return (-num / den) ** 0.5
 
 
-def M_add_at_kl(M: GT_PATTERN, k: int, l: int, increment: int) -> Optional[GT_PATTERN]:
-    M = tuple(tuple(M[i][j] + increment if (i, j) == (k, l) else M[i][j] for j in range(len(M[i]))) for i in range(len(M)))
+def M_add_at_lk(M: GT_PATTERN, l: int, k: int, increment: int) -> Optional[GT_PATTERN]:
+    M = tuple(tuple(M[i][j] + increment if (i, j) == (l, k) else M[i][j] for j in range(len(M[i]))) for i in range(len(M)))
     return M if is_valid_M(M) else None
 
 
-def upper_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
-    """<N| J^L_+ |M>
+def unique_pairs(n: int, start: int = 0) -> Iterator[Tuple[int, int]]:
+    """Produce pairs of indexes in range(n)"""
+    for i in range(start, n):
+        for j in range(n - i):
+            yield i, j
+
+
+def upper_ladder(l: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
+    """<N| J(l)+ |M>
 
     Args:
-        L: The index of the ladder operator. 0 <= L <= len(N)-2.
+        l: The index of the ladder operator. 0 <= l <= n-2.
         N: The left bracket GT-pattern.
         M: The right bracket GT-pattern.
 
@@ -179,20 +186,15 @@ def upper_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
         The coefficient of the ladder operator.
     """
     n = len(M)
-    output = 0.0
-    for k, l in unique_pairs(n, 1):
-        if k - 1 == L:
-            M_kl = M_add_at_kl(M, k, l, 1)
-            if M_kl == N:
-                output += compute_coeff_upper(M, k, l)
-    return output
+    l = l + 1
+    return sum(compute_coeff_upper(M, l, k) for k in range(n - l) if M_add_at_lk(M, l, k, 1) == N)
 
 
-def lower_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
-    """<N| J^L_-|M>
+def lower_ladder(l: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
+    """<N| J(l)- |M>
 
     Args:
-        L: The index of the ladder operator. 0 <= L <= len(N)-2.
+        l: The index of the ladder operator. 0 <= l <= n-2.
         N: The left bracket GT-pattern.
         M: The right bracket GT-pattern.
 
@@ -200,13 +202,30 @@ def lower_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
         The coefficient of the ladder operator.
     """
     n = len(M)
-    output = 0.0
-    for k, l in unique_pairs(n, 1):
-        if k - 1 == L:
-            M_kl = M_add_at_kl(M, k, l, -1)
-            if M_kl == N:
-                output += compute_coeff_lower(M, k, l)
-    return output
+    l = l + 1
+    return sum(compute_coeff_lower(M, l, k) for k in range(n - l) if M_add_at_lk(M, l, k, -1) == N)
+
+
+def upper_ladder_matrices(S: WEIGHT) -> np.ndarray:
+    return np.array([[[upper_ladder(l, N, M) for M in S_to_Ms(S)] for N in S_to_Ms(S)] for l in range(len(S) - 1)]).reshape(
+        len(S) - 1, dim(S), dim(S)
+    )
+
+
+def lower_ladder_matrices(S: WEIGHT) -> np.ndarray:
+    return np.array([[[lower_ladder(l, N, M) for M in S_to_Ms(S)] for N in S_to_Ms(S)] for l in range(len(S) - 1)]).reshape(
+        len(S) - 1, dim(S), dim(S)
+    )
+
+
+def Jz_matrices(S: WEIGHT) -> np.ndarray:
+    n = len(S)
+    Jz = np.zeros((n - 1, dim(S), dim(S)))
+    for i, M in enumerate(S_to_Ms(S)):
+        z = M_to_z_weight(M)
+        for l in range(n - 1):
+            Jz[l, i, i] = z[l]
+    return Jz
 
 
 def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_3_eldest: GT_PATTERN) -> np.ndarray:
