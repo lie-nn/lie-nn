@@ -204,7 +204,7 @@ def upper_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
 
 def construct_highest_weight_constraint(rep1: 'SURep', rep2: 'SURep', M_eldest):
     n = len(M_eldest)
-    A_1 = jnp.zeros((rep1.dim, rep2.dim, n - 1), dtype=np.float64)
+    A_1 = jnp.zeros((rep1.dim, rep2.dim, n - 1), dtype=jnp.float64)
     A_list = []
     for i in range(rep1.dim):
         for j in range(rep2.dim):
