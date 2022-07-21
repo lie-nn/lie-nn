@@ -125,7 +125,7 @@ def block_diagonal(As: List[np.array]):
     shape_x = 0
     shape_y = 0
     for i in range(len(As)):
-        R[:, shape_x:shape_x + As[i].shape[1], shape_y:shape_y + As[i].shape[2]] = As[i]
+        R[:, shape_x : shape_x + As[i].shape[1], shape_y : shape_y + As[i].shape[2]] = As[i]
         shape_x += As[i].shape[1]
         shape_y += As[i].shape[2]
     return R
