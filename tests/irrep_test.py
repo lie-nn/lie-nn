@@ -2,7 +2,8 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn import Irrep, O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep, SU2RealRep
+from lie_nn import Irrep
+from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2RealRep, SU2Rep
 from lie_nn.util import round_to_sqrt_rational
 
 

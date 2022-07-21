@@ -1,3 +1,5 @@
+import dataclasses
+
 import numpy as np
 
 
@@ -30,3 +32,20 @@ class Rep:
 
     def discrete_generators(self) -> np.ndarray:
         raise NotImplementedError
+
+
+@dataclasses.dataclass
+class GenericRep(Rep):
+    r"""Unknown representation"""
+    A: np.ndarray
+    X: np.ndarray
+    H: np.ndarray
+
+    def algebra(self) -> np.ndarray:
+        return self.A
+
+    def continuous_generators(self) -> np.ndarray:
+        return self.X
+
+    def discrete_generators(self) -> np.ndarray:
+        return self.H

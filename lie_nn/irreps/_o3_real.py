@@ -3,7 +3,7 @@ from typing import Iterator
 
 import numpy as np
 
-from . import Irrep, static_jax_pytree
+from .. import Irrep, static_jax_pytree
 from ._so3_real import SO3Rep
 
 

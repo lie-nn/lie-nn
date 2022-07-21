@@ -3,7 +3,7 @@ from typing import Iterator
 
 import numpy as np
 
-from . import Irrep, static_jax_pytree
+from .. import Irrep, static_jax_pytree
 from ._su2 import SU2Rep
 
 

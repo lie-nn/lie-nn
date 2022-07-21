@@ -5,7 +5,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from . import Rep
-from lie_nn.util import commutator, kron, vmap, change_of_basis
+from .util import commutator, kron, vmap, change_of_basis
 
 
 def static_jax_pytree(cls):

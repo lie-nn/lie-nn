@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import numpy as np
 from multipledispatch import dispatch
 
-from . import Irrep, Rep
+from . import GenericRep, Irrep, Rep
 from .util import direct_sum
 
 
@@ -69,49 +69,10 @@ class ReducedRep(Rep):
         return np.stack(Xs)
 
 
-@dataclasses.dataclass
-class UnknownRep(Rep):
-    r"""Unknown representation"""
-    A: np.ndarray
-    X: np.ndarray
-    H: np.ndarray
-
-    def algebra(self) -> np.ndarray:
-        return self.A
-
-    def continuous_generators(self) -> np.ndarray:
-        return self.X
-
-    def discrete_generators(self) -> np.ndarray:
-        return self.H
-
-
-@dispatch(MulIrrep)
-def reduce(rep: MulIrrep) -> ReducedRep:
-    return ReducedRep(
-        A=rep.algebra(),
-        irreps=(rep,),
-        Q=None,
-    )
-
-
-@dispatch(ReducedRep)
-def reduce(rep: ReducedRep) -> ReducedRep:
-    return rep
-
-
-@dispatch(UnknownRep)
-def reduce(rep: UnknownRep) -> ReducedRep:
-    r"""Reduce an unknown representation to a reduced form.
-    This operation is slow and should be avoided if possible.
-    """
-    raise NotImplementedError
-
-
 @dispatch(Rep, object)
-def change_basis(rep: Rep, Q: np.ndarray) -> UnknownRep:
+def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
     iQ = np.linalg.inv(Q)
-    return UnknownRep(
+    return GenericRep(
         A=rep.algebra(),
         X=Q @ rep.continuous_generators() @ iQ,
         H=Q @ rep.discrete_generators() @ iQ,
@@ -139,13 +100,13 @@ def change_basis(rep: Irrep, Q: np.ndarray) -> ReducedRep:
 
 
 @dispatch(Rep, Rep)
-def tensor_product(rep1: Rep, rep2: Rep) -> UnknownRep:
+def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
     assert np.allclose(rep1.algebra(), rep2.algebra())  # same lie algebra
     X1, H1 = rep1.continuous_generators(), rep1.discrete_generators()
     X2, H2 = rep2.continuous_generators(), rep2.discrete_generators()
     assert H1.shape[0] == H2.shape[0]  # same discrete dimension
     d = rep1.dim * rep2.dim
-    return UnknownRep(
+    return GenericRep(
         A=rep1.algebra(),
         X=np.einsum("aij,akl->aikjl", X1, X2).reshape(X1.shape[0], d, d),
         H=np.einsum("aij,akl->aikjl", H1, H2).reshape(H1.shape[0], d, d),
@@ -158,9 +119,9 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
 
 
 @dispatch(Rep, int)
-def tensor_power(rep: Rep, n: int) -> UnknownRep:
+def tensor_power(rep: Rep, n: int) -> GenericRep:
     X, H = rep.continuous_generators(), rep.discrete_generators()
-    result = UnknownRep(
+    result = GenericRep(
         A=rep.algebra(),
         X=np.ones((X.shape[0], 1, 1)),
         H=np.ones((H.shape[0], 1, 1)),

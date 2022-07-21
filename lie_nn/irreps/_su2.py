@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 
-from . import Irrep, static_jax_pytree
+from .. import Irrep, static_jax_pytree
 
 
 @static_jax_pytree

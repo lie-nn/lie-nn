@@ -3,9 +3,9 @@ from typing import Iterator
 
 import numpy as np
 from ._su2 import SU2Rep, clebsch_gordanSU2mat
-from .util import vmap
+from ..util import vmap
 
-from . import Irrep, static_jax_pytree
+from .. import Irrep, static_jax_pytree
 
 
 def sign(p):

@@ -4,7 +4,7 @@ from typing import Iterator, List, Tuple, Optional
 
 import jax.numpy as jnp
 
-from . import Irrep, static_jax_pytree
+from .. import Irrep, static_jax_pytree
 
 
 WEIGHT = Tuple[int, ...]
