@@ -41,6 +41,5 @@ class O3Rep(Irrep):
     def discrete_generators(rep: "O3Rep") -> np.ndarray:
         return rep.p * np.eye(rep.dim)[None]
 
-    @classmethod
-    def algebra(cls) -> np.ndarray:
+    def algebra(rep) -> np.ndarray:
         return SO3Rep.algebra()

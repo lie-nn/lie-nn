@@ -76,8 +76,7 @@ class SL2Rep(Irrep):
         )  # [d, d]
         return C.T @ X @ np.conj(C)
 
-    @classmethod
-    def algebra(cls) -> np.ndarray:
+    def algebra(rep) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         algebra = np.zeros((6, 6, 6))
 

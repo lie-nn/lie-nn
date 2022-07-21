@@ -79,10 +79,9 @@ class Irrep(Rep):
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
         return cg
 
-    @classmethod
     @property
-    def lie_dim(cls) -> int:
-        return cls.algebra().shape[0]
+    def lie_dim(rep) -> int:
+        return rep.algebra().shape[0]
 
     @property
     def dim(rep: "Irrep") -> int:
@@ -101,8 +100,7 @@ class Irrep(Rep):
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         raise NotImplementedError
 
-    @classmethod
-    def algebra(cls) -> np.ndarray:
+    def algebra(rep) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         pass
 
