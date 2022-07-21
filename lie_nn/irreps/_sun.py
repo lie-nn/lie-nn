@@ -175,18 +175,6 @@ def M_add_at_kl(M: GT_PATTERN, k: int, l: int, increment: int) -> Optional[GT_PA
     return M if is_valid_M(M) else None
 
 
-def lower_ladder(M: GT_PATTERN) -> List[Tuple[float, GT_PATTERN]]:
-    n = len(M)
-    instructions = []
-    for k, l in unique_pairs(n, 1):
-        M_kl = M_add_at_kl(M, k, l, -1)
-        if M_kl is not None:
-            coeff = compute_coeff_lower(M, k, l)
-            if coeff != 0:
-                instructions.append((coeff, M_kl))
-    return instructions
-
-
 def upper_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
     """<N| J^L_+ |M>
 
@@ -205,6 +193,27 @@ def upper_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
             M_kl = M_add_at_kl(M, k, l, 1)
             if M_kl == N:
                 output += compute_coeff_upper(M, k, l)
+    return output
+
+
+def lower_ladder(L: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
+    """<N| J^L_-|M>
+
+    Args:
+        L: The index of the ladder operator. 0 <= L <= len(N)-2.
+        N: The left bracket GT-pattern.
+        M: The right bracket GT-pattern.
+
+    Returns:
+        The coefficient of the ladder operator.
+    """
+    n = len(M)
+    output = 0.0
+    for k, l in unique_pairs(n, 1):
+        if k - 1 == L:
+            M_kl = M_add_at_kl(M, k, l, -1)
+            if M_kl == N:
+                output += compute_coeff_lower(M, k, l)
     return output
 
 
