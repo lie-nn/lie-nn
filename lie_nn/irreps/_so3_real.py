@@ -65,4 +65,4 @@ class SO3Rep(Irrep):
 
     def algebra(rep) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        return SU2Rep.algebra()
+        return SU2Rep.algebra(rep)
