@@ -252,36 +252,37 @@ def Jz_matrices(S: WEIGHT) -> np.ndarray:
     return Jz
 
 
-def construct_highest_weight_constraint(rep1: "SURep", rep2: "SURep", M_3_eldest: GT_PATTERN) -> np.ndarray:
+def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
     n = len(M_3_eldest)  # SU(n)
+    dimS1 = dim(S1)
+    dimS2 = dim(S2)
+    A = np.zeros((dimS1, dimS2, dimS1, dimS2, n - 1), dtype=np.float64)
 
-    A = np.zeros((rep1.dim, rep2.dim, rep1.dim, rep2.dim, n - 1), dtype=np.float64)
-
-    for m1 in range(rep1.dim):
-        for m2 in range(rep2.dim):
-            for n1 in range(rep1.dim):
-                for n2 in range(rep2.dim):
+    for m1 in range(dimS1):
+        for m2 in range(dimS2):
+            for n1 in range(dimS1):
+                for n2 in range(dimS2):
                     for l in range(n - 1):
                         if n2 == m2:
-                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(rep1.S, n1), index_to_M(rep1.S, m1))
+                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(S1, n1), index_to_M(S1, m1))
                         if n1 == m1:
-                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(rep2.S, n2), index_to_M(rep2.S, m2))
+                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(S2, n2), index_to_M(S2, m2))
 
-    A = A.reshape(rep1.dim, rep2.dim, -1)
+    A = A.reshape(dimS1, dimS2, -1)
 
     B = []
 
-    for m1 in range(rep1.dim):
-        for m2 in range(rep2.dim):
-            W_1 = M_to_z_weight(index_to_M(rep1.S, m1))
-            W_2 = M_to_z_weight(index_to_M(rep2.S, m2))
+    for m1 in range(dimS1):
+        for m2 in range(dimS2):
+            W_1 = M_to_z_weight(index_to_M(S1, m1))
+            W_2 = M_to_z_weight(index_to_M(S2, m2))
             W_eldest = M_to_z_weight(M_3_eldest)
             if tuple(map(add, W_1, W_2)) != W_eldest:
-                b = np.zeros((rep1.dim, rep2.dim, 1))
+                b = np.zeros((dimS1, dimS2, 1))
                 b[m1, m2] = 1
                 B.append(b)
 
-    return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(rep1.dim * rep2.dim, -1).T)
+    return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(dimS1 * dimS2, -1).T)
 
 
 def E_basis(k: int, l: int, Jp, Jm):
@@ -296,7 +297,7 @@ def E_basis(k: int, l: int, Jp, Jm):
         return commutator(Jm[k - 1], E_basis(k - 1, l, Jp, Jm))
 
 
-def generators(S):
+def generators(S: WEIGHT):
     """
     Returns the generators of the Lie algebra
     """
@@ -311,7 +312,7 @@ def generators(S):
     return np.concatenate([Xi, Xr, Xd], axis=0)
 
 
-def algebra(S):
+def algebra(S: WEIGHT):
     """
     Returns the Lie algebra
     """
