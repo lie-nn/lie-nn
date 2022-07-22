@@ -12,7 +12,7 @@ def first_reps(IR: Irrep, n: int):
 
 
 REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SU2RealRep, SL2Rep, SO13Rep]
-# TODO add SURep
+# TODO: add SUNRep
 
 
 @pytest.mark.parametrize("IR", REPRESENTATIONS)
