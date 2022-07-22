@@ -1,43 +1,13 @@
 from dataclasses import dataclass
 from typing import Iterator, List
 
-import jax
-import jax.numpy as jnp
+
 import numpy as np
 from . import Rep
 from .util import commutator, kron, vmap, change_of_basis
 
 
-def static_jax_pytree(cls):
-    cls = dataclass(frozen=True)(cls)
-    jax.tree_util.register_pytree_node(cls, lambda x: ((), x), lambda x, _: x)
-    return cls
-
-
-@jax.jit
-def matrix_power(F, n):
-    upper_limit = 32
-    init_carry = n, F, jnp.eye(F.shape[0])
-
-    def body(carry, _):
-        # One step of the iteration
-        n, z, result = carry
-        new_n, bit = jnp.divmod(n, 2)
-
-        new_result = jax.lax.cond(bit, lambda x: z @ x, lambda x: x, result)
-
-        # No more computation necessary if n = 0
-        # Is there a better way to early break rather than just returning something empty?
-        new_z = jax.lax.cond(new_n, lambda z: z @ z, lambda _: jnp.empty(z.shape), z)
-
-        return (new_n, new_z, new_result), None
-
-    result = jax.lax.cond(n == 1, lambda _: F, lambda _: jax.lax.scan(body, init_carry, None, length=upper_limit)[0][2], None)
-
-    return result
-
-
-@static_jax_pytree
+@dataclass(frozen=True)
 class Irrep(Rep):
     def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
         # Selection rule
@@ -103,14 +73,6 @@ class Irrep(Rep):
     def algebra(rep) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         pass
-
-    def exp_map(rep: "Irrep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
-        # return a matrix of shape ``(rep.dim, rep.dim)``
-        discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
-        output = jax.scipy.linalg.expm(jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators()))
-        for x in reversed(discrete):
-            output = x @ output
-        return output
 
     def test_algebra(rep: "Irrep", rtol=1e-10, atol=1e-10):
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
