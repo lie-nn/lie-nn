@@ -70,7 +70,7 @@ class Irrep(Rep):
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         raise NotImplementedError
 
-    def algebra(rep) -> np.ndarray:
+    def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         pass
 

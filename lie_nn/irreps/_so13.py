@@ -44,6 +44,6 @@ class SO13Rep(Irrep):  # TODO: think if this class shoulb be a subclass of SL2Re
     def continuous_generators(rep: "SO13Rep") -> np.ndarray:
         return SL2Rep.continuous_generators(rep)
 
-    def algebra(rep) -> np.ndarray:
+    def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         return SL2Rep.algebra()

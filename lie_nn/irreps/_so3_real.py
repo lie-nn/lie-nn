@@ -63,6 +63,6 @@ class SO3Rep(Irrep):
     def discrete_generators(rep: "SO3Rep") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
-    def algebra(rep) -> np.ndarray:
+    def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         return SU2Rep.algebra(rep)
