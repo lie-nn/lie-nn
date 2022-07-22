@@ -29,6 +29,9 @@ class MulIrrep(Rep):
             return np.empty((0, self.dim, self.dim))
         return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in H], axis=0)
 
+    def __repr__(self) -> str:
+        return f"{self.mul}x{self.rep}"
+
 
 @dataclasses.dataclass
 class ReducedRep(Rep):
@@ -51,8 +54,9 @@ class ReducedRep(Rep):
     def continuous_generators(self) -> np.ndarray:
         Xs = []
         for i in range(self.lie_dim):
-            X = direct_sum(*[mulir.continuous_generators()[i] for mulir in self.irreps])
-            X = self.Q @ X @ np.linalg.inv(self.Q)
+            X = direct_sum(*[mul_ir.continuous_generators()[i] for mul_ir in self.irreps])
+            if self.Q is not None:
+                X = self.Q @ X @ np.linalg.inv(self.Q)
             Xs += [X]
         return np.stack(Xs)
 
@@ -62,7 +66,14 @@ class ReducedRep(Rep):
             return np.empty((0, self.dim, self.dim))
         Xs = []
         for i in range(n):
-            X = direct_sum(*[irrep.discrete_generators()[i] for irrep in self.irreps])
-            X = self.Q @ X @ np.linalg.inv(self.Q)
+            X = direct_sum(*[mul_ir.discrete_generators()[i] for mul_ir in self.irreps])
+            if self.Q is not None:
+                X = self.Q @ X @ np.linalg.inv(self.Q)
             Xs += [X]
         return np.stack(Xs)
+
+    def __repr__(self) -> str:
+        r = " + ".join(repr(mul_ir) for mul_ir in self.irreps)
+        if self.Q is not None:
+            r = f"Q ({r}) Q^{-1}"
+        return r

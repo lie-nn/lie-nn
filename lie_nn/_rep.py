@@ -33,6 +33,9 @@ class Rep:
     def discrete_generators(self) -> np.ndarray:
         raise NotImplementedError
 
+    def __repr__(self) -> str:
+        return f"Rep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
+
 
 @dataclasses.dataclass
 class GenericRep(Rep):
@@ -49,3 +52,6 @@ class GenericRep(Rep):
 
     def discrete_generators(self) -> np.ndarray:
         return self.H
+
+    def __repr__(self) -> str:
+        return f"GenericRep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
