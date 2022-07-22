@@ -54,7 +54,7 @@ class SU2Rep(Irrep):
             axis=0,
         )
 
-    def algebra(rep) -> np.ndarray:
+    def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         return np.array(
             [
