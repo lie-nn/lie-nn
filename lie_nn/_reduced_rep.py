@@ -51,7 +51,7 @@ class ReducedRep(Rep):
     def continuous_generators(self) -> np.ndarray:
         Xs = []
         for i in range(self.lie_dim):
-            X = direct_sum(*[irrep.continuous_generators()[i] for irrep in self.irreps])
+            X = direct_sum(*[mulir.continuous_generators()[i] for mulir in self.irreps])
             X = self.Q @ X @ np.linalg.inv(self.Q)
             Xs += [X]
         return np.stack(Xs)
