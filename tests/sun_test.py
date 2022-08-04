@@ -26,7 +26,7 @@ def test_highest_weight_constraint_with_su2(j1: int, j2: int, j3: int):
 
     eldest_weight = list(S_to_Ms(S3.S))[-1]
 
-    A = construct_highest_weight_constraint(S1, S2, eldest_weight)
+    A = construct_highest_weight_constraint(S1.S, S2.S, eldest_weight)
     C1 = null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1]  # [dim_null_space, dim_solution]
     C1 = C1.reshape(-1, S1.dim, S2.dim)
 
