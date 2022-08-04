@@ -49,8 +49,10 @@ def test_limit_denominator():
         x = Fraction(n, d).limit_denominator()
         return x.numerator, x.denominator
 
-    n = np.random.randint(-1_000_000_000, 1_000_000_000, size=(30000,))
-    d = np.random.randint(1, 1_000_000_000, size=n.shape)
+    n = np.random.randint(-1_000_000, 1_000_000, size=(200_000,))
+    d = np.random.randint(1, 1_000_000, size=n.shape)
+    n = np.concatenate([n, np.array([-906339, -386764])])
+    d = np.concatenate([d, np.array([8850, 1509])])
 
     n1, d1 = normalize_integer_ratio(n, d)
     n1, d1 = limit_denominator(n1, d1)
@@ -65,10 +67,13 @@ def test_round_to_sqrt_rational():
         sign = 1 if x >= 0 else -1
         return sign * Fraction(x**2).limit_denominator() ** 0.5
 
-    n = np.random.randint(-1_000_000, 1_000_000, size=(30000,))
+    n = np.random.randint(-1_000_000, 1_000_000, size=(200_000,))
     d = np.random.randint(1, 1_000_000, size=n.shape)
+    n = np.concatenate([n, np.array([-906339, -386764])])
+    d = np.concatenate([d, np.array([8850, 1509])])
+
     x = np.sign(n) * np.sqrt(np.abs(n) / d)
 
     y = round_to_sqrt_rational(x)
     y_ = _round_to_sqrt_rational(x)
-    assert np.all(np.abs(y_ - y) < 5e-15), np.max(np.abs(y_ - y))
+    np.testing.assert_allclose(y, y_, rtol=1e-15, atol=1e-15)

@@ -58,10 +58,12 @@ def limit_denominator(n, d, max_denominator=1_000_000):
         k = (max_denominator - q0) // q1
     n1, d1 = p0 + k * p1, q0 + k * q1
     n2, d2 = p1, q1
+    with np.errstate(over="ignore"):
+        mask = np.abs(d1 * (n2 * d0 - n0 * d2)) <= np.abs(d2 * (n1 * d0 - n0 * d1))
     return np.where(
         d0 < max_denominator,
         (n0, d0),
-        np.where(np.abs(d1 * (n2 * d0 - n0 * d2)) <= np.abs(d2 * (n1 * d0 - n0 * d1)), (n2, d2), (n1, d1)),
+        np.where(mask, (n2, d2), (n1, d1)),
     )
 
 
@@ -125,7 +127,7 @@ def block_diagonal(As: List[np.array]):
     shape_x = 0
     shape_y = 0
     for i in range(len(As)):
-        R[:, shape_x : shape_x + As[i].shape[1], shape_y : shape_y + As[i].shape[2]] = As[i]
+        R[:, shape_x: shape_x + As[i].shape[1], shape_y: shape_y + As[i].shape[2]] = As[i]
         shape_x += As[i].shape[1]
         shape_y += As[i].shape[2]
     return R
