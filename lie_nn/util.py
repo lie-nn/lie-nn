@@ -1,4 +1,5 @@
 from typing import List
+
 import numpy as np
 
 
@@ -219,6 +220,28 @@ def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarr
     X = round_fn(X)
     X = gram_schmidt(X, round_fn=round_fn)
     return X
+
+
+def sequential_null_space(gen_A: List[np.ndarray], dim_null_space: int, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+    S = None
+    n = 0
+    m = 0
+    for A in gen_A:
+        if S is None:
+            S = null_space(A, epsilon=epsilon, round_fn=round_fn)
+        else:
+            S = null_space(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S
+
+        n += 1
+        m += A.shape[0]
+
+        if S.shape[0] <= dim_null_space:
+            return S
+    raise ValueError((
+        f"Could not compute null space of dimension {dim_null_space}. "
+        "Not enough constraints available. "
+        f"{n} elements in the generator, {m} dimensions constrained."
+    ))
 
 
 def change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
