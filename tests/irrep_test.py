@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 import pytest
 from lie_nn import Irrep
-from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2RealRep, SU2Rep
+from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2RealRep, SU2Rep, SU2Rep_, SU3Rep, SU4Rep
 from lie_nn.util import round_to_sqrt_rational
 
 
@@ -11,8 +11,8 @@ def first_reps(IR: Irrep, n: int):
     return list(itertools.islice(IR.iterator(), n))
 
 
-REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SU2RealRep, SL2Rep, SO13Rep]
-# TODO: add SUNRep
+REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SU2RealRep, SL2Rep, SO13Rep, SU2Rep_, SU3Rep, SU4Rep]
+REPRESENTATIONS = [SU4Rep]
 
 
 @pytest.mark.parametrize("IR", REPRESENTATIONS)
@@ -46,6 +46,6 @@ def test_selection_rule(IR: Irrep):
         cg = IR.clebsch_gordan(ir1, ir2, ir3)
 
         if ir3 in ir1 * ir2:
-            assert cg.shape[0] > 0
+            assert cg.shape[0] > 0, (ir1, ir2, ir3)
         else:
-            assert cg.shape[0] == 0
+            assert cg.shape[0] == 0, (ir1, ir2, ir3)

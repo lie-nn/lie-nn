@@ -27,6 +27,9 @@ def _assert_valid_S(S: WEIGHT):
 
 def dim(S: WEIGHT) -> int:
     """Return the number of possible GT-patterns with first line S."""
+    # A numerical algorithm for the explicit calculation of SU(N) and SL(N, C)
+    # Clebsch-Gordan coefficients Arne Alex, Matthias Kalus, Alan Huckleberry
+    # and Jan von Delft Eq 22.
     _assert_valid_S(S)
     d = 1
     for i in range(len(S)):
@@ -371,6 +374,9 @@ def generators(S: WEIGHT):
     Returns the generators of the Lie algebra
     """
     N = len(S)
+    if N == 1:
+        return np.zeros((1, 1, 1))
+
     Jp = upper_ladder_matrices(S)
     Jm = lower_ladder_matrices(S)
     Jz = Jz_matrices(S)
@@ -402,41 +408,55 @@ def algebra(S: WEIGHT):
 
 
 @dataclass(frozen=True)
-class SURep(Irrep):
+class SUNRep(Irrep):
     S: Tuple[int]  # List of weights of the representation
 
-    def __mul__(rep1: "SURep", rep2: "SURep") -> List["SURep"]:
-        return map(SURep, sorted(set(mul_rep(rep1.S, rep2.S))))
+    def __mul__(rep1: "SUNRep", rep2: "SUNRep") -> List["SUNRep"]:
+        return map(SUNRep, sorted(set(mul_rep(rep1.S, rep2.S))))
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SURep", rep2: "SURep", rep3: "SURep") -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "SUNRep", rep2: "SUNRep", rep3: "SUNRep") -> np.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         return clebsch_gordan_matrix(rep1.S, rep2.S, rep3.S)
 
     @property
-    def dim(rep: "SURep") -> int:
-        # A numerical algorithm for the explicit calculation of SU(N) and SL(N, C)
-        # Clebsch-Gordan coefficients Arne Alex, Matthias Kalus, Alan Huckleberry
-        # and Jan von Delft Eq 22.
+    def dim(rep: "SUNRep") -> int:
         return dim(rep.S)
 
-    @classmethod
-    def iterator(cls) -> Iterator["SURep"]:
-        yield SURep(S=(0,))
-
-        for n in range(1, 3 + 1):
-            for S in itertools.product(range(3 + 1), repeat=n):
-                S = S + (0,)
-                if _is_valid_S(S):
-                    yield SURep(S=S)
-
-    def discrete_generators(rep: "SURep") -> np.ndarray:
+    def discrete_generators(rep: "SUNRep") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SURep") -> np.ndarray:
+    def continuous_generators(rep: "SUNRep") -> np.ndarray:
         return generators(rep.S)
 
-    def algebra(rep: "SURep") -> np.ndarray:
+    def algebra(rep: "SUNRep") -> np.ndarray:
         if rep.S == (0,):
             return np.zeros((1, 1, 1))
         return algebra((1,) + (0,) * (len(rep.S) - 1))
+
+
+@dataclass(frozen=True)
+class SU2Rep_(SUNRep):
+    @classmethod
+    def iterator(cls) -> Iterator["SUNRep"]:
+        for j in itertools.count(0):
+            yield SUNRep(S=(j, 0))
+
+
+@dataclass(frozen=True)
+class SU3Rep(SUNRep):
+    @classmethod
+    def iterator(cls) -> Iterator["SUNRep"]:
+        for j1 in itertools.count(0):
+            for j2 in range(j1 + 1):
+                yield SUNRep(S=(j1, j2, 0))
+
+
+@dataclass(frozen=True)
+class SU4Rep(SUNRep):
+    @classmethod
+    def iterator(cls) -> Iterator["SUNRep"]:
+        for j1 in itertools.count(0):
+            for j2 in range(j1 + 1):
+                for j3 in range(j2 + 1):
+                    yield SUNRep(S=(j1, j2, j3, 0))
