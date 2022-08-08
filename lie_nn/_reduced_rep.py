@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
@@ -43,6 +43,31 @@ class ReducedRep(Rep):
     A: np.ndarray
     irreps: Tuple[MulIrrep, ...]
     Q: Optional[np.ndarray]  # change of basis matrix
+
+    @classmethod
+    def from_irreps(cls, mul_irreps: Tuple[Union[Irrep, Tuple[int, Irrep], MulIrrep], ...]) -> "ReducedRep":
+        A = None
+        irreps = []
+
+        for mul_ir in mul_irreps:
+            if isinstance(mul_ir, tuple):
+                mul_ir = MulIrrep(mul=mul_ir[0], rep=mul_ir[1])
+            elif isinstance(mul_ir, Irrep):
+                mul_ir = MulIrrep(mul=1, rep=mul_ir)
+            elif isinstance(mul_ir, MulIrrep):
+                pass
+
+            assert mul_ir.mul >= 0
+            assert isinstance(mul_ir.rep, Irrep)
+
+            irreps += [mul_ir]
+
+            if A is None:
+                A = mul_ir.algebra()
+            else:
+                assert np.allclose(A, mul_ir.algebra())
+
+        return cls(A=A, irreps=irreps, Q=None)
 
     @property
     def dim(self) -> int:

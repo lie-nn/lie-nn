@@ -45,7 +45,7 @@ def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:
     s = 0
     for mul_ir in irreps:
         irreps_out.append(MulIrrep(mul=m1 * m2 * mul_ir.mul, rep=mul_ir.rep))
-        q = Q[:, s : s + mul_ir.dim].reshape(mulirrep1.rep.dim, mulirrep2.rep.dim, mul_ir.mul, mul_ir.rep.dim)
+        q = Q[:, s: s + mul_ir.dim].reshape(mulirrep1.rep.dim, mulirrep2.rep.dim, mul_ir.mul, mul_ir.rep.dim)
         q = np.einsum("ijsk,ur,vt->uivjrtsk", q, np.eye(m1), np.eye(m2))
         q = q.reshape(q.shape[0] * q.shape[1] * q.shape[2] * q.shape[3], q.shape[4] * q.shape[5] * q.shape[6] * q.shape[7])
         Q_out.append(q)
@@ -70,7 +70,7 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
             reducedrep = tensor_product(mulirrep1, mulirrep2)
             mulir_list += reducedrep.irreps
             q = reducedrep.Q.reshape(mulirrep1.dim, mulirrep2.dim, reducedrep.dim)
-            Q[i : i + mulirrep1.dim, j : j + mulirrep2.dim, k : k + reducedrep.dim] = q
+            Q[i: i + mulirrep1.dim, j: j + mulirrep2.dim, k: k + reducedrep.dim] = q
             k += reducedrep.dim
             j += mulirrep2.dim
         i += mulirrep1.dim
@@ -78,6 +78,11 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
     Q = Q.reshape(rep1.dim * rep2.dim, rep1.dim * rep2.dim)
     Q = Q_tp @ Q
     return ReducedRep(A=rep1.A, irreps=tuple(mulir_list), Q=Q)
+
+
+@dispatch(MulIrrep, Irrep)
+def tensor_product(mulirrep1: MulIrrep, irrep2: Irrep) -> ReducedRep:
+    return tensor_product(mulirrep1, MulIrrep(mul=1, rep=irrep2))
 
 
 @dispatch(Rep, int)
