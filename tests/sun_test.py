@@ -63,4 +63,4 @@ def test_cg_su2(j1: int, j2: int, j3: int):
     C1 = SURep.clebsch_gordan(S1, S2, S3)
     C2 = SU2Rep.clebsch_gordan(SU2Rep(j1), SU2Rep(j2), SU2Rep(j3))
 
-    np.testing.assert_allclose(C1, C2)
+    np.testing.assert_allclose(C1, C2, rtol=1e-15, atol=1e-15)
