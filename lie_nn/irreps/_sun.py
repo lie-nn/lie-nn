@@ -7,7 +7,7 @@ from typing import Iterator, List, Optional, Tuple
 import numpy as np
 
 from .. import Irrep
-from ..util import commutator, round_to_sqrt_rational
+from ..util import commutator, null_space, round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
 GT_PATTERN = Tuple[WEIGHT, ...]
@@ -283,6 +283,68 @@ def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_P
                 B.append(b)
 
     return round_to_sqrt_rational(np.concatenate([A] + B, axis=2).reshape(dimS1 * dimS2, -1).T)
+
+
+def clebsch_gordan_eldest(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
+    A = construct_highest_weight_constraint(S1, S2, M_3_eldest)
+    C1 = null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1]  # [dim_null_space, dim_solution]
+    C1 = C1.reshape(-1, S1.dim, S2.dim)
+    return C1
+
+
+def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]:
+    n = len(M_list[0])
+    S3 = M_list[0][0]
+    dimS3 = dim(S3)
+    M_c_indices = [M_to_index(M) for M in M_list]
+    mp, l, mc = (None, None, None)
+    for mc_i in M_c_indices:
+        for m3 in range(dimS3):
+            for li in range(n - 1):
+                coeff = lower_ladder(li, index_to_M(S3, m3), index_to_M(S3, mc_i))
+                if coeff != 0 and mp not in M_c_indices:
+                    mp = m3
+                    l = li
+                    mc = mc_i
+                    return (index_to_M(mc), index_to_M(mp), l)
+
+
+def construct_lower_cg(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT, Mp: GT_PATTERN, Mc: GT_PATTERN, l: int, alpha: int, C: np.array) -> Tuple[np.ndarray, int]:
+    dimS1 = dim(S1)
+    dimS2 = dim(S2)
+    mc, mp = M_to_index(Mc), M_to_index(Mp)
+    CG = np.zeros((dimS1, dimS2))
+    for m1 in range(dimS1):
+        for m2 in range(dimS2):
+            for n1 in range(dimS1):
+                for n2 in range(dimS2):
+                    if n2 == m2:
+                        CG[n1, n2] += C[alpha, m1, m2, mc] * \
+                            lower_ladder(l, index_to_M(S1, n1), index_to_M(S1, m1)) * \
+                            upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
+                    if n1 == m1:
+                        CG[n1, n2] += C[alpha, m1, m2, mc] * \
+                            lower_ladder(l, index_to_M(S2, n2), index_to_M(S2, m2)) * \
+                            upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
+
+    return CG
+
+
+def clebsch_gordan_matrix(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT):
+    dimS1 = dim(S1)
+    dimS2 = dim(S2)
+    dimS3 = dim(S3)
+    M_eldest = S_to_Ms(S3)[0]
+    C_eldest = clebsch_gordan_eldest(S1, S2, M_eldest)
+    C = np.concatenate((C_eldest, np.zeros(C_eldest.shape[0], dimS1, dimS2, dimS3 - 1)), axis=-1)
+    M_list = [M_eldest]
+    for alpha in range(C.shape[0]):
+        while len(M_list) != dimS3:
+            Mc, Mp, l = search_state(M_list)
+            mc = M_to_index(Mc)
+            C[alpha, :, :, mc] = construct_lower_cg(S1, S2, S3, Mp, Mc, l, alpha, C)
+            M_list.append(Mc)
+    return C
 
 
 def E_basis(k: int, l: int, Jp, Jm):
