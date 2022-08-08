@@ -411,7 +411,7 @@ class SURep(Irrep):
     @classmethod
     def clebsch_gordan(cls, rep1: "SURep", rep2: "SURep", rep3: "SURep") -> np.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
-        pass
+        return clebsch_gordan_matrix(rep1.S, rep2.S, rep3.S)
 
     @property
     def dim(rep: "SURep") -> int:
