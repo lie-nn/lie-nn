@@ -348,9 +348,9 @@ def clebsch_gordan_matrix(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT):
     for alpha in range(C.shape[0]):
         while len(M_list) != dimS3:
             Mc, Mp, l = search_state(M_list)
-            mc = M_to_index(Mc)
-            C[alpha, :, :, mc] = construct_lower_cg(S1, S2, S3, Mp, Mc, l, alpha, C)
-            M_list.append(Mc)
+            mp = M_to_index(Mp)
+            C[alpha, :, :, mp] = construct_lower_cg(S1, S2, S3, Mp, Mc, l, alpha, C)
+            M_list.append(Mp)
     return C
 
 
