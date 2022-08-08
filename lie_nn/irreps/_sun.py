@@ -309,7 +309,9 @@ def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]
                     return (index_to_M(mc), index_to_M(mp), l)
 
 
-def construct_lower_cg(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT, Mp: GT_PATTERN, Mc: GT_PATTERN, l: int, alpha: int, C: np.array) -> Tuple[np.ndarray, int]:
+def construct_lower_cg(
+    S1: WEIGHT, S2: WEIGHT, S3: WEIGHT, Mp: GT_PATTERN, Mc: GT_PATTERN, l: int, alpha: int, C: np.array
+) -> Tuple[np.ndarray, int]:
     dimS1 = dim(S1)
     dimS2 = dim(S2)
     mc, mp = M_to_index(Mc), M_to_index(Mp)
@@ -319,13 +321,17 @@ def construct_lower_cg(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT, Mp: GT_PATTERN, Mc: G
             for n1 in range(dimS1):
                 for n2 in range(dimS2):
                     if n2 == m2:
-                        CG[n1, n2] += C[alpha, m1, m2, mc] * \
-                            lower_ladder(l, index_to_M(S1, n1), index_to_M(S1, m1)) * \
-                            upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
+                        CG[n1, n2] += (
+                            C[alpha, m1, m2, mc]
+                            * lower_ladder(l, index_to_M(S1, n1), index_to_M(S1, m1))
+                            * upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
+                        )
                     if n1 == m1:
-                        CG[n1, n2] += C[alpha, m1, m2, mc] * \
-                            lower_ladder(l, index_to_M(S2, n2), index_to_M(S2, m2)) * \
-                            upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
+                        CG[n1, n2] += (
+                            C[alpha, m1, m2, mc]
+                            * lower_ladder(l, index_to_M(S2, n2), index_to_M(S2, m2))
+                            * upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
+                        )
 
     return CG
 

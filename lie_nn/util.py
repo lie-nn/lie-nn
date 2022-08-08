@@ -128,7 +128,7 @@ def block_diagonal(As: List[np.array]):
     shape_x = 0
     shape_y = 0
     for i in range(len(As)):
-        R[:, shape_x: shape_x + As[i].shape[1], shape_y: shape_y + As[i].shape[2]] = As[i]
+        R[:, shape_x : shape_x + As[i].shape[1], shape_y : shape_y + As[i].shape[2]] = As[i]
         shape_x += As[i].shape[1]
         shape_y += As[i].shape[2]
     return R
@@ -254,11 +254,13 @@ def sequential_null_space(gen_A: List[np.ndarray], dim_null_space: int, *, epsil
 
         if S.shape[0] <= dim_null_space:
             return S
-    raise ValueError((
-        f"Could not compute null space of dimension {dim_null_space}. "
-        "Not enough constraints available. "
-        f"{n} elements in the generator, {m} dimensions constrained."
-    ))
+    raise ValueError(
+        (
+            f"Could not compute null space of dimension {dim_null_space}. "
+            "Not enough constraints available. "
+            f"{n} elements in the generator, {m} dimensions constrained."
+        )
+    )
 
 
 def change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
