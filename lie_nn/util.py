@@ -191,15 +191,16 @@ def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
 
 
 def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
-    r"""
-    Compute the null space of a matrix.
+    r"""Compute the null space of a matrix.
 
     .. math::
+
         \mathbf{A} \mathbf{X}^T = 0
 
     Args:
         A: Matrix to compute null space of.
         epsilon: The tolerance for the eigenvalue.
+        round_fn: Function to round the numbers to.
 
     Returns:
         The null space of A.
@@ -223,14 +224,30 @@ def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarr
 
 
 def sequential_null_space(gen_A: List[np.ndarray], dim_null_space: int, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+    r"""Compute the null space of a list of matrices.
+
+    .. math::
+
+        \mathbf{A}_1 \mathbf{X}^T = 0
+        \mathbf{A}_2 \mathbf{X}^T = 0
+
+    Args:
+        gen_A: List of matrices to compute null space of. Can be a generator.
+        dim_null_space: The dimension of the null space. The algorithm will stop when the null space has this dimension.
+        epsilon: The tolerance for the eigenvalue.
+        round_fn: Function to round the numbers to.
+
+    Returns:
+        The null space
+    """
     S = None
     n = 0
     m = 0
     for A in gen_A:
         if S is None:
-            S = null_space(A, epsilon=epsilon, round_fn=round_fn)
+            S = null_space(A, epsilon=epsilon, round_fn=round_fn)  # (num_null_space, dim_total)
         else:
-            S = null_space(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S
+            S = null_space(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S  # (num_null_space, dim_total)
 
         n += 1
         m += A.shape[0]
