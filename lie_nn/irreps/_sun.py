@@ -287,9 +287,7 @@ def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_P
 
 def clebsch_gordan_eldest(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
     A = construct_highest_weight_constraint(S1, S2, M_3_eldest)
-    C1 = null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1]  # [dim_null_space, dim_solution]
-    C1 = C1.reshape(-1, dim(S1), dim(S2))
-    return C1
+    return null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1].reshape(-1, dim(S1), dim(S2))
 
 
 def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]:
@@ -297,14 +295,14 @@ def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]
     n = len(M0)
     S3 = M0[0]
 
-    for mc in M_list:
-        for mp in S_to_Ms(S3):
-            if mp in M_list:
+    for Mc in M_list:
+        for Mp in S_to_Ms(S3):
+            if Mp in M_list:
                 continue
 
             for l in range(n - 1):
-                if lower_ladder(l, mp, mc) != 0:
-                    return (mc, mp, l)
+                if lower_ladder(l, Mp, Mc) != 0:
+                    return (Mc, Mp, l)
 
     raise ValueError("No state found")
 
@@ -333,7 +331,7 @@ def construct_lower_cg(
                             * upper_ladder(l, index_to_M(S3, mc), index_to_M(S3, mp))
                         )
 
-    return CG
+    return CG / np.linalg.norm(CG)
 
 
 def clebsch_gordan_matrix(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT):
