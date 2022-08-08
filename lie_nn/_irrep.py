@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterator, List
+from typing import Iterator
 
 
 import numpy as np
@@ -74,35 +74,32 @@ class Irrep(Rep):
         # [X_i, X_j] = A_ijk X_k
         pass
 
-    def test_algebra(rep: "Irrep", rtol=1e-10, atol=1e-10):
+    def test_algebra_vs_generators(rep: "Irrep", rtol=1e-10, atol=1e-10):
         X = rep.continuous_generators()  # (lie_group_dimension, rep.dim, rep.dim)
         left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
         right_side = np.einsum("ijk,kab->ijab", rep.algebra(), X)
-        assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
+        np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     @classmethod
-    def test_clebsch_gordan(cls, reps: List["Irrep"], rtol=1e-10, atol=1e-10):
-        for rep1 in reps:
-            for rep2 in reps:
-                for rep3 in reps:
-                    X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
-                    X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
-                    X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
+    def test_clebsch_gordan_vs_generators(cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep", rtol=1e-10, atol=1e-10):
+        X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
+        X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
+        X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
 
-                    cg = cls.clebsch_gordan(rep1, rep2, rep3)
-                    assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
-                    assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
+        cg = cls.clebsch_gordan(rep1, rep2, rep3)
+        assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
+        assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
 
-                    # Orthogonality
-                    # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
-                    # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
-                    # assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
+        # Orthogonality
+        # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
+        # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
+        # np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
 
-                    if rep3 in rep1 * rep2:
-                        assert cg.shape[0] > 0
-                    else:
-                        assert cg.shape[0] == 0
+        if rep3 in rep1 * rep2:
+            assert cg.shape[0] > 0
+        else:
+            assert cg.shape[0] == 0
 
-                    left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
-                    right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
-                    assert np.allclose(left_side, right_side, rtol=rtol, atol=atol)
+        left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
+        right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
+        np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
