@@ -288,7 +288,7 @@ def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_P
 def clebsch_gordan_eldest(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
     A = construct_highest_weight_constraint(S1, S2, M_3_eldest)
     C1 = null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1]  # [dim_null_space, dim_solution]
-    C1 = C1.reshape(-1, S1.dim, S2.dim)
+    C1 = C1.reshape(-1, dim(S1), dim(S2))
     return C1
 
 
@@ -340,9 +340,9 @@ def clebsch_gordan_matrix(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT):
     dimS1 = dim(S1)
     dimS2 = dim(S2)
     dimS3 = dim(S3)
-    M_eldest = S_to_Ms(S3)[0]
+    M_eldest = tuple(S_to_Ms(S3))[0]
     C_eldest = clebsch_gordan_eldest(S1, S2, M_eldest)
-    C = np.concatenate((C_eldest, np.zeros(C_eldest.shape[0], dimS1, dimS2, dimS3 - 1)), axis=-1)
+    C = np.concatenate((C_eldest, np.zeros((C_eldest.shape[0], dimS1, dimS2, dimS3 - 1))), axis=-1)
     M_list = [M_eldest]
     for alpha in range(C.shape[0]):
         while len(M_list) != dimS3:
