@@ -293,20 +293,20 @@ def clebsch_gordan_eldest(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.
 
 
 def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]:
-    n = len(M_list[0])
-    S3 = M_list[0][0]
-    dimS3 = dim(S3)
-    M_c_indices = [M_to_index(M) for M in M_list]
-    mp, l, mc = (None, None, None)
-    for mc_i in M_c_indices:
-        for m3 in range(dimS3):
-            for li in range(n - 1):
-                coeff = lower_ladder(li, index_to_M(S3, m3), index_to_M(S3, mc_i))
-                if coeff != 0 and mp not in M_c_indices:
-                    mp = m3
-                    l = li
-                    mc = mc_i
-                    return (index_to_M(mc), index_to_M(mp), l)
+    M0 = M_list[0]
+    n = len(M0)
+    S3 = M0[0]
+
+    for mc in M_list:
+        for mp in S_to_Ms(S3):
+            if mp in M_list:
+                continue
+
+            for l in range(n - 1):
+                if lower_ladder(l, mp, mc) != 0:
+                    return (mc, mp, l)
+
+    raise ValueError("No state found")
 
 
 def construct_lower_cg(
