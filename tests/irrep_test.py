@@ -15,12 +15,17 @@ def bunch_of_reps():
 
 
 def bunch_of_triplets():
-    return sum((list(itertools.product(itertools.islice(IR.iterator(), 5), repeat=3)) for IR in REPRESENTATIONS), [])
+    return sum((list(itertools.product(itertools.islice(IR.iterator(), 6), repeat=3)) for IR in REPRESENTATIONS), [])
 
 
 @pytest.mark.parametrize("ir", bunch_of_reps())
 def test_algebra_vs_generators(ir: Irrep):
     ir.test_algebra_vs_generators()
+
+
+@pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
+def test_numerical_cg_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
+    Irrep.test_clebsch_gordan_vs_generators(ir1, ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
