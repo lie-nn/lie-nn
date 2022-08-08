@@ -15,7 +15,7 @@ def bunch_of_reps():
 
 
 def bunch_of_triplets():
-    return sum((list(itertools.product(itertools.islice(IR.iterator(), 6), repeat=3)) for IR in REPRESENTATIONS), [])
+    return sum((list(itertools.product(itertools.islice(IR.iterator(), 4), repeat=3)) for IR in REPRESENTATIONS), [])
 
 
 @pytest.mark.parametrize("ir", bunch_of_reps())
