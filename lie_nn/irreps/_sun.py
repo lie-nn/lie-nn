@@ -342,8 +342,10 @@ def clebsch_gordan_matrix(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT):
     dimS3 = dim(S3)
     M_eldest = tuple(S_to_Ms(S3))[-1]
     C_eldest = clebsch_gordan_eldest(S1, S2, M_eldest)
-    C = np.concatenate((np.zeros((C_eldest.shape[0], dimS1, dimS2, dimS3 - 1)),
-                       (C_eldest.reshape(C_eldest.shape[0], dimS1, dimS2, 1))), axis=-1)
+    C = np.concatenate(
+        (np.zeros((C_eldest.shape[0], dimS1, dimS2, dimS3 - 1)), (C_eldest.reshape(C_eldest.shape[0], dimS1, dimS2, 1))),
+        axis=-1,
+    )
     M_list = [M_eldest]
     for alpha in range(C.shape[0]):
         while len(M_list) != dimS3:
