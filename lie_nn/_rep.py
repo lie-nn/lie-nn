@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Rep:
-    r"""Abstract representation of a Lie group."""
+    r"""Abstract Class, Representation of a Lie group."""
 
     @property
     def lie_dim(self) -> int:
