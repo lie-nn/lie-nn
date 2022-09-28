@@ -301,11 +301,11 @@ def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round
         \mathbf{X_1} \mathbf{S} = \mathbf{S} \mathbf{X_2}
 
     Args:
-        X1: Ensemble of matrices.
-        X2: Ensemble of matrices.
+        X1: Ensemble of matrices of shape (n, d1, d1).
+        X2: Ensemble of matrices of shape (n, d2, d2).
 
     Returns:
-        The change of basis S.
+        The change of basis S of shape (n_solutions, d1, d2).
     """
     assert X1.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
     assert X2.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
@@ -324,7 +324,10 @@ def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round
     A = A.reshape(n * d2 * d1, d2 * d1)
     S = null_space(A, epsilon=epsilon, round_fn=round_fn)
     S = S.reshape(-1, d2, d1)
-    S = np.swapaxes(S, 1, 2)
+    S = np.swapaxes(S, 1, 2)  # (num_null_space, d1, d2)
+
+    # In case S is orthogonal, make it orthonormal
+    S = np.sqrt(min(d1, d2)) * S
 
     # assert np.allclose(X1 @ S[0], S[0] @ X2)
     return S

@@ -20,15 +20,23 @@ def test_null_space():
     assert np.allclose(S @ X.T, 0)
 
 
-def test_change_of_basis():
+def test_infer_change_of_basis():
     n, d = 5, 10
     X2 = np.random.normal(size=(n, d, d)) + 1j * np.random.normal(size=(n, d, d))
     S = np.random.normal(size=(d, d)) + 1j * np.random.normal(size=(d, d))
-    S = S / np.linalg.norm(S)
     X1 = S @ X2 @ np.linalg.inv(S)
 
     T = infer_change_of_basis(X1, X2)
+    assert T.shape == (1, d, d)
+    T = T[0]
+
     assert np.allclose(X1, T @ X2 @ np.linalg.inv(T))
+
+    # S and T are eqaul up to a global phase
+    np.testing.assert_allclose(
+        S / S[0, 0],
+        T / T[0, 0],
+    )
 
 
 def test_as_integer_ratio():
