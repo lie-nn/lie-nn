@@ -44,6 +44,9 @@ class GenericRep(Rep):
     X: np.ndarray
     H: np.ndarray
 
+    def from_rep(rep: Rep) -> "GenericRep":
+        return GenericRep(rep.algebra(), rep.continuous_generators(), rep.discrete_generators())
+
     def algebra(self) -> np.ndarray:
         return self.A
 

@@ -145,14 +145,29 @@ def kron(A, *BCD):
 
 
 def direct_sum(A, *BCD):
+    r"""Direct sum of matrices.
+
+    Args:
+        A (np.ndarray): Matrix of shape (..., m, n).
+        B (np.ndarray): Matrix of shape (..., p, q).
+
+    Returns:
+        np.ndarray: Matrix of shape (..., m + p, n + q).
+    """
     if len(BCD) == 0:
         return A
     B = direct_sum(*BCD)
-    a = A.shape[0]
-    b = B.shape[0]
-    output = np.zeros_like(A, shape=(a + b, a + b))
-    output[:a, :a] = A
-    output[a:, a:] = B
+
+    shape = np.broadcast_shapes(A.shape[:-2], B.shape[:-2])
+    A = np.broadcast_to(A, shape + A.shape[-2:])
+    B = np.broadcast_to(B, shape + B.shape[-2:])
+
+    m, n = A.shape[-2:]
+    p, q = B.shape[-2:]
+
+    output = np.zeros_like(A, shape=shape + (m + p, n + q))
+    output[..., :m, :n] = A
+    output[..., m:, n:] = B
     return output
 
 
@@ -174,12 +189,23 @@ def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
     return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
 
 
-def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
-    """
-    Add rows to A to make it full rank.
+def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x, returns="Q") -> np.ndarray:
+    """Add rows to A to make it full rank.
+
+    Args:
+        A (np.ndarray): Matrix of shape (m, n) with m <= n.
+        epsilon (float): Tolerance for rank detection.
+        round_fn (Callable): Function to round numbers.
+        returns (str): What to return. Can be "Q" or "E".
+            "Q" returns the complete orthogonal basis.
+            "E" returns the matrix that extends A to a full rank matrix.
+
+    Returns:
+        np.ndarray: Matrix of shape (n, n) (if returns=Q) or (n - m, n) (if returns=E).
     """
     Q = gram_schmidt(A, epsilon=epsilon, round_fn=round_fn)
     Q = [q for q in Q]
+    E = []
     for v in np.eye(A.shape[1], dtype=A.dtype):
         for w in Q:
             v -= np.dot(np.conj(w), v) * w
@@ -187,7 +213,11 @@ def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
         if norm > epsilon:
             v = round_fn(v / norm)
             Q += [v]
-    return np.stack(Q)
+            E += [v]
+    if returns == "Q":
+        return np.stack(Q)
+    if returns == "E":
+        return np.stack(E)
 
 
 def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:

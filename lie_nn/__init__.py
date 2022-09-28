@@ -5,6 +5,7 @@ from ._irrep import Irrep
 from ._reduced_rep import MulIrrep, ReducedRep
 from ._change_basis import change_basis
 from ._tensor_product import tensor_product
+from ._direct_sum import direct_sum
 
 __all__ = [
     "Rep",
@@ -14,4 +15,5 @@ __all__ = [
     "ReducedRep",
     "change_basis",
     "tensor_product",
+    "direct_sum",
 ]
