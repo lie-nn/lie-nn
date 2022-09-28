@@ -60,7 +60,7 @@ def S_to_Ms(S: WEIGHT) -> Iterator[GT_PATTERN]:
     """Produce all possible GT-patterns with first line S.
 
     >>> list(S_to_Ms((2, 0)))
-    [((2, 0), (2,)), ((2, 0), (1,)), ((2, 0), (0,))]
+    [((2, 0), (0,)), ((2, 0), (1,)), ((2, 0), (2,))]
     """
     _assert_valid_S(S)
     if len(S) == 1:
