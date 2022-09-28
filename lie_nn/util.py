@@ -327,7 +327,7 @@ def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round
     S = np.swapaxes(S, 1, 2)  # (num_null_space, d1, d2)
 
     # In case S is orthogonal, make it orthonormal
-    S = np.sqrt(min(d1, d2)) * S
+    # S = np.sqrt(min(d1, d2)) * S
 
     # assert np.allclose(X1 @ S[0], S[0] @ X2)
     return S
