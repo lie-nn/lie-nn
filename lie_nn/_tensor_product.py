@@ -85,6 +85,11 @@ def tensor_product(mulirrep1: MulIrrep, irrep2: Irrep) -> ReducedRep:
     return tensor_product(mulirrep1, MulIrrep(mul=1, rep=irrep2))
 
 
+@dispatch(Irrep, MulIrrep)
+def tensor_product(irrep1: Irrep, mulirrep2: MulIrrep) -> ReducedRep:
+    return tensor_product(MulIrrep(mul=1, rep=irrep1), mulirrep2)
+
+
 @dispatch(Rep, int)
 def tensor_power(rep: Rep, n: int) -> GenericRep:
     X, H = rep.continuous_generators(), rep.discrete_generators()

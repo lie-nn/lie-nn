@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from lie_nn.irreps import SU2Rep, SURep
+from lie_nn.irreps import SU2Rep, SU2Rep_
 from lie_nn.irreps._sun import (
     Jz_matrices,
     S_to_Ms,
@@ -19,9 +19,9 @@ j_max = 4
 @pytest.mark.parametrize("j2", range(j_max + 1))
 @pytest.mark.parametrize("j1", range(j_max + 1))
 def test_highest_weight_constraint_with_su2(j1: int, j2: int, j3: int):
-    S1 = SURep((j1, 0))
-    S2 = SURep((j2, 0))
-    S3 = SURep((j3, 0))
+    S1 = SU2Rep_((j1, 0))
+    S2 = SU2Rep_((j2, 0))
+    S3 = SU2Rep_((j3, 0))
 
     eldest_weight = list(S_to_Ms(S3.S))[-1]
 
@@ -56,11 +56,11 @@ def test_J_commutators(S):
 @pytest.mark.parametrize("j2", range(j_max + 1))
 @pytest.mark.parametrize("j1", range(j_max + 1))
 def test_cg_su2(j1: int, j2: int, j3: int):
-    S1 = SURep((j1, 0))
-    S2 = SURep((j2, 0))
-    S3 = SURep((j3, 0))
+    S1 = SU2Rep_((j1, 0))
+    S2 = SU2Rep_((j2, 0))
+    S3 = SU2Rep_((j3, 0))
 
-    C1 = SURep.clebsch_gordan(S1, S2, S3)
+    C1 = SU2Rep_.clebsch_gordan(S1, S2, S3)
     C2 = SU2Rep.clebsch_gordan(SU2Rep(j1), SU2Rep(j2), SU2Rep(j3))
 
     np.testing.assert_allclose(C1, C2, rtol=1e-15, atol=1e-15)
