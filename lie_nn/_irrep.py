@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 from . import Rep
-from .util import commutator, kron, vmap, change_of_basis
+from .util import commutator, kron, vmap, infer_change_of_basis
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,7 @@ class Irrep(Rep):
         )
         H_out = rep3.discrete_generators()
 
-        cg = change_of_basis(np.concatenate([X_in, H_in]), np.concatenate([X_out, H_out]), round_fn=round_fn)
+        cg = infer_change_of_basis(np.concatenate([X_in, H_in]), np.concatenate([X_out, H_out]), round_fn=round_fn)
 
         assert cg.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
 

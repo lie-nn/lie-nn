@@ -1,7 +1,7 @@
 import numpy as np
 from lie_nn.util import (
     null_space,
-    change_of_basis,
+    infer_change_of_basis,
     as_approx_integer_ratio,
     round_to_sqrt_rational,
     limit_denominator,
@@ -27,7 +27,7 @@ def test_change_of_basis():
     S = S / np.linalg.norm(S)
     X1 = S @ X2 @ np.linalg.inv(S)
 
-    T = change_of_basis(X1, X2)
+    T = infer_change_of_basis(X1, X2)
     assert np.allclose(X1, T @ X2 @ np.linalg.inv(T))
 
 

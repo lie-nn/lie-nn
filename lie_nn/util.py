@@ -293,7 +293,7 @@ def sequential_null_space(gen_A: List[np.ndarray], dim_null_space: int, *, epsil
     )
 
 
-def change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     r"""
     Compute the change of basis matrix from X1 to X2.
 
