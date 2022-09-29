@@ -90,14 +90,29 @@ def tensor_product(irrep1: Irrep, mulirrep2: MulIrrep) -> ReducedRep:
     return tensor_product(MulIrrep(mul=1, rep=irrep1), mulirrep2)
 
 
+@dispatch(MulIrrep, ReducedRep)
+def tensor_product(mulirrep1: MulIrrep, rep2: ReducedRep) -> ReducedRep:
+    return tensor_product(ReducedRep(A=mulirrep1.algebra(), irreps=(mulirrep1,), Q=None), rep2)
+
+
+@dispatch(ReducedRep, MulIrrep)
+def tensor_product(rep1: ReducedRep, mulirrep2: MulIrrep) -> ReducedRep:
+    return tensor_product(ReducedRep(A=mulirrep2.algebra(), irreps=(mulirrep2,), Q=None), rep1)
+
+
+@dispatch(ReducedRep, Irrep)
+def tensor_product(rep1: ReducedRep, irrep2: Irrep) -> ReducedRep:
+    return tensor_product(rep1, MulIrrep(mul=1, rep=irrep2))
+
+
+@dispatch(Irrep, ReducedRep)
+def tensor_product(irrep1: Irrep, rep2: ReducedRep) -> ReducedRep:
+    return tensor_product(MulIrrep(mul=1, rep=irrep1), rep2)
+
+
 @dispatch(Rep, int)
-def tensor_power(rep: Rep, n: int) -> GenericRep:
-    X, H = rep.continuous_generators(), rep.discrete_generators()
-    result = GenericRep(
-        A=rep.algebra(),
-        X=np.ones((X.shape[0], 1, 1)),
-        H=np.ones((H.shape[0], 1, 1)),
-    )
+def tensor_power(rep: Rep, n: int) -> Rep:
+    result = rep.create_trivial()
 
     while True:
         if n & 1:
@@ -106,13 +121,12 @@ def tensor_power(rep: Rep, n: int) -> GenericRep:
 
         if n == 0:
             return result
-
         rep = tensor_product(rep, rep)
 
 
-@dispatch(ReducedRep, int)
-def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
-    # TODO reduce into irreps and wrap with the change of basis that maps to the usual tensor product
-    # TODO as well reduce into irreps of S_n
-    # and diagonalize irreps of S_n in the same basis that diagonalizes irreps of S_{n-1} (unclear how to do this)
-    raise NotImplementedError
+# @dispatch(ReducedRep, int)
+# def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
+#     # TODO reduce into irreps and wrap with the change of basis that maps to the usual tensor product
+#     # TODO as well reduce into irreps of S_n
+#     # and diagonalize irreps of S_n in the same basis that diagonalizes irreps of S_{n-1} (unclear how to do this)
+#     raise NotImplementedError

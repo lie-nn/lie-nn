@@ -29,6 +29,9 @@ class MulIrrep(Rep):
             return np.empty((0, self.dim, self.dim))
         return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in H], axis=0)
 
+    def create_trivial(self) -> Irrep:
+        return self.rep.create_trivial()
+
     def __repr__(self) -> str:
         return f"{self.mul}x{self.rep}"
 
@@ -96,6 +99,9 @@ class ReducedRep(Rep):
                 X = self.Q @ X @ np.linalg.inv(self.Q)
             Xs += [X]
         return np.stack(Xs)
+
+    def create_trivial(self) -> Irrep:
+        return self.irreps[0].create_trivial()
 
     def __repr__(self) -> str:
         r = " + ".join(repr(mul_ir) for mul_ir in self.irreps)

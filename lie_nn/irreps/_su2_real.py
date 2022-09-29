@@ -61,6 +61,9 @@ class SU2RealRep(Irrep):
         else:
             return 2 * int(2 * rep.j + 1)
 
+    def __lt__(rep1: "SU2RealRep", rep2: "SU2RealRep") -> bool:
+        return rep1.j < rep2.j
+
     @classmethod
     def iterator(cls) -> Iterator["SU2RealRep"]:
         for tj in itertools.count(0):

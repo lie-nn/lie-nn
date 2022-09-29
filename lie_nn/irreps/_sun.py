@@ -419,6 +419,12 @@ class SUNRep(Irrep):
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         return clebsch_gordan_matrix(rep1.S, rep2.S, rep3.S)
 
+    def __lt__(rep1: "SUNRep", rep2: "SUNRep") -> bool:
+        return rep1.S < rep2.S
+
+    def __eq__(rep1: "SUNRep", rep2: "SUNRep") -> bool:
+        return rep1.S == rep2.S
+
     @property
     def dim(rep: "SUNRep") -> int:
         return dim(rep.S)
@@ -438,25 +444,25 @@ class SUNRep(Irrep):
 @dataclass(frozen=True)
 class SU2Rep_(SUNRep):
     @classmethod
-    def iterator(cls) -> Iterator["SUNRep"]:
+    def iterator(cls) -> Iterator["SU2Rep_"]:
         for j in itertools.count(0):
-            yield SUNRep(S=(j, 0))
+            yield SU2Rep_(S=(j, 0))
 
 
 @dataclass(frozen=True)
 class SU3Rep(SUNRep):
     @classmethod
-    def iterator(cls) -> Iterator["SUNRep"]:
+    def iterator(cls) -> Iterator["SU3Rep"]:
         for j1 in itertools.count(0):
             for j2 in range(j1 + 1):
-                yield SUNRep(S=(j1, j2, 0))
+                yield SU3Rep(S=(j1, j2, 0))
 
 
 @dataclass(frozen=True)
 class SU4Rep(SUNRep):
     @classmethod
-    def iterator(cls) -> Iterator["SUNRep"]:
+    def iterator(cls) -> Iterator["SU4Rep"]:
         for j1 in itertools.count(0):
             for j2 in range(j1 + 1):
                 for j3 in range(j2 + 1):
-                    yield SUNRep(S=(j1, j2, j3, 0))
+                    yield SU4Rep(S=(j1, j2, j3, 0))

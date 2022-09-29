@@ -48,6 +48,9 @@ class SO3Rep(Irrep):
     def dim(rep: "SO3Rep") -> int:
         return 2 * rep.l + 1
 
+    def __lt__(rep1: "SO3Rep", rep2: "SO3Rep") -> bool:
+        return rep1.l < rep2.l
+
     @classmethod
     def iterator(cls) -> Iterator["SO3Rep"]:
         for l in itertools.count(0):

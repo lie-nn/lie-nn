@@ -28,6 +28,9 @@ class SU2Rep(Irrep):
     def dim(rep: "SU2Rep") -> int:
         return rep.j + 1
 
+    def __lt__(rep1: "SU2Rep", rep2: "SU2Rep") -> bool:
+        return rep1.j < rep2.j
+
     @classmethod
     def iterator(cls) -> Iterator["SU2Rep"]:
         for j in itertools.count(0):

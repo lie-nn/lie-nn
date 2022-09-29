@@ -50,6 +50,9 @@ class SL2Rep(Irrep):
     def dim(rep: "SL2Rep") -> int:
         return (rep.l + 1) * (rep.k + 1)
 
+    def __lt__(rep1: "SL2Rep", rep2: "SL2Rep") -> bool:
+        return (rep1.l + rep1.k, rep1.l) < (rep2.l + rep2.k, rep2.l)
+
     @classmethod
     def iterator(cls) -> Iterator["SL2Rep"]:
         for sum in itertools.count(0):

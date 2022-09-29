@@ -57,10 +57,20 @@ class Irrep(Rep):
     def dim(rep: "Irrep") -> int:
         raise NotImplementedError
 
+    def __lt__(rep1: "Irrep", rep2: "Irrep") -> bool:
+        # This is used for sorting the irreps
+        raise NotImplementedError
+
     @classmethod
     def iterator(cls) -> Iterator["Irrep"]:
-        # not sure if we need this
+        # Requirements:
+        #  - the first element must be the trivial representation
+        #  - the elements must be sorted by the __lt__ method
         raise NotImplementedError
+
+    @classmethod
+    def create_trivial(cls) -> "Irrep":
+        return cls.iterator().__next__()
 
     def continuous_generators(rep: "Irrep") -> np.ndarray:
         # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``

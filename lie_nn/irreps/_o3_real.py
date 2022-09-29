@@ -29,11 +29,15 @@ class O3Rep(Irrep):
     def dim(rep: "O3Rep") -> int:
         return 2 * rep.l + 1
 
+    def __lt__(rep1: "O3Rep", rep2: "O3Rep") -> bool:
+        # scalar, speudo-scalar, vector, pseudo-vector, tensor, pseudo-tensor, ...
+        return (rep1.l, -((-1) ** rep1.l) * rep1.p) < (rep2.l, -((-1) ** rep2.l) * rep2.p)
+
     @classmethod
     def iterator(cls) -> Iterator["O3Rep"]:
         for l in itertools.count(0):
-            yield O3Rep(l=l, p=1)
-            yield O3Rep(l=l, p=-1)
+            yield O3Rep(l=l, p=1 * (-1) ** l)
+            yield O3Rep(l=l, p=-1 * (-1) ** l)
 
     def continuous_generators(rep: "O3Rep") -> np.ndarray:
         return SO3Rep(l=rep.l).continuous_generators()

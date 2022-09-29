@@ -49,3 +49,18 @@ def test_selection_rule(ir1: Irrep, ir2: Irrep, ir3: Irrep):
         assert cg.shape[0] > 0
     else:
         assert cg.shape[0] == 0
+
+
+@pytest.mark.parametrize("Rep", REPRESENTATIONS)
+def test_trivial(Rep):
+    assert Rep.create_trivial().is_trivial()
+
+    ir = Rep.create_trivial()
+    assert ir.create_trivial().is_trivial()
+
+
+@pytest.mark.parametrize("Rep", REPRESENTATIONS)
+def test_order(Rep):
+    irreps = list(itertools.islice(Rep.iterator(), 10))
+    for ir1, ir2 in zip(irreps, irreps[1:]):
+        assert ir1 < ir2
