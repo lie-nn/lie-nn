@@ -2,8 +2,8 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn import GenericRep, Irrep, MulIrrep, ReducedRep, Rep, tensor_product, tensor_power
-from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep, SU3Rep, SU4Rep
+from lie_nn import GenericRep, Irrep, MulIrrep, ReducedRep, tensor_product, tensor_power
+from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep
 
 
 def first_reps(IR: Irrep, n: int):
