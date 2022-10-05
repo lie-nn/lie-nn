@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Type
 
 import numpy as np
 
@@ -11,6 +11,11 @@ from .util import direct_sum
 class MulIrrep(Rep):
     mul: int
     rep: Irrep
+
+    @classmethod
+    def from_string(cls, string: str, cls_irrep: Type[Irrep]) -> "MulIrrep":
+        mul, rep = string.split("x")
+        return cls(mul=int(mul), rep=cls_irrep.from_string(rep))
 
     @property
     def dim(self) -> int:
@@ -46,6 +51,10 @@ class ReducedRep(Rep):
     A: np.ndarray
     irreps: Tuple[MulIrrep, ...]
     Q: Optional[np.ndarray]  # change of basis matrix
+
+    @classmethod
+    def from_string(cls, string: str, cls_irrep: Type[Irrep]) -> "ReducedRep":
+        return cls.from_irreps([MulIrrep.from_string(term, cls_irrep) for term in string.split("+")])
 
     @classmethod
     def from_irreps(cls, mul_irreps: Tuple[Union[Irrep, Tuple[int, Irrep], MulIrrep], ...]) -> "ReducedRep":

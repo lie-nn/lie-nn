@@ -1,4 +1,5 @@
 import itertools
+import re
 from dataclasses import dataclass
 from fractions import Fraction
 from operator import add
@@ -411,6 +412,17 @@ def algebra(S: WEIGHT):
 class SUNRep(Irrep):
     S: Tuple[int]  # List of weights of the representation
 
+    def __post_init__(rep):
+        assert isinstance(rep.S, tuple)
+        _assert_valid_S(rep.S)
+        assert rep.S[-1] == 0
+
+    @classmethod
+    def from_string(cls, s: str) -> "SUNRep":
+        # (4,3,2,1,0)
+        m = re.match(r"\((\d+(?:,\d+)*)\)", s)
+        return cls(S=tuple(map(int, m.group(1).split(","))))
+
     def __mul__(rep1: "SUNRep", rep2: "SUNRep") -> List["SUNRep"]:
         return map(SUNRep, sorted(set(mul_rep(rep1.S, rep2.S))))
 
@@ -443,6 +455,9 @@ class SUNRep(Irrep):
 
 @dataclass(frozen=True)
 class SU2Rep_(SUNRep):
+    def __post_init__(rep):
+        assert len(rep.S) == 2
+
     @classmethod
     def iterator(cls) -> Iterator["SU2Rep_"]:
         for j in itertools.count(0):
@@ -451,6 +466,9 @@ class SU2Rep_(SUNRep):
 
 @dataclass(frozen=True)
 class SU3Rep(SUNRep):
+    def __post_init__(rep):
+        assert len(rep.S) == 3
+
     @classmethod
     def iterator(cls) -> Iterator["SU3Rep"]:
         for j1 in itertools.count(0):
@@ -460,6 +478,9 @@ class SU3Rep(SUNRep):
 
 @dataclass(frozen=True)
 class SU4Rep(SUNRep):
+    def __post_init__(rep):
+        assert len(rep.S) == 4
+
     @classmethod
     def iterator(cls) -> Iterator["SU4Rep"]:
         for j1 in itertools.count(0):

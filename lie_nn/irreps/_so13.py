@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 import itertools
+import re
+from dataclasses import dataclass
 from typing import Iterator
 
 import numpy as np
@@ -19,6 +20,12 @@ class SO13Rep(Irrep):  # TODO: think if this class shoulb be a subclass of SL2Re
         assert rep.l >= 0
         assert rep.k >= 0
         assert (rep.l + rep.k) % 2 == 0
+
+    @classmethod
+    def from_string(cls, s: str) -> "SO13Rep":
+        m = re.match(r"\((\d+),(\d+)\)", s.strip())
+        assert m is not None
+        return cls(l=int(m.group(1)), k=int(m.group(2)))
 
     def __mul__(rep1: "SO13Rep", rep2: "SO13Rep") -> Iterator["SO13Rep"]:
         for rep in SL2Rep.__mul__(rep1, rep2):

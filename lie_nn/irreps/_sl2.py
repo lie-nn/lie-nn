@@ -1,12 +1,13 @@
-from dataclasses import dataclass
 import itertools
+import re
+from dataclasses import dataclass
 from typing import Iterator
 
 import numpy as np
-from ._su2 import SU2Rep, clebsch_gordanSU2mat
-from ..util import vmap
 
 from .. import Irrep
+from ..util import vmap
+from ._su2 import SU2Rep, clebsch_gordanSU2mat
 
 
 def sign(p):
@@ -32,6 +33,12 @@ class SL2Rep(Irrep):
         assert isinstance(rep.k, int)
         assert rep.l >= 0
         assert rep.k >= 0
+
+    @classmethod
+    def from_string(cls, s: str) -> "SL2Rep":
+        m = re.match(r"\((\d+),(\d+)\)", s.strip())
+        assert m is not None
+        return cls(l=int(m.group(1)), k=int(m.group(2)))
 
     def __mul__(rep1: "SL2Rep", rep2: "SL2Rep") -> Iterator["SL2Rep"]:
         for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 2):

@@ -9,6 +9,10 @@ from .util import commutator, kron, vmap, infer_change_of_basis
 
 @dataclass(frozen=True)
 class Irrep(Rep):
+    @classmethod
+    def from_string(cls, string: str) -> "Irrep":
+        raise NotImplementedError
+
     def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
         # Selection rule
         raise NotImplementedError

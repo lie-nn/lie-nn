@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import itertools
+from dataclasses import dataclass
 from typing import Iterator
 
 import numpy as np
@@ -12,6 +12,13 @@ from ._so3_real import SO3Rep
 class O3Rep(Irrep):
     l: int  # non-negative integer
     p: int  # 1 or -1
+
+    @classmethod
+    def from_string(cls, s: str) -> "O3Rep":
+        s = s.strip()
+        l = int(s[:-1])
+        p = {"e": 1, "o": -1}[s[-1]]
+        return cls(l=l, p=p)
 
     def __mul__(rep1: "O3Rep", rep2: "O3Rep") -> Iterator["O3Rep"]:
         assert isinstance(rep2, O3Rep)

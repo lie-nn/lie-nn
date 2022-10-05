@@ -12,6 +12,10 @@ from .. import Irrep
 class SU2Rep(Irrep):
     j: int
 
+    @classmethod
+    def from_string(cls, string: str) -> "SU2Rep":
+        return cls(j=int(string))
+
     def __mul__(rep1: "SU2Rep", rep2: "SU2Rep") -> Iterator["SU2Rep"]:
         assert isinstance(rep2, SU2Rep)
         return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
