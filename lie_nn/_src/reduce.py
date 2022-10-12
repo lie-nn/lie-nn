@@ -1,6 +1,7 @@
 from multipledispatch import dispatch
 
-from . import GenericRep, MulIrrep, ReducedRep
+from .rep import GenericRep
+from .reduced_rep import MulIrrep, ReducedRep
 
 
 @dispatch(MulIrrep)
