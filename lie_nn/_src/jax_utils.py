@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import jax
 import jax.numpy as jnp
-from . import Irrep
+from .irrep import Irrep
 
 
 def static_jax_pytree(cls):

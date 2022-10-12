@@ -44,4 +44,4 @@ jobs:
         pip install coveralls
     - name: Test with pytest
       run: |
-        pytest --doctest-modules --ignore=docs/ --ignore=examples/ .
+        pytest --doctest-modules --ignore=docs/ --ignore=examples/ --ignore=noxfile.py .
