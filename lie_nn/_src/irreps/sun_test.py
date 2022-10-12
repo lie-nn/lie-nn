@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from lie_nn.irreps import SU2Rep, SU2Rep_
-from lie_nn.irreps._sun import (
+from lie_nn._src.irreps.sun import (
     Jz_matrices,
     S_to_Ms,
     clebsch_gordan_eldest,

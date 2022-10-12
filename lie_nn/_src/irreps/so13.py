@@ -5,8 +5,8 @@ from typing import Iterator
 
 import numpy as np
 
-from .. import Irrep
-from ._sl2 import SL2Rep
+from ..irrep import Irrep
+from .sl2 import SL2Rep
 
 
 @dataclass(frozen=True)

@@ -3,7 +3,7 @@ from typing import Iterator
 
 
 import numpy as np
-from . import Rep
+from .rep import Rep
 from .util import commutator, kron, vmap, infer_change_of_basis
 
 

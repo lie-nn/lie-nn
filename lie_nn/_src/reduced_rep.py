@@ -3,7 +3,8 @@ from typing import Optional, Tuple, Union, Type
 
 import numpy as np
 
-from . import Irrep, Rep
+from .irrep import Irrep
+from .rep import Rep
 from .util import direct_sum
 
 

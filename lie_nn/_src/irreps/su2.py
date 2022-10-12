@@ -5,7 +5,7 @@ from typing import Iterator
 
 import numpy as np
 
-from .. import Irrep
+from ..irrep import Irrep
 
 
 @dataclass(frozen=True)

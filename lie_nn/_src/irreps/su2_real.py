@@ -5,8 +5,8 @@ from typing import Iterator
 import numpy as np
 from ..util import is_half_integer, is_integer, round_to_sqrt_rational
 
-from .. import Irrep
-from ._su2 import SU2Rep
+from ..irrep import Irrep
+from .su2 import SU2Rep
 
 
 def change_basis_real_to_complex(j: float) -> np.ndarray:

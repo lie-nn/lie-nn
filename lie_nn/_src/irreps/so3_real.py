@@ -4,8 +4,8 @@ from typing import Iterator
 
 import numpy as np
 
-from .. import Irrep
-from ._su2 import SU2Rep
+from ..irrep import Irrep
+from .su2 import SU2Rep
 
 
 def change_basis_real_to_complex(l: int) -> np.ndarray:

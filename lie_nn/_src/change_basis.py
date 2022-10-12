@@ -3,7 +3,9 @@ import dataclasses
 import numpy as np
 from multipledispatch import dispatch
 
-from . import GenericRep, Irrep, MulIrrep, ReducedRep, Rep
+from .rep import GenericRep, Rep
+from .irrep import Irrep
+from .reduced_rep import MulIrrep, ReducedRep
 
 
 @dispatch(Rep, object)

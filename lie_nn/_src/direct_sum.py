@@ -1,7 +1,7 @@
 import numpy as np
 from multipledispatch import dispatch
 
-from . import GenericRep, Rep
+from .rep import GenericRep, Rep
 from .util import direct_sum as _direct_sum
 
 

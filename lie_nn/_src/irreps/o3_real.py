@@ -4,8 +4,8 @@ from typing import Iterator
 
 import numpy as np
 
-from .. import Irrep
-from ._so3_real import SO3Rep
+from ..irrep import Irrep
+from .so3_real import SO3Rep
 
 
 @dataclass(frozen=True)
