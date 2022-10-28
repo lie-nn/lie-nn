@@ -6,6 +6,7 @@ from ._src.reduced_rep import MulIrrep, ReducedRep
 from ._src.change_basis import change_basis
 from ._src.tensor_product import tensor_product, tensor_power
 from ._src.direct_sum import direct_sum
+from ._src.reduced_tensor_product import reduced_tensor_product_basis, reduced_symmetric_tensor_product_basis
 
 __all__ = [
     "Rep",
@@ -17,4 +18,6 @@ __all__ = [
     "tensor_product",
     "tensor_power",
     "direct_sum",
+    "reduced_tensor_product_basis",
+    "reduced_symmetric_tensor_product_basis",
 ]
