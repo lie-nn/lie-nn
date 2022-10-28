@@ -41,7 +41,11 @@ def as_approx_integer_ratio(x):
     x = np.abs(x)
 
     with np.errstate(divide="ignore", over="ignore"):
-        n, d = np.where(x <= 1, _as_approx_integer_ratio(x), _as_approx_integer_ratio(1 / x)[::-1],)
+        n, d = np.where(
+            x <= 1,
+            _as_approx_integer_ratio(x),
+            _as_approx_integer_ratio(1 / x)[::-1],
+        )
     return normalize_integer_ratio(sign * n, d)
 
 
@@ -64,13 +68,17 @@ def limit_denominator(n, d, max_denominator=1_000_000):
     n2, d2 = p1, q1
     with np.errstate(over="ignore"):
         mask = np.abs(d1 * (n2 * d0 - n0 * d2)) <= np.abs(d2 * (n1 * d0 - n0 * d1))
-    return np.where(d0 < max_denominator, (n0, d0), np.where(mask, (n2, d2), (n1, d1)),)
+    return np.where(
+        d0 < max_denominator,
+        (n0, d0),
+        np.where(mask, (n2, d2), (n1, d1)),
+    )
 
 
 def _round_to_sqrt_rational(x, max_denominator):
     sign = np.sign(x)
-    n, d = as_approx_integer_ratio(x ** 2)
-    n, d = limit_denominator(n, d, max_denominator ** 2 + 1)
+    n, d = as_approx_integer_ratio(x**2)
+    n, d = limit_denominator(n, d, max_denominator**2 + 1)
     return sign * np.sqrt(n / d)
 
 
@@ -82,7 +90,11 @@ def round_to_sqrt_rational(x: np.ndarray, max_denominator=4096) -> np.ndarray:
 
 
 def vmap(
-    fun, in_axes=0, out_axes=0, *, out_shape=None,
+    fun,
+    in_axes=0,
+    out_axes=0,
+    *,
+    out_shape=None,
 ):
     if out_shape is not None:
         out_shape = list(out_shape)

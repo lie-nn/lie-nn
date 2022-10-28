@@ -23,7 +23,10 @@ class IrrepsArray(NamedTuple):
     def sorted(self):
         indices = list(range(len(self.irreps)))
         indices = sorted(indices, key=lambda i: (self.irreps[i].rep, self.irreps[i].mul))
-        return IrrepsArray(list=[self.list[i] for i in indices], irreps=tuple(self.irreps[i] for i in indices),)
+        return IrrepsArray(
+            list=[self.list[i] for i in indices],
+            irreps=tuple(self.irreps[i] for i in indices),
+        )
 
     def simplify(self):
         muls = []
@@ -64,7 +67,10 @@ def _to_reducedrep(irreps) -> ReducedRep:
 
 
 def reduced_tensor_product_basis(
-    formula_or_irreps_list: Union[str, List[ReducedRep]], *, epsilon: float = 1e-5, **irreps_dict,
+    formula_or_irreps_list: Union[str, List[ReducedRep]],
+    *,
+    epsilon: float = 1e-5,
+    **irreps_dict,
 ) -> IrrepsArray:
     r"""Reduce a tensor product of multiple irreps subject to some permutation symmetry given by a formula.
 
@@ -136,7 +142,12 @@ def reduced_tensor_product_basis(
     return _reduced_tensor_product_basis(irreps_tuple, perm_repr, epsilon)
 
 
-def reduced_symmetric_tensor_product_basis(irreps: ReducedRep, order: int, *, epsilon: float = 1e-5,) -> IrrepsArray:
+def reduced_symmetric_tensor_product_basis(
+    irreps: ReducedRep,
+    order: int,
+    *,
+    epsilon: float = 1e-5,
+) -> IrrepsArray:
     r"""Reduce a symmetric tensor product.
 
     Args:
@@ -155,7 +166,9 @@ def reduced_symmetric_tensor_product_basis(irreps: ReducedRep, order: int, *, ep
 
 # @functools.lru_cache(maxsize=None)
 def _reduced_tensor_product_basis(
-    irreps_tuple: Tuple[ReducedRep, ...], perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]], epsilon: float,
+    irreps_tuple: Tuple[ReducedRep, ...],
+    perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]],
+    epsilon: float,
 ) -> IrrepsArray:
     dims = tuple(irps.dim for irps in irreps_tuple)
 
@@ -249,7 +262,9 @@ def germinate_perm_repr(formula: str) -> Tuple[str, FrozenSet[Tuple[int, Tuple[i
 
 
 def reduce_basis_product(
-    basis1: IrrepsArray, basis2: IrrepsArray, filter_ir_out: Optional[List[Irrep]] = None,
+    basis1: IrrepsArray,
+    basis2: IrrepsArray,
+    filter_ir_out: Optional[List[Irrep]] = None,
 ) -> IrrepsArray:
     """Reduce the product of two basis."""
     new_irreps: List[Tuple[int, Irrep]] = []
@@ -264,7 +279,12 @@ def reduce_basis_product(
                     continue
 
                 cg = ir.clebsch_gordan(ir1, ir2, ir)
-                x = np.einsum("...ui,...vj,wijk->...wuvk", x1, x2, cg,)
+                x = np.einsum(
+                    "...ui,...vj,wijk->...wuvk",
+                    x1,
+                    x2,
+                    cg,
+                )
                 x = np.reshape(x, x.shape[:-4] + (cg.shape[0] * mul1 * mul2, ir.dim))
                 new_irreps.append((cg.shape[0] * mul1 * mul2, ir))
                 new_list.append(x)
