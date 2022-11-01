@@ -10,6 +10,7 @@ from ._src.util import (
     null_space,
     sequential_null_space,
     infer_change_of_basis,
+    basis_intersection,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "null_space",
     "sequential_null_space",
     "infer_change_of_basis",
+    "basis_intersection",
 ]
