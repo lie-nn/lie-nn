@@ -346,8 +346,8 @@ def basis_intersection(
     """Compute the intersection of two bases
 
     Args:
-        basis1 (np.ndarray): A basis, shape ``(n1, d)``
-        basis2 (np.ndarray): Another basis, shape ``(n2, d)``
+        basis1 (np.ndarray): A basis, shape ``(n1, ...)``.
+        basis2 (np.ndarray): Another basis, shape ``(n2, ...)``.
         epsilon (float, optional): Tolerance for the norm of the vectors. Defaults to 1e-4.
         round_fn (function, optional): Function to round the vectors. Defaults to lambda x: x.
 
@@ -364,9 +364,9 @@ def basis_intersection(
         >>> P1 @ basis1
         array([[1., 0., 0.]])
     """
-    assert basis1.ndim == 2
-    assert basis2.ndim == 2
-    assert basis1.shape[1] == basis2.shape[1]
+    assert basis1.shape[1:] == basis2.shape[1:]
+    basis1 = np.reshape(basis1, (basis1.shape[0], -1))
+    basis2 = np.reshape(basis2, (basis2.shape[0], -1))
 
     p = np.concatenate(
         [
