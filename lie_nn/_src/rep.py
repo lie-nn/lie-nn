@@ -1,6 +1,7 @@
 import dataclasses
 
 import numpy as np
+import scipy.linalg
 
 
 class Rep:
@@ -36,6 +37,21 @@ class Rep:
     def create_trivial(self) -> "Rep":
         # Create a trivial representation from the same group as self
         raise NotImplementedError
+
+    def exp_map(self, continuous_params: np.ndarray, discrete_params: np.ndarray) -> np.ndarray:
+        """Instanciate the representation
+
+        Args:
+            continuous_params: ``(lie_dim,)`` array of continuous parameters
+            discrete_params: ``(len(H),)`` array of discrete parameters (integers)
+
+        Returns:
+            ``(dim, dim)`` array
+        """
+        output = scipy.linalg.expm(np.einsum("a,aij->ij", continuous_params, self.continuous_generators()))
+        for k, h in reversed(zip(discrete_params, self.discrete_generators())):
+            output = np.linalg.matrix_power(h, k) @ output
+        return output
 
     def __repr__(self) -> str:
         return f"Rep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"

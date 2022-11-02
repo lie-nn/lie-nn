@@ -9,16 +9,37 @@ import functools
 import itertools
 from typing import FrozenSet, List, Optional, Tuple, Union
 
-from lie_nn import Irrep, ReducedRep, MulIrrep
+from lie_nn import Irrep, ReducedRep, MulIrrep, Rep
 import numpy as np
 import lie_nn._src.discrete_groups.perm as perm
 from .util import basis_intersection, round_to_sqrt_rational, prod
 from typing import NamedTuple
 
 
-class IrrepsArray(NamedTuple):
+class RepArray(NamedTuple):
+    rep: Rep
+    array: np.ndarray
     list: List[np.ndarray]
+
+
+class IrrepsArray:
     irreps: Tuple[MulIrrep, ...]
+    list: List[np.ndarray]
+
+    @property
+    def array(self):
+        return np.concatenate([np.reshape(x, x.shape[:-2] + (-1,)) for x in self.list], axis=-1)
+
+    def __init__(self, *, irreps, list):
+        assert len(irreps) == len(list)
+        shapes = []
+        for mul_ir, x in zip(irreps, list):
+            assert x.shape[-2] == mul_ir.mul
+            assert x.shape[-1] == mul_ir.rep.dim
+            shapes.append(x.shape[:-2])
+        assert len(set(shapes)) == 1
+        self.irreps = tuple(irreps)
+        self.list = list
 
     def sorted(self):
         indices = list(range(len(self.irreps)))
@@ -42,9 +63,9 @@ class IrrepsArray(NamedTuple):
                 list.append(x)
                 muls.append(mul)
             else:
-                list[-1] = np.concatenate([list[-1], x], axis=-1)
+                list[-1] = np.concatenate([list[-1], x], axis=-2)
                 muls[-1] += mul
-        return IrrepsArray(list, tuple(MulIrrep(mul, irrep) for mul, irrep in zip(muls, irreps)))
+        return IrrepsArray(list=list, irreps=tuple(MulIrrep(mul, irrep) for mul, irrep in zip(muls, irreps)))
 
     def reshape(self, shape):
         assert shape[-1] == -1 or shape[-1] == sum(mul_irrep.mul for mul_irrep in self.irreps)
@@ -71,7 +92,7 @@ def reduced_tensor_product_basis(
     *,
     epsilon: float = 1e-5,
     **irreps_dict,
-) -> IrrepsArray:
+) -> RepArray:
     r"""Reduce a tensor product of multiple irreps subject to some permutation symmetry given by a formula.
 
     Args:
@@ -83,7 +104,7 @@ def reduced_tensor_product_basis(
         irreps_dict (dict): the irreps of each index of the formula. For instance ``i="1x1o"``.
 
     Returns:
-        IrrepsArray: The change of basis
+        RepArray: The change of basis
             The shape is ``(d1, ..., dn, irreps_out.dim)``
             where ``di`` is the dimension of the index ``i`` and ``n`` is the number of indices in the formula.
 
@@ -108,7 +129,8 @@ def reduced_tensor_product_basis(
         irreps_list = formula_or_irreps_list
         irreps_tuple = tuple(_to_reducedrep(irreps) for irreps in irreps_list)
         formulas: FrozenSet[Tuple[int, Tuple[int, ...]]] = frozenset({(1, tuple(range(len(irreps_tuple))))})
-        return _reduced_tensor_product_basis(irreps_tuple, formulas, epsilon)
+        out = _reduced_tensor_product_basis(irreps_tuple, formulas, epsilon)
+        return RepArray(ReducedRep.from_irreps(out.irreps), out.array, out.list)
 
     formula = formula_or_irreps_list
     f0, perm_repr = germinate_perm_repr(formula)
@@ -139,7 +161,8 @@ def reduced_tensor_product_basis(
 
     irreps_tuple = tuple(irreps_dict[i] for i in f0)
 
-    return _reduced_tensor_product_basis(irreps_tuple, perm_repr, epsilon)
+    out = _reduced_tensor_product_basis(irreps_tuple, perm_repr, epsilon)
+    return RepArray(ReducedRep.from_irreps(out.irreps), out.array, out.list)
 
 
 def reduced_symmetric_tensor_product_basis(
@@ -147,7 +170,7 @@ def reduced_symmetric_tensor_product_basis(
     order: int,
     *,
     epsilon: float = 1e-5,
-) -> IrrepsArray:
+) -> RepArray:
     r"""Reduce a symmetric tensor product.
 
     Args:
@@ -155,13 +178,14 @@ def reduced_symmetric_tensor_product_basis(
         order (int): the order of the tensor product. i.e. the number of indices.
 
     Returns:
-        IrrepsArray: The change of basis
+        RepArray: The change of basis
             The shape is ``(d, ..., d, irreps_out.dim)``
             where ``d`` is the dimension of ``irreps``.
     """
     irreps = _to_reducedrep(irreps)
     perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]] = frozenset((1, p) for p in itertools.permutations(range(order)))
-    return _reduced_tensor_product_basis(tuple([irreps] * order), perm_repr, epsilon)
+    out = _reduced_tensor_product_basis(tuple([irreps] * order), perm_repr, epsilon)
+    return RepArray(ReducedRep.from_irreps(out.irreps), out.array, out.list)
 
 
 # @functools.lru_cache(maxsize=None)
@@ -172,11 +196,29 @@ def _reduced_tensor_product_basis(
 ) -> IrrepsArray:
     dims = tuple(irps.dim for irps in irreps_tuple)
 
-    def _recursion(bases: List[Tuple[FrozenSet[int], IrrepsArray]]) -> IrrepsArray:
+    def get_initial_basis(reduced_rep: ReducedRep, i: int) -> List[np.ndarray]:
+        x = np.reshape(
+            np.eye(reduced_rep.dim) if reduced_rep.Q is None else np.linalg.inv(reduced_rep.Q).T,
+            (1,) * i + (reduced_rep.dim,) + (1,) * (len(irreps_tuple) - i - 1) + (reduced_rep.dim,),
+        )
+        x_list = []
+        cursor = 0
+        for mul_ir in reduced_rep.irreps:
+            mul, ir = mul_ir.mul, mul_ir.rep
+            x_list.append(x[..., cursor : cursor + mul * ir.dim].reshape(x.shape[:-1] + (mul, ir.dim)))
+            cursor += mul * ir.dim
+        return x_list
+
+    bases = [
+        (frozenset({i}), IrrepsArray(list=get_initial_basis(reduced_rep, i), irreps=reduced_rep.irreps))
+        for i, reduced_rep in enumerate(irreps_tuple)
+    ]
+
+    while True:
         if len(bases) == 1:
             f, b = bases[0]
             assert f == frozenset(range(len(irreps_tuple)))
-            return b
+            return b.sorted().simplify()
 
         if len(bases) == 2:
             (fa, a) = bases[0]
@@ -184,10 +226,10 @@ def _reduced_tensor_product_basis(
             f = frozenset(fa | fb)
             ab = reduce_basis_product(a, b)
             if len(subrepr_permutation(f, perm_repr)) == 1:
-                return ab
+                return ab.sorted().simplify()
             p = reduce_subgroup_permutation(f, perm_repr, dims)
             ab = constrain_rotation_basis_by_permutation_basis(ab, p, epsilon=epsilon, round_fn=round_to_sqrt_rational)
-            return ab
+            return ab.sorted().simplify()
 
         # greedy algorithm
         min_p = np.inf
@@ -210,25 +252,7 @@ def _reduced_tensor_product_basis(
         sub_perm_repr = subrepr_permutation(f, perm_repr)
         ab = _reduced_tensor_product_basis(sub_irreps, sub_perm_repr, epsilon)
         ab = ab.reshape(tuple(dims[i] if i in f else 1 for i in range(len(dims))) + (-1,))
-        return _recursion([(f, ab)] + bases)
-
-    def get_initial_basis(reduced_rep: ReducedRep, i: int) -> List[np.ndarray]:
-        x = np.reshape(
-            np.eye(reduced_rep.dim) if reduced_rep.Q is None else reduced_rep.Q,
-            (1,) * i + (reduced_rep.dim,) + (1,) * (len(irreps_tuple) - i - 1) + (reduced_rep.dim,),
-        )
-        x_list = []
-        cursor = 0
-        for mul_ir in reduced_rep.irreps:
-            mul, ir = mul_ir.mul, mul_ir.rep
-            x_list.append(x[..., cursor : cursor + mul * ir.dim].reshape(x.shape[:-1] + (mul, ir.dim)))
-            cursor += mul * ir.dim
-        return x_list
-
-    initial_bases = [
-        IrrepsArray(get_initial_basis(reduced_rep, i), reduced_rep.irreps) for i, reduced_rep in enumerate(irreps_tuple)
-    ]
-    return _recursion([(frozenset({i}), base) for i, base in enumerate(initial_bases)])
+        bases = [(f, ab)] + bases
 
 
 @functools.lru_cache(maxsize=None)
@@ -267,6 +291,9 @@ def reduce_basis_product(
     filter_ir_out: Optional[List[Irrep]] = None,
 ) -> IrrepsArray:
     """Reduce the product of two basis."""
+    basis1 = basis1.sorted().simplify()
+    basis2 = basis2.sorted().simplify()
+
     new_irreps: List[Tuple[int, Irrep]] = []
     new_list: List[np.ndarray] = []
 
@@ -316,7 +343,9 @@ def constrain_rotation_basis_by_permutation_basis(
         mul, ir = rotation_basis_mul_ir.mul, rotation_basis_mul_ir.rep
         R = rot_basis[..., 0]
         R = np.reshape(R, (-1, mul)).T  # (mul, dim)
-        P, _ = basis_intersection(R, perm, epsilon=epsilon, round_fn=round_fn)
+
+        perm_opt = perm[~np.all(perm[:, ~np.all(R == 0, axis=0)] == 0, axis=1)]
+        P, _ = basis_intersection(R, perm_opt, epsilon=epsilon, round_fn=round_fn)
 
         if P.shape[0] > 0:
             new_irreps.append((P.shape[0], ir))

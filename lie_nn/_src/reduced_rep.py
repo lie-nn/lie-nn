@@ -15,7 +15,10 @@ class MulIrrep(Rep):
 
     @classmethod
     def from_string(cls, string: str, cls_irrep: Type[Irrep]) -> "MulIrrep":
-        mul, rep = string.split("x")
+        if "x" in string:
+            mul, rep = string.split("x")
+        else:
+            mul, rep = 1, string
         return cls(mul=int(mul), rep=cls_irrep.from_string(rep))
 
     @property
@@ -54,11 +57,13 @@ class ReducedRep(Rep):
     Q: Optional[np.ndarray]  # change of basis matrix
 
     @classmethod
-    def from_string(cls, string: str, cls_irrep: Type[Irrep]) -> "ReducedRep":
-        return cls.from_irreps([MulIrrep.from_string(term, cls_irrep) for term in string.split("+")])
+    def from_string(cls, string: str, cls_irrep: Type[Irrep], Q: Optional[np.ndarray] = None) -> "ReducedRep":
+        return cls.from_irreps([MulIrrep.from_string(term, cls_irrep) for term in string.split("+")], Q)
 
     @classmethod
-    def from_irreps(cls, mul_irreps: Tuple[Union[Irrep, Tuple[int, Irrep], MulIrrep], ...]) -> "ReducedRep":
+    def from_irreps(
+        cls, mul_irreps: Tuple[Union[Irrep, Tuple[int, Irrep], MulIrrep], ...], Q: Optional[np.ndarray] = None
+    ) -> "ReducedRep":
         A = None
         irreps = []
 
@@ -80,7 +85,10 @@ class ReducedRep(Rep):
             else:
                 assert np.allclose(A, mul_ir.algebra())
 
-        return cls(A=A, irreps=irreps, Q=None)
+        dim = sum(mul_ir.dim for mul_ir in irreps)
+        assert Q is None or Q.shape == (dim, dim)
+
+        return cls(A=A, irreps=irreps, Q=Q)
 
     @property
     def dim(self) -> int:
