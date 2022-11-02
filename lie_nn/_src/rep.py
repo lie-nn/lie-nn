@@ -49,7 +49,7 @@ class Rep:
             ``(dim, dim)`` array
         """
         output = scipy.linalg.expm(np.einsum("a,aij->ij", continuous_params, self.continuous_generators()))
-        for k, h in reversed(zip(discrete_params, self.discrete_generators())):
+        for k, h in reversed(list(zip(discrete_params, self.discrete_generators()))):
             output = np.linalg.matrix_power(h, k) @ output
         return output
 
