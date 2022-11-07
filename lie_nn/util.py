@@ -1,4 +1,6 @@
 from ._src.util import (
+    as_approx_integer_ratio,
+    limit_denominator,
     round_to_sqrt_rational,
     vmap,
     block_diagonal,
@@ -14,6 +16,8 @@ from ._src.util import (
 )
 
 __all__ = [
+    "as_approx_integer_ratio",
+    "limit_denominator",
     "round_to_sqrt_rational",
     "vmap",
     "block_diagonal",
