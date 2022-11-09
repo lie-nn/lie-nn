@@ -178,6 +178,13 @@ def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
     j2, m2 = idx2
     j3, m3 = idx3
 
+    j1 = Fraction(int(2 * j1), 2)
+    j2 = Fraction(int(2 * j2), 2)
+    j3 = Fraction(int(2 * j3), 2)
+    m1 = Fraction(int(2 * m1), 2)
+    m2 = Fraction(int(2 * m2), 2)
+    m3 = Fraction(int(2 * m3), 2)
+
     if m3 != m1 + m2:
         return 0
     vmin = int(max([-j1 + j2 + m3, -j1 + m1, 0]))
@@ -187,18 +194,18 @@ def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
         assert n == round(n)
         return factorial(round(n))
 
-    C = (
-        (2.0 * j3 + 1.0)
-        * Fraction(
-            f(j3 + j1 - j2) * f(j3 - j1 + j2) * f(j1 + j2 - j3) * f(j3 + m3) * f(j3 - m3),
-            f(j1 + j2 + j3 + 1) * f(j1 - m1) * f(j1 + m1) * f(j2 - m2) * f(j2 + m2),
-        )
-    ) ** 0.5
+    C = (2 * j3 + 1) * Fraction(
+        f(j3 + j1 - j2) * f(j3 - j1 + j2) * f(j1 + j2 - j3) * f(j3 + m3) * f(j3 - m3),
+        f(j1 + j2 + j3 + 1) * f(j1 - m1) * f(j1 + m1) * f(j2 - m2) * f(j2 + m2),
+    )
 
     S = 0
     for v in range(vmin, vmax + 1):
-        S += (-1.0) ** (v + j2 + m2) * Fraction(
+        S += (-1) ** (v + j2 + m2) * Fraction(
             f(j2 + j3 + m1 - v) * f(j1 - m1 + v), f(v) * f(j3 - j1 + j2 - v) * f(j3 + m3 - v) * f(v + j1 - j2 - m3)
         )
-    C = C * S
-    return C
+
+    if S > 0:
+        return (C * S**2) ** 0.5
+    else:
+        return -((C * S**2) ** 0.5)

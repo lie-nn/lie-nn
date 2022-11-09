@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 from .rep import Rep
-from .util import commutator, kron, vmap, infer_change_of_basis
+from .util import commutator, vmap
 
 
 @dataclass(frozen=True)
@@ -16,42 +16,6 @@ class Irrep(Rep):
     def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
         # Selection rule
         raise NotImplementedError
-
-    @classmethod
-    def clebsch_gordan(cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep", *, round_fn=lambda x: x) -> np.ndarray:
-        r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
-
-        Args:
-            rep1: The first input representation.
-            rep2: The second input representation.
-            rep3: The output representation.
-
-        Returns:
-            The Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
-            It is an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``.
-        """
-        # Check the group structure
-        assert np.allclose(rep1.algebra(), rep2.algebra())
-        assert np.allclose(rep2.algebra(), rep3.algebra())
-
-        i1 = np.eye(rep1.dim)
-        i2 = np.eye(rep2.dim)
-
-        X_in = vmap(lambda x1, x2: kron(x1, i2) + kron(i1, x2))(rep1.continuous_generators(), rep2.continuous_generators())
-        X_out = rep3.continuous_generators()
-
-        H_in = vmap(lambda x1, x2: kron(x1, x2), out_shape=(rep1.dim * rep2.dim, rep1.dim * rep2.dim))(
-            rep1.discrete_generators(), rep2.discrete_generators()
-        )
-        H_out = rep3.discrete_generators()
-
-        cg = infer_change_of_basis(np.concatenate([X_in, H_in]), np.concatenate([X_out, H_out]), round_fn=round_fn)
-
-        assert cg.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
-
-        cg = cg * np.sqrt(rep3.dim)
-        cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
-        return cg
 
     @property
     def lie_dim(rep) -> int:
