@@ -185,7 +185,7 @@ def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
     assert A.dtype in [np.float64, np.complex128], "Gram-Schmidt process only works for float64 matrices."
     Q = []
     for i in range(A.shape[0]):
-        v = A[i]
+        v = np.copy(A[i])
         for w in Q:
             v -= np.dot(np.conj(w), v) * w
         norm = np.linalg.norm(v)

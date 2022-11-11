@@ -28,6 +28,7 @@ class Rep:
         return d
 
     def algebra(self) -> np.ndarray:
+        """``[X_i, X_j] = A_ijk X_k``"""
         raise NotImplementedError
 
     def continuous_generators(self) -> np.ndarray:
@@ -81,15 +82,23 @@ class Rep:
         i1 = np.eye(rep1.dim)
         i2 = np.eye(rep2.dim)
 
-        X_in = vmap(lambda x1, x2: kron(x1, i2) + kron(i1, x2))(rep1.continuous_generators(), rep2.continuous_generators())
-        X_out = rep3.continuous_generators()
+        X_in = vmap(lambda x1, x2: kron(x1.T, i2) + kron(i1, x2.T))(rep1.continuous_generators(), rep2.continuous_generators())
+        X_out = vmap(lambda x3: x3.T)(rep3.continuous_generators())
 
-        H_in = vmap(lambda x1, x2: kron(x1, x2), out_shape=(rep1.dim * rep2.dim, rep1.dim * rep2.dim))(
+        H_in = vmap(lambda x1, x2: kron(x1.T, x2.T), out_shape=(rep1.dim * rep2.dim, rep1.dim * rep2.dim))(
             rep1.discrete_generators(), rep2.discrete_generators()
         )
-        H_out = rep3.discrete_generators()
+        H_out = vmap(lambda x3: x3.T, out_shape=(rep3.dim, rep3.dim))(rep3.discrete_generators())
 
-        cg = infer_change_of_basis(np.concatenate([X_in, H_in]), np.concatenate([X_out, H_out]), round_fn=round_fn)
+        Y_in = np.concatenate([X_in, H_in])
+        Y_out = np.concatenate([X_out, H_out])
+        cg = infer_change_of_basis(Y_in, Y_out, round_fn=round_fn)
+        np.testing.assert_allclose(
+            np.einsum("aij,bjk->abik", Y_in, cg),
+            np.einsum("bij,ajk->abik", cg, Y_out),
+            rtol=1e-10,
+            atol=1e-10,
+        )
 
         assert cg.dtype in [np.float64, np.complex128], "Clebsch-Gordan coefficient must be computed with double precision."
 
@@ -105,6 +114,7 @@ class Rep:
         X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
         X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
         X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
+        assert X1.shape[0] == X2.shape[0] == X3.shape[0]
 
         cg = cls.clebsch_gordan(rep1, rep2, rep3)
         assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
@@ -115,14 +125,24 @@ class Rep:
         # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
         # np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
 
-        if rep3 in rep1 * rep2:
-            assert cg.shape[0] > 0
-        else:
-            assert cg.shape[0] == 0
+        # if rep3 in rep1 * rep2:
+        #     assert cg.shape[0] > 0
+        # else:
+        #     assert cg.shape[0] == 0
 
         left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
         right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
-        np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
+
+        for solution in range(cg.shape[0]):
+            for i in range(X1.shape[0]):
+                if not np.allclose(left_side[solution][i], right_side[solution][i], rtol=rtol, atol=atol):
+                    print('Left side: einsum("zijk,dlk->zdijl", cg, X3)')
+                    print(left_side[solution][i])
+                    print('Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)')
+                    print(right_side[solution][i])
+                    raise AssertionError(
+                        f"Solution {solution} of Clebsch-Gordan coefficient is not correct for Lie algebra generator {i}."
+                    )
 
 
 @dataclasses.dataclass
@@ -148,6 +168,7 @@ class GenericRep(Rep):
         return GenericRep(A, X, H)
 
     def algebra(self) -> np.ndarray:
+        """``[X_i, X_j] = A_ijk X_k``"""
         return self.A
 
     def continuous_generators(self) -> np.ndarray:

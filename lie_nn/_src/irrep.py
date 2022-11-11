@@ -48,5 +48,5 @@ class Irrep(Rep):
         raise NotImplementedError
 
     def algebra(rep=None) -> np.ndarray:
-        # [X_i, X_j] = A_ijk X_k
+        """``[X_i, X_j] = A_ijk X_k``"""
         pass

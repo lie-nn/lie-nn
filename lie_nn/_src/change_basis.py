@@ -10,7 +10,7 @@ from .reduced_rep import MulIrrep, ReducedRep
 
 @dispatch(Rep, object)
 def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
-    iQ = np.linalg.inv(Q)
+    iQ = np.linalg.pinv(Q)
     return GenericRep(
         A=rep.algebra(),
         X=Q @ rep.continuous_generators() @ iQ,
