@@ -1,8 +1,7 @@
-from typing import List
+from functools import reduce
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
-from functools import reduce
-from typing import List, Union, Tuple
 
 
 def prod(list_of_numbers: List[Union[int, float]]) -> Union[int, float]:
@@ -386,3 +385,44 @@ def basis_intersection(
     x2 = v[basis1.shape[0] :, :]
     x2 = gram_schmidt(x2 @ x2.T, epsilon=epsilon, round_fn=round_fn)
     return x1, x2
+
+
+def test_algebra_vs_generators(A: np.ndarray, X: np.ndarray, rtol: float = 1e-10, atol: float = 1e-10):
+    left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
+    right_side = np.einsum("ijk,kab->ijab", A, X)
+    return np.allclose(left_side, right_side, rtol=rtol, atol=atol)
+
+
+def infer_algebra_from_generators(
+    X: np.ndarray, *, round_fn=lambda x: x, rtol: float = 1e-10, atol: float = 1e-10
+) -> Optional[np.ndarray]:
+    """Infer the algebra from the generators.
+
+    .. math::
+
+        [X_i, X_j] = A_ijk X_k
+
+    Args:
+        X (np.ndarray): The generators of the algebra. Shape ``(n, d, d)``.
+        round_fn (function, optional): Function to round the matrices. Defaults to the identity.
+        rtol (float, optional): Relative tolerance to test the validity of the algebra. Defaults to 1e-10.
+        atol (float, optional): Absolute tolerance to test the validity of the algebra. Defaults to 1e-10.
+
+    Returns:
+        np.ndarray: If successful, the algebra. Shape ``(n, n, n)``.
+    """
+    n = X.shape[0]
+    pinv = np.linalg.pinv(X.reshape((n, -1)))
+
+    algebra = np.zeros((n, n, n))
+    for i in range(n):
+        for j in range(n):
+            xij = commutator(X[i], X[j])
+            algebra[i, j] = xij.reshape(-1) @ pinv
+
+    algebra = round_fn(algebra)
+
+    if test_algebra_vs_generators(algebra, X, rtol=rtol, atol=atol):
+        return algebra
+    else:
+        return None

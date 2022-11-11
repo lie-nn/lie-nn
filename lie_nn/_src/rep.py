@@ -2,8 +2,8 @@ import dataclasses
 
 import numpy as np
 import scipy.linalg
-
-from .util import infer_change_of_basis, kron, vmap
+from typing import Optional
+from .util import infer_change_of_basis, kron, vmap, infer_algebra_from_generators, test_algebra_vs_generators
 
 
 class Rep:
@@ -97,6 +97,33 @@ class Rep:
         cg = cg.reshape((-1, rep1.dim, rep2.dim, rep3.dim))
         return cg
 
+    def test_algebra_vs_generators(rep: "Rep", rtol=1e-10, atol=1e-10):
+        assert test_algebra_vs_generators(rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol)
+
+    @classmethod
+    def test_clebsch_gordan_vs_generators(cls, rep1: "Rep", rep2: "Rep", rep3: "Rep", rtol=1e-10, atol=1e-10):
+        X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
+        X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
+        X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
+
+        cg = cls.clebsch_gordan(rep1, rep2, rep3)
+        assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
+        assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
+
+        # Orthogonality
+        # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
+        # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
+        # np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
+
+        if rep3 in rep1 * rep2:
+            assert cg.shape[0] > 0
+        else:
+            assert cg.shape[0] == 0
+
+        left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
+        right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
+        np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
+
 
 @dataclasses.dataclass
 class GenericRep(Rep):
@@ -107,6 +134,18 @@ class GenericRep(Rep):
 
     def from_rep(rep: Rep) -> "GenericRep":
         return GenericRep(rep.algebra(), rep.continuous_generators(), rep.discrete_generators())
+
+    def from_generators(
+        X: np.ndarray,
+        H: Optional[np.ndarray] = None,
+        round_fn=lambda x: x,
+    ) -> Optional["GenericRep"]:
+        A = infer_algebra_from_generators(X, round_fn=round_fn)
+        if A is None:
+            return None
+        if H is None:
+            H = np.zeros((0, X.shape[1], X.shape[1]))
+        return GenericRep(A, X, H)
 
     def algebra(self) -> np.ndarray:
         return self.A

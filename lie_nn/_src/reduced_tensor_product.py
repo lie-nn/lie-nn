@@ -107,22 +107,6 @@ def reduced_tensor_product_basis(
         RepArray: The change of basis
             The shape is ``(d1, ..., dn, irreps_out.dim)``
             where ``di`` is the dimension of the index ``i`` and ``n`` is the number of indices in the formula.
-
-    Example:
-        >>> np.set_printoptions(precision=3, suppress=True)
-        >>> reduced_tensor_product_basis("ij=-ji", i="1x1o")
-        1x1e
-        [[[ 0.     0.     0.   ]
-          [ 0.     0.     0.707]
-          [ 0.    -0.707  0.   ]]
-        <BLANKLINE>
-         [[ 0.     0.    -0.707]
-          [ 0.     0.     0.   ]
-          [ 0.707  0.     0.   ]]
-        <BLANKLINE>
-         [[ 0.     0.707  0.   ]
-          [-0.707  0.     0.   ]
-          [ 0.     0.     0.   ]]]
     """
 
     if isinstance(formula_or_irreps_list, (tuple, list)):
