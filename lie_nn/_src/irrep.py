@@ -50,3 +50,8 @@ class Irrep(Rep):
     def algebra(rep=None) -> np.ndarray:
         """``[X_i, X_j] = A_ijk X_k``"""
         pass
+
+    @classmethod
+    def clebsch_gordan(cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep") -> np.ndarray:
+        # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
+        raise NotImplementedError
