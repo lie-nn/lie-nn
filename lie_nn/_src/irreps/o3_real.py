@@ -36,6 +36,10 @@ class O3Rep(Irrep):
     def dim(rep: "O3Rep") -> int:
         return 2 * rep.l + 1
 
+    def is_scalar(rep: "O3Rep") -> bool:
+        """Equivalent to ``l == 0``"""
+        return rep.l == 0
+
     def __lt__(rep1: "O3Rep", rep2: "O3Rep") -> bool:
         # scalar, speudo-scalar, vector, pseudo-vector, tensor, pseudo-tensor, ...
         return (rep1.l, -((-1) ** rep1.l) * rep1.p) < (rep2.l, -((-1) ** rep2.l) * rep2.p)

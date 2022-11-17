@@ -32,6 +32,10 @@ class SU2Rep(Irrep):
     def dim(rep: "SU2Rep") -> int:
         return rep.j + 1
 
+    def is_scalar(rep: "SU2Rep") -> bool:
+        """Equivalent to ``j == 0``"""
+        return rep.j == 0
+
     def __lt__(rep1: "SU2Rep", rep2: "SU2Rep") -> bool:
         return rep1.j < rep2.j
 
@@ -64,23 +68,7 @@ class SU2Rep(Irrep):
     def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
         return np.array(
-            [
-                [
-                    [0, 0, 0],
-                    [0, 0, 1],
-                    [0, -1, 0],
-                ],
-                [
-                    [0, 0, -1],
-                    [0, 0, 0],
-                    [1, 0, 0],
-                ],
-                [
-                    [0, 1, 0],
-                    [-1, 0, 0],
-                    [0, 0, 0.0],
-                ],
-            ]
+            [[[0, 0, 0], [0, 0, 1], [0, -1, 0],], [[0, 0, -1], [0, 0, 0], [1, 0, 0],], [[0, 1, 0], [-1, 0, 0], [0, 0, 0.0],],]
         )
 
 
@@ -206,6 +194,7 @@ def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
         )
 
     if S > 0:
-        return (C * S**2) ** 0.5
+        return (C * S ** 2) ** 0.5
     else:
-        return -((C * S**2) ** 0.5)
+        return -((C * S ** 2) ** 0.5)
+

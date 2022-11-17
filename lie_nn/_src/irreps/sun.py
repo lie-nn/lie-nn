@@ -395,12 +395,12 @@ def algebra(S: WEIGHT):
     N = len(S)
     X = generators(S)
 
-    x = X.reshape(N**2 - 1, -1)
+    x = X.reshape(N ** 2 - 1, -1)
     pix = np.linalg.pinv(x)
     # np.testing.assert_allclose(x @ pix, np.eye(N**2 - 1), atol=1e-10)
 
     C = np.einsum("iab,jbc->ijac", X, X) - np.einsum("jab,ibc->ijac", X, X)
-    C = C.reshape(N**2 - 1, N**2 - 1, -1)
+    C = C.reshape(N ** 2 - 1, N ** 2 - 1, -1)
 
     A = np.einsum("ijz,zk->ijk", C, pix)
     A = np.real(A)
@@ -440,6 +440,10 @@ class SUNRep(Irrep):
     @property
     def dim(rep: "SUNRep") -> int:
         return dim(rep.S)
+
+    def is_scalar(rep: "SUNRep") -> bool:
+        """Equivalent to ``S=(0,...,0)``"""
+        return all(s == 0 for s in rep.S)
 
     def discrete_generators(rep: "SUNRep") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))

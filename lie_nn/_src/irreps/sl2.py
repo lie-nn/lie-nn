@@ -57,6 +57,10 @@ class SL2Rep(Irrep):
     def dim(rep: "SL2Rep") -> int:
         return (rep.l + 1) * (rep.k + 1)
 
+    def is_scalar(rep: "SL2Rep") -> bool:
+        """Equivalent to ``l == 0 and k == 0``"""
+        return rep.l == 0 and rep.k == 0
+
     def __lt__(rep1: "SL2Rep", rep2: "SL2Rep") -> bool:
         return (rep1.l + rep1.k, rep1.l) < (rep2.l + rep2.k, rep2.l)
 

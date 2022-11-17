@@ -39,6 +39,10 @@ class SO13Rep(Irrep):  # TODO: think if this class shoulb be a subclass of SL2Re
     def dim(rep: "SO13Rep") -> int:
         return SL2Rep(l=rep.l, k=rep.k).dim
 
+    def is_scalar(rep: "SO13Rep") -> bool:
+        """Equivalent to ``l == 0 and k == 0``"""
+        return rep.l == 0 and rep.k == 0
+
     def __lt__(rep1: "SO13Rep", rep2: "SO13Rep") -> bool:
         return (rep1.l + rep1.k, rep1.l) < (rep2.l + rep2.k, rep2.l)
 
