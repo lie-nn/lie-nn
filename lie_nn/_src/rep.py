@@ -66,41 +66,6 @@ class Rep:
     def test_algebra_vs_generators(rep: "Rep", rtol=1e-10, atol=1e-10):
         assert test_algebra_vs_generators(rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol)
 
-    @classmethod
-    def test_clebsch_gordan_vs_generators(cls, rep1: "Rep", rep2: "Rep", rep3: "Rep", rtol=1e-10, atol=1e-10):
-        X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
-        X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
-        X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
-        assert X1.shape[0] == X2.shape[0] == X3.shape[0]
-
-        cg = cls.clebsch_gordan(rep1, rep2, rep3)
-        assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
-        assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
-
-        # Orthogonality
-        # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
-        # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
-        # np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
-
-        # if rep3 in rep1 * rep2:
-        #     assert cg.shape[0] > 0
-        # else:
-        #     assert cg.shape[0] == 0
-
-        left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
-        right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
-
-        for solution in range(cg.shape[0]):
-            for i in range(X1.shape[0]):
-                if not np.allclose(left_side[solution][i], right_side[solution][i], rtol=rtol, atol=atol):
-                    print('Left side: einsum("zijk,dlk->zdijl", cg, X3)')
-                    print(left_side[solution][i])
-                    print('Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)')
-                    print(right_side[solution][i])
-                    raise AssertionError(
-                        f"Solution {solution} of Clebsch-Gordan coefficient is not correct for Lie algebra generator {i}."
-                    )
-
 
 @dataclasses.dataclass
 class GenericRep(Rep):
@@ -143,3 +108,40 @@ class GenericRep(Rep):
 
     def __repr__(self) -> str:
         return f"GenericRep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
+
+
+def clebsch_gordan_vs_generators_test(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):
+    X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
+    X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
+    X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
+    assert X1.shape[0] == X2.shape[0] == X3.shape[0]
+
+    from .clebsch_gordan import clebsch_gordan
+
+    cg = clebsch_gordan(rep1, rep2, rep3)
+    assert cg.ndim == 1 + 3, (rep1, rep2, rep3, cg.shape)
+    assert cg.shape == (cg.shape[0], rep1.dim, rep2.dim, rep3.dim)
+
+    # Orthogonality
+    # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
+    # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
+    # np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
+
+    # if rep3 in rep1 * rep2:
+    #     assert cg.shape[0] > 0
+    # else:
+    #     assert cg.shape[0] == 0
+
+    left_side = np.einsum("zijk,dlk->zdijl", cg, X3)
+    right_side = np.einsum("dil,zijk->zdljk", X1, cg) + np.einsum("djl,zijk->zdilk", X2, cg)
+
+    for solution in range(cg.shape[0]):
+        for i in range(X1.shape[0]):
+            if not np.allclose(left_side[solution][i], right_side[solution][i], rtol=rtol, atol=atol):
+                print('Left side: einsum("zijk,dlk->zdijl", cg, X3)')
+                print(left_side[solution][i])
+                print('Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)')
+                print(right_side[solution][i])
+                raise AssertionError(
+                    f"Solution {solution} of Clebsch-Gordan coefficient is not correct for Lie algebra generator {i}."
+                )

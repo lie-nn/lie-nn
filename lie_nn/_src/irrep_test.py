@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn import Irrep
+from lie_nn import Irrep, clebsch_gordan, clebsch_gordan_vs_generators_test, GenericRep
 from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2RealRep, SU2Rep, SU2Rep_, SU3Rep, SU4Rep
 from lie_nn.util import round_to_sqrt_rational
 
@@ -25,18 +25,18 @@ def test_algebra_vs_generators(ir: Irrep):
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
 def test_numerical_cg_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
-    Irrep.test_clebsch_gordan_vs_generators(ir1, ir2, ir3)
+    clebsch_gordan_vs_generators_test(GenericRep.from_rep(ir1), ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
-def test_clebsch_gordan_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
-    ir1.test_clebsch_gordan_vs_generators(ir1, ir2, ir3)
+def test_irreps_clebsch_gordan_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
+    clebsch_gordan_vs_generators_test(ir1, ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
 def test_recompute_clebsch_gordan(ir1: Irrep, ir2: Irrep, ir3: Irrep):
     tol = 1e-14
-    C1 = Irrep.clebsch_gordan(ir1, ir2, ir3, round_fn=round_to_sqrt_rational)
+    C1 = clebsch_gordan(ir1, ir2, ir3, round_fn=round_to_sqrt_rational)
     C2 = ir1.clebsch_gordan(ir1, ir2, ir3)
     assert np.allclose(C1, C2, atol=tol, rtol=tol) or np.allclose(C1, -C2, atol=tol, rtol=tol)
 

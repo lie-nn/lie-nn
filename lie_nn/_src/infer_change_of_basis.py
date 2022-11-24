@@ -1,12 +1,26 @@
 import numpy as np
-from multipledispatch import dispatch
 
-from .rep import GenericRep, Rep
+from .rep import Rep
 from .util import infer_change_of_basis as _infer_change_of_basis
 
+# TODO (mario): Can be specialized for ReducedRep
 
-# @dispatch(Rep, Rep, object)
+
 def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndarray:
+    r"""Infers the change of basis matrix between two representations.
+
+    .. math::
+
+        Q \rho_1 = \rho_2 Q
+
+    Args:
+        rep1: A representation.
+        rep2: A representation.
+        round_fn (optional): A rounding function used in numerical computations.
+
+    Returns:
+        The change of basis matrix ``Q``.
+    """
     # Check the group structure
     assert np.allclose(rep1.algebra(), rep2.algebra())
 
@@ -15,7 +29,10 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndar
 
     A = _infer_change_of_basis(Y2, Y1, round_fn=round_fn)
     np.testing.assert_allclose(
-        np.einsum("aij,bjk->abik", Y2, A), np.einsum("bij,ajk->abik", A, Y1), rtol=1e-10, atol=1e-10,
+        np.einsum("aij,bjk->abik", Y2, A),
+        np.einsum("bij,ajk->abik", A, Y1),
+        rtol=1e-10,
+        atol=1e-10,
     )
 
     assert A.dtype in [np.float64, np.complex128]

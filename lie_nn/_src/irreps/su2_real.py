@@ -7,6 +7,7 @@ from ..util import is_half_integer, is_integer, round_to_sqrt_rational
 
 from ..irrep import Irrep
 from .su2 import SU2Rep
+from lie_nn import clebsch_gordan
 
 
 def change_basis_real_to_complex(j: float) -> np.ndarray:
@@ -41,6 +42,8 @@ class SU2RealRep(Irrep):
 
     @classmethod
     def clebsch_gordan(cls, rep1: "SU2RealRep", rep2: "SU2RealRep", rep3: "SU2RealRep") -> np.ndarray:
+        from lie_nn import GenericRep
+
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if is_integer(rep1.j) and is_integer(rep2.j) and is_integer(rep3.j):
             C = SU2Rep.clebsch_gordan(SU2Rep(j=int(2 * rep1.j)), SU2Rep(j=int(2 * rep2.j)), SU2Rep(j=int(2 * rep3.j)))
@@ -49,7 +52,7 @@ class SU2RealRep(Irrep):
             Q3 = change_basis_real_to_complex(rep3.j)
             C = np.einsum("ij,kl,mn,zikn->zjlm", Q1, Q2, np.conj(Q3.T), C)
         else:
-            C = Irrep.clebsch_gordan(rep1, rep2, rep3, round_fn=round_to_sqrt_rational)
+            C = clebsch_gordan(GenericRep.from_rep(rep1), rep2, rep3, round_fn=round_to_sqrt_rational)
 
         assert np.all(np.abs(np.imag(C)) < 1e-5)
         return np.real(C)
