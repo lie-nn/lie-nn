@@ -11,6 +11,9 @@ from ._src.clebsch_gordan import clebsch_gordan
 from ._src.infer_change_of_basis import infer_change_of_basis
 from ._src.conjugate import conjugate
 
+from lie_nn import irreps as irreps
+from lie_nn import util as util
+
 __all__ = [
     "Rep",
     "GenericRep",
@@ -27,4 +30,6 @@ __all__ = [
     "clebsch_gordan",
     "infer_change_of_basis",
     "conjugate",
+    "irreps",
+    "util",
 ]
