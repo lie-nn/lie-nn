@@ -1,6 +1,6 @@
 __version__ = "0.0.0"
 
-from ._src.rep import Rep, GenericRep
+from ._src.rep import Rep, GenericRep, clebsch_gordan_vs_generators_test
 from ._src.irrep import Irrep
 from ._src.reduced_rep import MulIrrep, ReducedRep
 from ._src.change_basis import change_basis
@@ -12,6 +12,7 @@ from ._src.clebsch_gordan import clebsch_gordan
 __all__ = [
     "Rep",
     "GenericRep",
+    "clebsch_gordan_vs_generators_test",
     "Irrep",
     "MulIrrep",
     "ReducedRep",
