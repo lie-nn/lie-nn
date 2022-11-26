@@ -426,3 +426,16 @@ def infer_algebra_from_generators(
         return algebra
     else:
         return None
+
+
+def sign(p):
+    if len(p) == 1:
+        return True
+
+    trans = 0
+    for i in range(0, len(p)):
+        for j in range(i + 1, len(p)):
+            if p[i] > p[j]:
+                trans += 1
+
+    return 1 if (trans % 2) == 0 else -1

@@ -13,6 +13,8 @@ from ._src.util import (
     sequential_null_space,
     infer_change_of_basis,
     basis_intersection,
+    sign,
+    test_algebra_vs_generators,
 )
 
 __all__ = [
@@ -30,4 +32,6 @@ __all__ = [
     "sequential_null_space",
     "infer_change_of_basis",
     "basis_intersection",
+    "sign",
+    "test_algebra_vs_generators",
 ]

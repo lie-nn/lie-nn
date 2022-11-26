@@ -6,21 +6,8 @@ from typing import Iterator
 import numpy as np
 
 from ..irrep import Irrep
-from ..util import vmap
+from ..util import vmap, sign
 from .su2 import SU2Rep, clebsch_gordanSU2mat
-
-
-def sign(p):
-    if len(p) == 1:
-        return True
-
-    trans = 0
-    for i in range(0, len(p)):
-        for j in range(i + 1, len(p)):
-            if p[i] > p[j]:
-                trans += 1
-
-    return 1 if (trans % 2) == 0 else -1
 
 
 @dataclass(frozen=True)
