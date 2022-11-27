@@ -111,6 +111,13 @@ class GenericRep(Rep):
 
 
 def clebsch_gordan_vs_generators_test(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):
+    assert np.allclose(rep1.algebra(), rep2.algebra(), rtol=rtol, atol=atol)
+    assert np.allclose(rep1.algebra(), rep3.algebra(), rtol=rtol, atol=atol)
+
+    rep1.test_algebra_vs_generators(rtol=rtol, atol=atol)
+    rep2.test_algebra_vs_generators(rtol=rtol, atol=atol)
+    rep3.test_algebra_vs_generators(rtol=rtol, atol=atol)
+
     X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
     X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
     X3 = rep3.continuous_generators()  # (lie_group_dimension, rep3.dim, rep3.dim)
@@ -138,10 +145,14 @@ def clebsch_gordan_vs_generators_test(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-1
     for solution in range(cg.shape[0]):
         for i in range(X1.shape[0]):
             if not np.allclose(left_side[solution][i], right_side[solution][i], rtol=rtol, atol=atol):
+                np.set_printoptions(precision=3, suppress=True)
+                print(rep1, rep2, rep3)
                 print('Left side: einsum("zijk,dlk->zdijl", cg, X3)')
                 print(left_side[solution][i])
                 print('Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)')
                 print(right_side[solution][i])
+                np.set_printoptions(precision=8, suppress=False)
                 raise AssertionError(
-                    f"Solution {solution} of Clebsch-Gordan coefficient is not correct for Lie algebra generator {i}."
+                    f"Solution {solution}/{cg.shape[0]} for {rep1} * {rep2} = {rep3} is not correct."
+                    f"Clebsch-Gordan coefficient is not correct for Lie algebra generator {i}."
                 )

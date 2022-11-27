@@ -6,7 +6,7 @@ from typing import Iterator
 import numpy as np
 
 from ..irrep import Irrep
-from ..util import vmap, sign
+from ..util import sign, vmap
 from .su2 import SU2, clebsch_gordanSU2mat
 
 
