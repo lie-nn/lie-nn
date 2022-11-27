@@ -3,11 +3,11 @@ import itertools
 import numpy as np
 import pytest
 from lie_nn import Irrep, clebsch_gordan, clebsch_gordan_vs_generators_test, GenericRep
-from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2RealRep, SU2Rep, SU2Rep_, SU3Rep, SU4Rep
+from lie_nn.irreps import O3, SL2C, SO3, SO13, SU2Real, SU2, SU2_, SU3, SU4
 from lie_nn.util import round_to_sqrt_rational
 
 
-REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SU2RealRep, SL2Rep, SO13Rep, SU2Rep_, SU3Rep, SU4Rep]
+REPRESENTATIONS = [O3, SU2, SO3, SU2Real, SL2C, SO13, SU2_, SU3, SU4]
 
 
 def bunch_of_reps():

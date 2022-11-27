@@ -3,17 +3,17 @@ import itertools
 import numpy as np
 import pytest
 from lie_nn import GenericRep, Irrep, MulIrrep, ReducedRep, tensor_product, tensor_power
-from lie_nn.irreps import O3Rep, SL2Rep, SO3Rep, SO13Rep, SU2Rep
+from lie_nn.irreps import O3, SL2C, SO3, SO13, SU2
 
 
 def first_reps(IR: Irrep, n: int):
     return list(itertools.islice(IR.iterator(), n))
 
 
-REPRESENTATIONS = [O3Rep, SU2Rep, SO3Rep, SL2Rep, SO13Rep]
-# TODO: add SU2RealRep (or remove it completely)
-# Note: SU2RealRep are not Irreps and this might be a problem
-# TODO: resolve tensor_product_consistency for SU3Rep, SU4Rep
+REPRESENTATIONS = [O3, SU2, SO3, SL2C, SO13]
+# TODO: add SU2Real (or remove it completely)
+# Note: SU2Real are not Irreps and this might be a problem
+# TODO: resolve tensor_product_consistency for SU3, SU4
 
 
 @pytest.mark.parametrize("ir1, ir2", sum((list(itertools.product(first_reps(IR, 4), repeat=2)) for IR in REPRESENTATIONS), []))
@@ -32,11 +32,11 @@ def test_tensor_product_consistency(ir1, ir2):
 
 
 def test_tensor_product_types():
-    assert isinstance(tensor_product(O3Rep(l=1, p=1), O3Rep(l=1, p=1)), ReducedRep)
-    assert isinstance(tensor_product(O3Rep(l=1, p=1), MulIrrep(mul=2, rep=O3Rep(l=1, p=1))), ReducedRep)
+    assert isinstance(tensor_product(O3(l=1, p=1), O3(l=1, p=1)), ReducedRep)
+    assert isinstance(tensor_product(O3(l=1, p=1), MulIrrep(mul=2, rep=O3(l=1, p=1))), ReducedRep)
 
 
 def test_tensor_power_types():
-    assert isinstance(tensor_power(O3Rep(l=1, p=1), 2), ReducedRep)
-    assert isinstance(tensor_power(MulIrrep(mul=2, rep=O3Rep(l=1, p=1)), 2), ReducedRep)
-    assert isinstance(tensor_power(GenericRep.from_rep(O3Rep(l=1, p=1)), 2), GenericRep)
+    assert isinstance(tensor_power(O3(l=1, p=1), 2), ReducedRep)
+    assert isinstance(tensor_power(MulIrrep(mul=2, rep=O3(l=1, p=1)), 2), ReducedRep)
+    assert isinstance(tensor_power(GenericRep.from_rep(O3(l=1, p=1)), 2), GenericRep)

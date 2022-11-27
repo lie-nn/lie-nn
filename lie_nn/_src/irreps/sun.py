@@ -395,12 +395,12 @@ def algebra(S: WEIGHT):
     N = len(S)
     X = generators(S)
 
-    x = X.reshape(N ** 2 - 1, -1)
+    x = X.reshape(N**2 - 1, -1)
     pix = np.linalg.pinv(x)
     # np.testing.assert_allclose(x @ pix, np.eye(N**2 - 1), atol=1e-10)
 
     C = np.einsum("iab,jbc->ijac", X, X) - np.einsum("jab,ibc->ijac", X, X)
-    C = C.reshape(N ** 2 - 1, N ** 2 - 1, -1)
+    C = C.reshape(N**2 - 1, N**2 - 1, -1)
 
     A = np.einsum("ijz,zk->ijk", C, pix)
     A = np.real(A)
@@ -409,7 +409,7 @@ def algebra(S: WEIGHT):
 
 
 @dataclass(frozen=True)
-class SUNRep(Irrep):
+class SUN(Irrep):
     S: Tuple[int]  # List of weights of the representation
 
     def __post_init__(rep):
@@ -418,76 +418,76 @@ class SUNRep(Irrep):
         assert rep.S[-1] == 0
 
     @classmethod
-    def from_string(cls, s: str) -> "SUNRep":
+    def from_string(cls, s: str) -> "SUN":
         # (4,3,2,1,0)
         m = re.match(r"\((\d+(?:,\d+)*)\)", s)
         return cls(S=tuple(map(int, m.group(1).split(","))))
 
-    def __mul__(rep1: "SUNRep", rep2: "SUNRep") -> List["SUNRep"]:
-        return map(SUNRep, sorted(set(mul_rep(rep1.S, rep2.S))))
+    def __mul__(rep1: "SUN", rep2: "SUN") -> List["SUN"]:
+        return map(SUN, sorted(set(mul_rep(rep1.S, rep2.S))))
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SUNRep", rep2: "SUNRep", rep3: "SUNRep") -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "SUN", rep2: "SUN", rep3: "SUN") -> np.ndarray:
         # return an array of shape ``(dim_null_space, rep1.dim, rep2.dim, rep3.dim)``
         return clebsch_gordan_matrix(rep1.S, rep2.S, rep3.S)
 
-    def __lt__(rep1: "SUNRep", rep2: "SUNRep") -> bool:
+    def __lt__(rep1: "SUN", rep2: "SUN") -> bool:
         return rep1.S < rep2.S
 
-    def __eq__(rep1: "SUNRep", rep2: "SUNRep") -> bool:
+    def __eq__(rep1: "SUN", rep2: "SUN") -> bool:
         return rep1.S == rep2.S
 
     @property
-    def dim(rep: "SUNRep") -> int:
+    def dim(rep: "SUN") -> int:
         return dim(rep.S)
 
-    def is_scalar(rep: "SUNRep") -> bool:
+    def is_scalar(rep: "SUN") -> bool:
         """Equivalent to ``S=(0,...,0)``"""
         return all(s == 0 for s in rep.S)
 
-    def discrete_generators(rep: "SUNRep") -> np.ndarray:
+    def discrete_generators(rep: "SUN") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SUNRep") -> np.ndarray:
+    def continuous_generators(rep: "SUN") -> np.ndarray:
         return generators(rep.S)
 
-    def algebra(rep: "SUNRep") -> np.ndarray:
+    def algebra(rep: "SUN") -> np.ndarray:
         if rep.S == (0,):
             return np.zeros((1, 1, 1))
         return algebra((1,) + (0,) * (len(rep.S) - 1))
 
 
 @dataclass(frozen=True)
-class SU2Rep_(SUNRep):
+class SU2_(SUN):
     def __post_init__(rep):
         assert len(rep.S) == 2
 
     @classmethod
-    def iterator(cls) -> Iterator["SU2Rep_"]:
+    def iterator(cls) -> Iterator["SU2_"]:
         for j in itertools.count(0):
-            yield SU2Rep_(S=(j, 0))
+            yield SU2_(S=(j, 0))
 
 
 @dataclass(frozen=True)
-class SU3Rep(SUNRep):
+class SU3(SUN):
     def __post_init__(rep):
         assert len(rep.S) == 3
 
     @classmethod
-    def iterator(cls) -> Iterator["SU3Rep"]:
+    def iterator(cls) -> Iterator["SU3"]:
         for j1 in itertools.count(0):
             for j2 in range(j1 + 1):
-                yield SU3Rep(S=(j1, j2, 0))
+                yield SU3(S=(j1, j2, 0))
 
 
 @dataclass(frozen=True)
-class SU4Rep(SUNRep):
+class SU4(SUN):
     def __post_init__(rep):
         assert len(rep.S) == 4
 
     @classmethod
-    def iterator(cls) -> Iterator["SU4Rep"]:
+    def iterator(cls) -> Iterator["SU4"]:
         for j1 in itertools.count(0):
             for j2 in range(j1 + 1):
                 for j3 in range(j2 + 1):
-                    yield SU4Rep(S=(j1, j2, j3, 0))
+                    yield SU4(S=(j1, j2, j3, 0))

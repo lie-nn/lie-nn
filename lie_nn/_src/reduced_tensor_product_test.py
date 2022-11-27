@@ -1,11 +1,11 @@
 from lie_nn import reduced_symmetric_tensor_product_basis
-from lie_nn.irreps import SO3Rep
+from lie_nn.irreps import SO3
 from lie_nn import ReducedRep
 import numpy as np
 
 
 def test_tensor_product_basis_equivariance():
-    irreps = ReducedRep.from_string("0+1+2+0", SO3Rep)
+    irreps = ReducedRep.from_string("0+1+2+0", SO3)
     Q = reduced_symmetric_tensor_product_basis(irreps, 3)
 
     params = (0.2, 0.1, 0.13)

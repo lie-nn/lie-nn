@@ -7,11 +7,11 @@ import numpy as np
 
 from ..irrep import Irrep
 from ..util import vmap, sign
-from .su2 import SU2Rep, clebsch_gordanSU2mat
+from .su2 import SU2, clebsch_gordanSU2mat
 
 
 @dataclass(frozen=True)
-class SL2Rep(Irrep):
+class SL2C(Irrep):
     l: int  # First integer weight
     k: int  # Second integer weight
 
@@ -22,18 +22,18 @@ class SL2Rep(Irrep):
         assert rep.k >= 0
 
     @classmethod
-    def from_string(cls, s: str) -> "SL2Rep":
+    def from_string(cls, s: str) -> "SL2C":
         m = re.match(r"\((\d+),(\d+)\)", s.strip())
         assert m is not None
         return cls(l=int(m.group(1)), k=int(m.group(2)))
 
-    def __mul__(rep1: "SL2Rep", rep2: "SL2Rep") -> Iterator["SL2Rep"]:
+    def __mul__(rep1: "SL2C", rep2: "SL2C") -> Iterator["SL2C"]:
         for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 2):
             for k in range(abs(rep1.k - rep2.k), rep1.k + rep2.k + 1, 2):
-                yield SL2Rep(l=l, k=k)
+                yield SL2C(l=l, k=k)
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SL2Rep", rep2: "SL2Rep", rep3: "SL2Rep") -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "SL2C", rep2: "SL2C", rep3: "SL2C") -> np.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordansl2mat((rep1.l, rep1.k), (rep2.l, rep2.k), (rep3.l, rep3.k))[None]
@@ -41,38 +41,38 @@ class SL2Rep(Irrep):
             return np.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
-    def dim(rep: "SL2Rep") -> int:
+    def dim(rep: "SL2C") -> int:
         return (rep.l + 1) * (rep.k + 1)
 
-    def is_scalar(rep: "SL2Rep") -> bool:
+    def is_scalar(rep: "SL2C") -> bool:
         """Equivalent to ``l == 0 and k == 0``"""
         return rep.l == 0 and rep.k == 0
 
-    def __lt__(rep1: "SL2Rep", rep2: "SL2Rep") -> bool:
+    def __lt__(rep1: "SL2C", rep2: "SL2C") -> bool:
         return (rep1.l + rep1.k, rep1.l) < (rep2.l + rep2.k, rep2.l)
 
     @classmethod
-    def iterator(cls) -> Iterator["SL2Rep"]:
+    def iterator(cls) -> Iterator["SL2C"]:
         for sum in itertools.count(0):
             for l in range(0, sum + 1):
-                yield SL2Rep(l=l, k=sum - l)
+                yield SL2C(l=l, k=sum - l)
 
-    def discrete_generators(rep: "SL2Rep") -> np.ndarray:
+    def discrete_generators(rep: "SL2C") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SL2Rep") -> np.ndarray:
+    def continuous_generators(rep: "SL2C") -> np.ndarray:
         def id_like(x):
             return np.eye(x.shape[0])
 
         def kron_add(x, y):
             return np.kron(x, id_like(y)) + np.conj(np.kron(id_like(x), y))
 
-        Xl = SU2Rep(j=rep.l).continuous_generators()
-        Xk = SU2Rep(j=rep.k).continuous_generators()
+        Xl = SU2(j=rep.l).continuous_generators()
+        Xk = SU2(j=rep.k).continuous_generators()
         real = vmap(kron_add)(Xl, Xk)
         imag = vmap(kron_add)(Xl, -Xk)
         X = np.concatenate([real, imag], axis=0)
-        C = SL2Rep.clebsch_gordan(SL2Rep(l=rep.l, k=0), SL2Rep(l=0, k=rep.k), SL2Rep(l=rep.l, k=rep.k)).reshape(
+        C = SL2C.clebsch_gordan(SL2C(l=rep.l, k=0), SL2C(l=0, k=rep.k), SL2C(l=rep.l, k=rep.k)).reshape(
             rep.dim, rep.dim
         )  # [d, d]
         return C.T @ X @ np.conj(C)

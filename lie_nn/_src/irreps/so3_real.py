@@ -5,7 +5,7 @@ from typing import Iterator
 import numpy as np
 
 from ..irrep import Irrep
-from .su2 import SU2Rep
+from .su2 import SU2
 
 
 def change_basis_real_to_complex(l: int) -> np.ndarray:
@@ -22,21 +22,21 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
 
 
 @dataclass(frozen=True)
-class SO3Rep(Irrep):
+class SO3(Irrep):
     l: int
 
     @classmethod
-    def from_string(cls, s: str) -> "SO3Rep":
+    def from_string(cls, s: str) -> "SO3":
         return cls(l=int(s))
 
-    def __mul__(rep1: "SO3Rep", rep2: "SO3Rep") -> Iterator["SO3Rep"]:
-        assert isinstance(rep2, SO3Rep)
-        return [SO3Rep(l=l) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
+    def __mul__(rep1: "SO3", rep2: "SO3") -> Iterator["SO3"]:
+        assert isinstance(rep2, SO3)
+        return [SO3(l=l) for l in range(abs(rep1.l - rep2.l), rep1.l + rep2.l + 1, 1)]
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SO3Rep", rep2: "SO3Rep", rep3: "SO3Rep") -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "SO3", rep2: "SO3", rep3: "SO3") -> np.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
-        C = SU2Rep.clebsch_gordan(SU2Rep(j=2 * rep1.l), SU2Rep(j=2 * rep2.l), SU2Rep(j=2 * rep3.l))
+        C = SU2.clebsch_gordan(SU2(j=2 * rep1.l), SU2(j=2 * rep2.l), SU2(j=2 * rep3.l))
         Q1 = change_basis_real_to_complex(rep1.l)
         Q2 = change_basis_real_to_complex(rep2.l)
         Q3 = change_basis_real_to_complex(rep3.l)
@@ -49,27 +49,27 @@ class SO3Rep(Irrep):
         return C
 
     @property
-    def dim(rep: "SO3Rep") -> int:
+    def dim(rep: "SO3") -> int:
         return 2 * rep.l + 1
 
-    def __lt__(rep1: "SO3Rep", rep2: "SO3Rep") -> bool:
+    def __lt__(rep1: "SO3", rep2: "SO3") -> bool:
         return rep1.l < rep2.l
 
     @classmethod
-    def iterator(cls) -> Iterator["SO3Rep"]:
+    def iterator(cls) -> Iterator["SO3"]:
         for l in itertools.count(0):
-            yield SO3Rep(l=l)
+            yield SO3(l=l)
 
-    def continuous_generators(rep: "SO3Rep") -> np.ndarray:
-        X = SU2Rep(j=2 * rep.l).continuous_generators()
+    def continuous_generators(rep: "SO3") -> np.ndarray:
+        X = SU2(j=2 * rep.l).continuous_generators()
         Q = change_basis_real_to_complex(rep.l)
         X = np.conj(Q.T) @ X @ Q
         assert np.all(np.abs(np.imag(X)) < 1e-5)
         return np.real(X)
 
-    def discrete_generators(rep: "SO3Rep") -> np.ndarray:
+    def discrete_generators(rep: "SO3") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
     def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
-        return SU2Rep.algebra(rep)
+        return SU2.algebra(rep)

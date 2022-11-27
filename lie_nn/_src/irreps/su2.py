@@ -9,19 +9,19 @@ from ..irrep import Irrep
 
 
 @dataclass(frozen=True)
-class SU2Rep(Irrep):
+class SU2(Irrep):
     j: int
 
     @classmethod
-    def from_string(cls, string: str) -> "SU2Rep":
+    def from_string(cls, string: str) -> "SU2":
         return cls(j=int(string))
 
-    def __mul__(rep1: "SU2Rep", rep2: "SU2Rep") -> Iterator["SU2Rep"]:
-        assert isinstance(rep2, SU2Rep)
-        return [SU2Rep(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
+    def __mul__(rep1: "SU2", rep2: "SU2") -> Iterator["SU2"]:
+        assert isinstance(rep2, SU2)
+        return [SU2(j=j) for j in range(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 2)]
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "SU2Rep", rep2: "SU2Rep", rep3: "SU2Rep") -> np.ndarray:
+    def clebsch_gordan(cls, rep1: "SU2", rep2: "SU2", rep3: "SU2") -> np.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if rep3 in rep1 * rep2:
             return clebsch_gordanSU2mat(rep1.j / 2, rep2.j / 2, rep3.j / 2)[None]
@@ -29,25 +29,25 @@ class SU2Rep(Irrep):
             return np.zeros((0, rep1.dim, rep2.dim, rep3.dim))
 
     @property
-    def dim(rep: "SU2Rep") -> int:
+    def dim(rep: "SU2") -> int:
         return rep.j + 1
 
-    def is_scalar(rep: "SU2Rep") -> bool:
+    def is_scalar(rep: "SU2") -> bool:
         """Equivalent to ``j == 0``"""
         return rep.j == 0
 
-    def __lt__(rep1: "SU2Rep", rep2: "SU2Rep") -> bool:
+    def __lt__(rep1: "SU2", rep2: "SU2") -> bool:
         return rep1.j < rep2.j
 
     @classmethod
-    def iterator(cls) -> Iterator["SU2Rep"]:
+    def iterator(cls) -> Iterator["SU2"]:
         for j in itertools.count(0):
-            yield SU2Rep(j=j)
+            yield SU2(j=j)
 
-    def discrete_generators(rep: "SU2Rep") -> np.ndarray:
+    def discrete_generators(rep: "SU2") -> np.ndarray:
         return np.zeros((0, rep.dim, rep.dim))
 
-    def continuous_generators(rep: "SU2Rep") -> np.ndarray:
+    def continuous_generators(rep: "SU2") -> np.ndarray:
         hj = rep.j / 2.0  # half-j
         m = np.arange(-hj, hj)
         raising = np.diag(-np.sqrt(hj * (hj + 1) - m * (m + 1)), k=-1)
