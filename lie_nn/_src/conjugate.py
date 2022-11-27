@@ -8,5 +8,8 @@ from .rep import GenericRep, Rep
 
 @dispatch(Rep)
 def conjugate(rep: Rep) -> GenericRep:
-    return GenericRep(A=rep.algebra(), X=np.conjugate(rep.continuous_generators()), H=np.conjugate(rep.discrete_generators()),)
-
+    return GenericRep(
+        A=rep.algebra(),
+        X=np.conjugate(rep.continuous_generators()),
+        H=np.conjugate(rep.discrete_generators()),
+    )
