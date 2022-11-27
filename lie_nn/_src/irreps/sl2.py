@@ -81,17 +81,12 @@ class SL2Rep(Irrep):
         # [X_i, X_j] = A_ijk X_k
         algebra = np.zeros((6, 6, 6))
 
+        # for generators X_0, X_1, X_2, Y_0, Y_1, Y_2
         for i, j, k in itertools.permutations((0, 1, 2)):
-            algebra[i, j, k] = sign((i, j, k))
-
-        for i, j, k in itertools.permutations((0, 4, 5)):
-            algebra[i, j, k] = sign((i, j, k))
-
-        for i, j, k in itertools.permutations((1, 3, 5)):
-            algebra[i, j, k] = -sign((i, j, k))
-
-        for i, j, k in itertools.permutations((2, 3, 4)):
-            algebra[i, j, k] = sign((i, j, k))
+            algebra[i, j, k] = sign((i, j, k))  # [X_i, X_j] = eps_ijk X_k
+            algebra[3 + i, 3 + j, k] = sign((i, j, k))  # [Y_i, Y_j] = eps_ijk X_k
+            algebra[i, 3 + j, 3 + k] = sign((i, j, k))  # [X_i, Y_j] = eps_ijk Y_k
+            algebra[3 + i, j, 3 + k] = sign((i, j, k))  # [Y_i, X_j] = eps_ijk Y_k
 
         return algebra
 

@@ -430,7 +430,7 @@ def infer_algebra_from_generators(
 
 def sign(p):
     if len(p) == 1:
-        return True
+        return 1
 
     trans = 0
     for i in range(0, len(p)):
