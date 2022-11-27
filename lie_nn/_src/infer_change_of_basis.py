@@ -11,6 +11,10 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndar
 
     .. math::
 
+        v_2 = Q v_1
+
+    .. math::
+
         Q \rho_1 = \rho_2 Q
 
     Args:

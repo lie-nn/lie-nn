@@ -4,6 +4,7 @@ from ._src.rep import Rep, GenericRep, clebsch_gordan_vs_generators_test
 from ._src.irrep import Irrep
 from ._src.reduced_rep import MulIrrep, ReducedRep
 from ._src.change_basis import change_basis
+from ._src.change_algebra import change_algebra
 from ._src.tensor_product import tensor_product, tensor_power
 from ._src.direct_sum import direct_sum
 from ._src.reduced_tensor_product import reduced_tensor_product_basis, reduced_symmetric_tensor_product_basis
@@ -22,6 +23,7 @@ __all__ = [
     "MulIrrep",
     "ReducedRep",
     "change_basis",
+    "change_algebra",
     "tensor_product",
     "tensor_power",
     "direct_sum",

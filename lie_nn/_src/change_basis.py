@@ -10,6 +10,17 @@ from .reduced_rep import MulIrrep, ReducedRep
 
 @dispatch(Rep, object)
 def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
+    """Apply change of basis to generators.
+
+    .. math::
+
+        X' = Q X Q^{-1}
+
+    .. math::
+
+        v' = Q v
+
+    """
     iQ = np.linalg.pinv(Q)
     return GenericRep(
         A=rep.algebra(),
