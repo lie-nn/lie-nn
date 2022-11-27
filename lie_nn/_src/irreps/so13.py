@@ -92,3 +92,51 @@ class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of S
             algebra[3 + i, j, 3 + k] = lie.util.sign((i, j, k))  # [K_i, J_j] = eps_ijk K_k
 
         return algebra
+
+    @classmethod
+    def four_vector(cls) -> lie.GenericRep:
+        # TODO(mario): add tests
+        return lie.GenericRep(
+            A=cls.algebra(),
+            X=np.array(
+                [
+                    [
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, -1],
+                        [0, 0, 1, 0],
+                    ],
+                    [
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 1],
+                        [0, 0, 0, 0],
+                        [0, -1, 0, 0],
+                    ],
+                    [
+                        [0, 0, 0, 0],
+                        [0, 0, -1, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 0, 0],
+                    ],
+                    [
+                        [0, 1, 0, 0],
+                        [1, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                    ],
+                    [
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0],
+                        [1, 0, 0, 0],
+                        [0, 0, 0, 0],
+                    ],
+                    [
+                        [0, 0, 0, 1],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [1, 0, 0, 0.0],
+                    ],
+                ]
+            ),
+            H=np.zeros((0, 4, 4)),
+        )
