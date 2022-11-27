@@ -6,7 +6,7 @@ from typing import Iterator
 import numpy as np
 
 from ..irrep import Irrep
-from .sl2 import SL2C
+from .sl2c import SL2C
 
 
 @dataclass(frozen=True)
