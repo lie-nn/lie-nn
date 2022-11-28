@@ -64,20 +64,16 @@ class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of S
         # Change algebra from SL2C to SO13
         X[3:] *= 1j
 
-        return X
-
-        # TODO(mario): fix this
         # Make the generators explicitly real, if possible
         S = lie.util.infer_change_of_basis(np.conjugate(X), X) * np.sqrt(rep.dim)
         if S.shape[0] == 0:
             assert rep.l != rep.k
             return X
+
         assert rep.l == rep.k
         W = sqrtm(S[0])
         iW = np.linalg.inv(W)
-        assert np.allclose(W @ iW, np.eye(rep.dim))
         X = W @ X @ iW
-        assert np.allclose(X.imag, 0)
         return X.real
 
     def algebra(rep=None) -> np.ndarray:
