@@ -16,3 +16,6 @@ Mario :
 2. Finish TP rep with dispatch
 3. Conjugaison
 4. Change of basis
+
+Jose:
+??
