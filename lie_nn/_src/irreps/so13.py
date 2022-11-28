@@ -91,7 +91,6 @@ class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of S
 
     @classmethod
     def four_vector(cls) -> lie.GenericRep:
-        # TODO(mario): add tests
         return lie.GenericRep(
             A=cls.algebra(),
             X=np.array(

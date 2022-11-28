@@ -12,6 +12,7 @@ from ._src.clebsch_gordan import clebsch_gordan
 from ._src.infer_change_of_basis import infer_change_of_basis
 from ._src.conjugate import conjugate
 from ._src.real import make_explicitly_real, is_real
+from ._src.properties import is_unitary
 
 from lie_nn import irreps as irreps
 from lie_nn import util as util
@@ -35,6 +36,7 @@ __all__ = [
     "conjugate",
     "make_explicitly_real",
     "is_real",
+    "is_unitary",
     "irreps",
     "util",
 ]
