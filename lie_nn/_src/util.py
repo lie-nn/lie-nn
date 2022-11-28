@@ -171,7 +171,7 @@ def direct_sum(A, *BCD):
     m, n = A.shape[-2:]
     p, q = B.shape[-2:]
 
-    output = np.zeros_like(A, shape=shape + (m + p, n + q))
+    output = np.zeros(shape=shape + (m + p, n + q), dtype=np.complex128)
     output[..., :m, :n] = A
     output[..., m:, n:] = B
     return output

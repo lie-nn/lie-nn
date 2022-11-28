@@ -110,7 +110,7 @@ class GenericRep(Rep):
         return f"GenericRep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
 
 
-def clebsch_gordan_vs_generators_test(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):
+def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):
     assert np.allclose(rep1.algebra(), rep2.algebra(), rtol=rtol, atol=atol)
     assert np.allclose(rep1.algebra(), rep3.algebra(), rtol=rtol, atol=atol)
 

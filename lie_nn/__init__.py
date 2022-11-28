@@ -1,6 +1,6 @@
 __version__ = "0.0.0"
 
-from ._src.rep import Rep, GenericRep, clebsch_gordan_vs_generators_test
+from ._src.rep import Rep, GenericRep, check_representation_triplet
 from ._src.irrep import Irrep
 from ._src.reduced_rep import MulIrrep, ReducedRep
 from ._src.change_basis import change_basis
@@ -19,7 +19,7 @@ from lie_nn import util as util
 __all__ = [
     "Rep",
     "GenericRep",
-    "clebsch_gordan_vs_generators_test",
+    "check_representation_triplet",
     "Irrep",
     "MulIrrep",
     "ReducedRep",

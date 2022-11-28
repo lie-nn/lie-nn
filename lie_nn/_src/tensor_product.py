@@ -1,9 +1,11 @@
 import numpy as np
 from multipledispatch import dispatch
 
-from .rep import GenericRep, Rep
+import lie_nn as lie
+
 from .irrep import Irrep
 from .reduced_rep import MulIrrep, ReducedRep
+from .rep import GenericRep, Rep
 
 
 @dispatch(Rep, Rep)
@@ -26,13 +28,14 @@ def tensor_product(irrep1: Irrep, irrep2: Irrep) -> ReducedRep:
     CG_list = []
     irreps_list = []
     for ir_out in irrep1 * irrep2:
-        CG = np.moveaxis(irrep1.clebsch_gordan(irrep1, irrep2, ir_out), 0, -2)
-        mul = CG.shape[-2]
-        CG = CG.reshape(CG.shape[0] * CG.shape[1], CG.shape[-2] * CG.shape[-1])
+        CG = np.moveaxis(lie.clebsch_gordan(irrep1, irrep2, ir_out), 3, 1)  # [sol, ir3, ir1, ir2]
+        mul = CG.shape[0]
+        CG = CG.reshape(CG.shape[0] * CG.shape[1], CG.shape[2] * CG.shape[3])
         CG_list.append(CG)
         irreps_list.append(MulIrrep(mul=mul, rep=ir_out))
-    CG = np.concatenate(CG_list, axis=-1)
-    return ReducedRep(A=irrep1.algebra(), irreps=tuple(irreps_list), Q=CG)
+    CG = np.concatenate(CG_list, axis=0)
+    Q = np.linalg.inv(CG)
+    return ReducedRep(A=irrep1.algebra(), irreps=tuple(irreps_list), Q=Q)
 
 
 @dispatch(MulIrrep, MulIrrep)
@@ -63,7 +66,7 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
     Q_tp = np.einsum("ij,kl->ikjl", q1, q2).reshape(rep1.dim * rep2.dim, rep1.dim * rep2.dim)
     mulir_list = []
 
-    Q = np.zeros((rep1.dim, rep2.dim, rep1.dim * rep2.dim))
+    Q = np.zeros((rep1.dim, rep2.dim, rep1.dim * rep2.dim), dtype=np.complex128)
     k = 0
     i = 0
     for mulirrep1 in rep1.irreps:
@@ -79,6 +82,11 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
     assert k == rep1.dim * rep2.dim
     Q = Q.reshape(rep1.dim * rep2.dim, rep1.dim * rep2.dim)
     Q = Q_tp @ Q
+
+    if np.allclose(Q.imag, 0):
+        Q = Q.real
+    if np.allclose(Q, np.eye(Q.shape[0])):
+        Q = None
     return ReducedRep(A=rep1.A, irreps=tuple(mulir_list), Q=Q)
 
 
@@ -112,7 +120,7 @@ def tensor_product(irrep1: Irrep, rep2: ReducedRep) -> ReducedRep:
     return tensor_product(MulIrrep(mul=1, rep=irrep1), rep2)
 
 
-@dispatch(Rep, int)
+# @dispatch(Rep, int)
 def tensor_power(rep: Rep, n: int) -> Rep:
     result = rep.create_trivial()
 

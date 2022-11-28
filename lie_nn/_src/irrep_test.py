@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn import Irrep, clebsch_gordan, clebsch_gordan_vs_generators_test, GenericRep
+from lie_nn import Irrep, clebsch_gordan, check_representation_triplet, GenericRep
 from lie_nn.irreps import O3, SL2C, SO3, SO13, SU2Real, SU2, SU2_, SU3, SU4
 from lie_nn.util import round_to_sqrt_rational
 
@@ -25,12 +25,12 @@ def test_algebra_vs_generators(ir: Irrep):
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
 def test_numerical_cg_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
-    clebsch_gordan_vs_generators_test(GenericRep.from_rep(ir1), ir2, ir3)
+    check_representation_triplet(GenericRep.from_rep(ir1), ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
 def test_irreps_clebsch_gordan_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
-    clebsch_gordan_vs_generators_test(ir1, ir2, ir3)
+    check_representation_triplet(ir1, ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())

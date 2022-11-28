@@ -10,4 +10,4 @@ def test_change_algebra():
     rep = lie.change_algebra(rep, Q)
 
     rep.test_algebra_vs_generators()
-    lie.clebsch_gordan_vs_generators_test(rep, rep, rep)
+    lie.check_representation_triplet(rep, rep, rep)
