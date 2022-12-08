@@ -1,11 +1,9 @@
-import dataclasses
-
 import numpy as np
 from multipledispatch import dispatch
 
-from .rep import GenericRep, Rep
 from .irrep import Irrep
 from .reduced_rep import MulIrrep, ReducedRep
+from .rep import GenericRep, Rep
 
 
 @dispatch(Rep, object)
@@ -32,7 +30,7 @@ def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
 @dispatch(ReducedRep, object)
 def change_basis(rep: ReducedRep, Q: np.ndarray) -> ReducedRep:
     Q = Q if rep.Q is None else Q @ rep.Q
-    return dataclasses.replace(rep, Q=Q)
+    return ReducedRep(A=rep.A, irreps=rep.irreps, Q=Q)
 
 
 @dispatch(MulIrrep, object)

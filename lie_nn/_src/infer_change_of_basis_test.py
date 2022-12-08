@@ -9,7 +9,7 @@ def test_infer_change_of_basis():
     Q = lie.infer_change_of_basis(rep1, rep2)[0]
     rep3 = lie.change_basis(rep1, Q)
 
-    np.testing.assert_allclose(rep2.continuous_generators(), rep3.continuous_generators())
+    np.testing.assert_allclose(rep2.X, rep3.X)
 
 
 def test_infer_change_of_basis_generic():
@@ -22,4 +22,4 @@ def test_infer_change_of_basis_generic():
     Q = lie.infer_change_of_basis(rep1, rep2)[0]
     rep3 = lie.change_basis(rep1, Q)
 
-    np.testing.assert_allclose(rep2.continuous_generators(), rep3.continuous_generators())
+    np.testing.assert_allclose(rep2.X, rep3.X)

@@ -32,11 +32,23 @@ class Rep:
         """``[X_i, X_j] = A_ijk X_k``"""
         raise NotImplementedError
 
+    @property
+    def A(self) -> np.ndarray:
+        return self.algebra()
+
     def continuous_generators(self) -> np.ndarray:
         raise NotImplementedError
 
+    @property
+    def X(self) -> np.ndarray:
+        return self.continuous_generators()
+
     def discrete_generators(self) -> np.ndarray:
         raise NotImplementedError
+
+    @property
+    def H(self) -> np.ndarray:
+        return self.discrete_generators()
 
     def create_trivial(self) -> "Rep":
         # Create a trivial representation from the same group as self
@@ -67,12 +79,17 @@ class Rep:
         assert test_algebra_vs_generators(rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol)
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(init=False)
 class GenericRep(Rep):
     r"""Unknown representation"""
-    A: np.ndarray
-    X: np.ndarray
-    H: np.ndarray
+    _A: np.ndarray
+    _X: np.ndarray
+    _H: np.ndarray
+
+    def __init__(self, A: np.ndarray, X: np.ndarray, H: np.ndarray):
+        self._A = A
+        self._X = X
+        self._H = H
 
     def from_rep(rep: Rep) -> "GenericRep":
         return GenericRep(rep.algebra(), rep.continuous_generators(), rep.discrete_generators())
@@ -91,13 +108,13 @@ class GenericRep(Rep):
 
     def algebra(self) -> np.ndarray:
         """``[X_i, X_j] = A_ijk X_k``"""
-        return self.A
+        return self._A
 
     def continuous_generators(self) -> np.ndarray:
-        return self.X
+        return self._X
 
     def discrete_generators(self) -> np.ndarray:
-        return self.H
+        return self._H
 
     def create_trivial(self) -> "GenericRep":
         return GenericRep(

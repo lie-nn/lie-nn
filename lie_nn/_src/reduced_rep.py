@@ -45,16 +45,20 @@ class MulIrrep(Rep):
         return f"{self.mul}x{self.rep}"
 
 
-@dataclasses.dataclass
 class ReducedRep(Rep):
     r"""Representation of the form
 
     .. math::
         Q (\osum_i m_i \rho_i ) Q^{-1}
     """
-    A: np.ndarray
+    _A: np.ndarray
     irreps: Tuple[MulIrrep, ...]
     Q: Optional[np.ndarray]  # change of basis matrix
+
+    def __init__(self, A: np.ndarray, irreps: Tuple[MulIrrep, ...], Q: Optional[np.ndarray] = None):
+        self._A = A
+        self.irreps = irreps
+        self.Q = Q
 
     @classmethod
     def from_string(cls, string: str, cls_irrep: Type[Irrep], Q: Optional[np.ndarray] = None) -> "ReducedRep":
@@ -95,7 +99,7 @@ class ReducedRep(Rep):
         return sum(irrep.dim for irrep in self.irreps)
 
     def algebra(self) -> np.ndarray:
-        return self.A
+        return self._A
 
     def continuous_generators(self) -> np.ndarray:
         Xs = []

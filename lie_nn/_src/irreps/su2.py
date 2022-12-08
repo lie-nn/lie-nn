@@ -12,6 +12,10 @@ from ..irrep import Irrep
 class SU2(Irrep):
     j: int
 
+    def __post_init__(self):
+        assert isinstance(self.j, int)
+        assert self.j >= 0
+
     @classmethod
     def from_string(cls, string: str) -> "SU2":
         return cls(j=int(string))

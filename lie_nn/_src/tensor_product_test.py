@@ -24,11 +24,7 @@ def test_tensor_product_consistency(ir1, ir2):
     tp1 = tensor_product(rep1, rep2)
     tp2 = tensor_product(GenericRep.from_rep(rep1), GenericRep.from_rep(rep2))
 
-    np.testing.assert_allclose(
-        tp1.continuous_generators(),
-        tp2.continuous_generators(),
-        atol=1e-10,
-    )
+    np.testing.assert_allclose(tp1.X, tp2.X, atol=1e-10)
 
 
 def test_tensor_product_types():
