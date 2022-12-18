@@ -1,5 +1,7 @@
-import lie_nn as lie
+import numpy as np
 import scipy.linalg as la
+
+import lie_nn as lie
 
 
 def is_real(rep: lie.Rep) -> bool:
@@ -9,5 +11,10 @@ def is_real(rep: lie.Rep) -> bool:
 
 def make_explicitly_real(rep, round_fn=lambda x: x):
     S = lie.infer_change_of_basis(rep, lie.conjugate(rep), round_fn=round_fn)
+    if S.shape[0] == 0:
+        raise ValueError("The representation is not real")
     assert S.shape[0] == 1
-    return lie.change_basis(rep, la.sqrtm(S[0]))
+    rep = lie.change_basis(rep, la.sqrtm(S[0]))
+    if np.linalg.norm(rep.X.imag) > 1e-10:
+        raise ValueError("The representation is not real")
+    return rep

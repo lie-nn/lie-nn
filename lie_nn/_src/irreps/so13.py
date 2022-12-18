@@ -65,7 +65,7 @@ class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of S
         X[3:] *= 1j
 
         # Make the generators explicitly real, if possible
-        S = lie.util.infer_change_of_basis(np.conjugate(X), X) * np.sqrt(rep.dim)
+        S = lie.util.infer_change_of_basis(np.conjugate(X), X, round_fn=lie.util.round_to_sqrt_rational) * np.sqrt(rep.dim)
         if S.shape[0] == 0:
             assert rep.l != rep.k
             return X
@@ -74,7 +74,7 @@ class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of S
         W = sqrtm(S[0])
         iW = np.linalg.inv(W)
         X = W @ X @ iW
-        return X.real
+        return lie.util.round_to_sqrt_rational(X.real)
 
     def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
