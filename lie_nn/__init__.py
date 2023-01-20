@@ -13,6 +13,7 @@ from ._src.infer_change_of_basis import infer_change_of_basis
 from ._src.conjugate import conjugate
 from ._src.real import make_explicitly_real, is_real
 from ._src.properties import is_unitary
+from ._src.group_product import group_product
 
 from lie_nn import irreps as irreps
 from lie_nn import util as util
@@ -37,6 +38,7 @@ __all__ = [
     "make_explicitly_real",
     "is_real",
     "is_unitary",
+    "group_product",
     "irreps",
     "util",
 ]
