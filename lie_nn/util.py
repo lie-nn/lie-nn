@@ -14,7 +14,7 @@ from ._src.util import (
     infer_change_of_basis,
     basis_intersection,
     sign,
-    test_algebra_vs_generators,
+    check_algebra_vs_generators,
 )
 
 __all__ = [
@@ -33,5 +33,5 @@ __all__ = [
     "infer_change_of_basis",
     "basis_intersection",
     "sign",
-    "test_algebra_vs_generators",
+    "check_algebra_vs_generators",
 ]

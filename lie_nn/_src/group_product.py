@@ -10,12 +10,19 @@ from .irrep import Irrep
 from .rep import GenericRep, Rep
 
 
+def _get_dtype(*args):
+    x = 0.0
+    for arg in args:
+        x = x + np.array(0.0, dtype=arg.dtype)
+    return x.dtype
+
+
 @dispatch(Rep, Rep)
 def group_product(rep1: Rep, rep2: Rep) -> GenericRep:
     A1 = rep1.A
     A2 = rep2.A
     lie_dim = rep1.lie_dim + rep2.lie_dim
-    A = np.zeros((lie_dim, lie_dim, lie_dim))
+    A = np.zeros((lie_dim, lie_dim, lie_dim), dtype=_get_dtype(A1, A2))
     A[: rep1.lie_dim, : rep1.lie_dim, : rep1.lie_dim] = A1
     A[rep1.lie_dim :, rep1.lie_dim :, rep1.lie_dim :] = A2
 
@@ -25,13 +32,13 @@ def group_product(rep1: Rep, rep2: Rep) -> GenericRep:
 
     X1 = rep1.X
     X2 = rep2.X
-    X = np.zeros((lie_dim, dim, dim))
+    X = np.zeros((lie_dim, dim, dim), dtype=_get_dtype(X1, X2))
     X[: rep1.lie_dim] = np.einsum("aij,kl->aikjl", X1, I2).reshape(rep1.lie_dim, dim, dim)
     X[rep1.lie_dim :] = np.einsum("ij,akl->aikjl", I1, X2).reshape(rep2.lie_dim, dim, dim)
 
     H1 = rep1.H
     H2 = rep2.H
-    H = np.zeros((H1.shape[0] + H2.shape[0], dim, dim))
+    H = np.zeros((H1.shape[0] + H2.shape[0], dim, dim), dtype=_get_dtype(H1, H2))
     H[: H1.shape[0]] = np.einsum("aij,kl->aikjl", H1, I2).reshape(H1.shape[0], dim, dim)
     H[H1.shape[0] :] = np.einsum("ij,akl->aikjl", I1, H2).reshape(H2.shape[0], dim, dim)
 
@@ -81,7 +88,7 @@ class IrrepProduct(Irrep):
         X2 = rep.rep2.X
         I1 = np.eye(rep.rep1.dim)
         I2 = np.eye(rep.rep2.dim)
-        X = np.zeros((rep.lie_dim, rep.dim, rep.dim))
+        X = np.zeros((rep.lie_dim, rep.dim, rep.dim), dtype=_get_dtype(X1, X2))
         X[: rep.rep1.lie_dim] = np.einsum("aij,kl->aikjl", X1, I2).reshape(rep.rep1.lie_dim, rep.dim, rep.dim)
         X[rep.rep1.lie_dim :] = np.einsum("ij,akl->aikjl", I1, X2).reshape(rep.rep2.lie_dim, rep.dim, rep.dim)
         return X
@@ -91,7 +98,7 @@ class IrrepProduct(Irrep):
         H2 = rep.rep2.H
         I1 = np.eye(rep.rep1.dim)
         I2 = np.eye(rep.rep2.dim)
-        H = np.zeros((H1.shape[0] + H2.shape[0], rep.dim, rep.dim))
+        H = np.zeros((H1.shape[0] + H2.shape[0], rep.dim, rep.dim), dtype=_get_dtype(H1, H2))
         H[: H1.shape[0]] = np.einsum("aij,kl->aikjl", H1, I2).reshape(H1.shape[0], rep.dim, rep.dim)
         H[H1.shape[0] :] = np.einsum("ij,akl->aikjl", I1, H2).reshape(H2.shape[0], rep.dim, rep.dim)
         return H
@@ -100,7 +107,7 @@ class IrrepProduct(Irrep):
         A1 = rep.rep1.A
         A2 = rep.rep2.A
         lie_dim = rep.rep1.lie_dim + rep.rep2.lie_dim
-        A = np.zeros((lie_dim, lie_dim, lie_dim))
+        A = np.zeros((lie_dim, lie_dim, lie_dim), dtype=_get_dtype(A1, A2))
         A[: rep.rep1.lie_dim, : rep.rep1.lie_dim, : rep.rep1.lie_dim] = A1
         A[rep.rep1.lie_dim :, rep.rep1.lie_dim :, rep.rep1.lie_dim :] = A2
         return A

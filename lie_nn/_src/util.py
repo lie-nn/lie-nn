@@ -387,9 +387,11 @@ def basis_intersection(
     return x1, x2
 
 
-def test_algebra_vs_generators(A: np.ndarray, X: np.ndarray, rtol: float = 1e-10, atol: float = 1e-10):
+def check_algebra_vs_generators(A: np.ndarray, X: np.ndarray, rtol: float = 1e-10, atol: float = 1e-10, assert_: bool = False):
     left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
     right_side = np.einsum("ijk,kab->ijab", A, X)
+    if assert_:
+        np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
     return np.allclose(left_side, right_side, rtol=rtol, atol=atol)
 
 
@@ -422,7 +424,7 @@ def infer_algebra_from_generators(
 
     algebra = round_fn(algebra)
 
-    if test_algebra_vs_generators(algebra, X, rtol=rtol, atol=atol):
+    if check_algebra_vs_generators(algebra, X, rtol=rtol, atol=atol):
         return algebra
     else:
         return None

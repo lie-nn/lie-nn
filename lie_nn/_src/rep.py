@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 import scipy.linalg
 
-from .util import infer_algebra_from_generators, test_algebra_vs_generators
+from .util import infer_algebra_from_generators, check_algebra_vs_generators
 
 
 class Rep:
@@ -75,8 +75,8 @@ class Rep:
     def is_trivial(self) -> bool:
         return self.dim == 1 and np.all(self.continuous_generators() == 0.0) and np.all(self.discrete_generators() == 1.0)
 
-    def test_algebra_vs_generators(rep: "Rep", rtol=1e-10, atol=1e-10):
-        assert test_algebra_vs_generators(rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol)
+    def check_algebra_vs_generators(rep: "Rep", rtol=1e-10, atol=1e-10):
+        check_algebra_vs_generators(rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol, assert_=True)
 
 
 @dataclasses.dataclass(init=False)
@@ -131,9 +131,9 @@ def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, at
     assert np.allclose(rep1.algebra(), rep2.algebra(), rtol=rtol, atol=atol)
     assert np.allclose(rep1.algebra(), rep3.algebra(), rtol=rtol, atol=atol)
 
-    rep1.test_algebra_vs_generators(rtol=rtol, atol=atol)
-    rep2.test_algebra_vs_generators(rtol=rtol, atol=atol)
-    rep3.test_algebra_vs_generators(rtol=rtol, atol=atol)
+    rep1.check_algebra_vs_generators(rtol=rtol, atol=atol)
+    rep2.check_algebra_vs_generators(rtol=rtol, atol=atol)
+    rep3.check_algebra_vs_generators(rtol=rtol, atol=atol)
 
     X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
     X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)

@@ -20,7 +20,7 @@ def bunch_of_triplets():
 
 @pytest.mark.parametrize("ir", bunch_of_reps())
 def test_algebra_vs_generators(ir: Irrep):
-    ir.test_algebra_vs_generators()
+    ir.check_algebra_vs_generators()
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
