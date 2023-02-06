@@ -24,13 +24,14 @@ def normalize_integer_ratio(n, d):
 
 
 def _as_approx_integer_ratio(x):
-    # only for 0 <= x <= 1
+    # only for 0 < x <= 1
+    assert np.all(0 < x), x
+    assert np.all(x <= 1), x
     big = 1 << 52 - 1  # mantissa is 52 bits
 
     n = np.floor(x * big).astype(np.int64)
-    with np.errstate(invalid="ignore"):
-        d = np.round(n / x).astype(np.int64)
-    d = np.where(n == 0, np.ones(d.shape, dtype=np.int64), d)
+    d = np.round(n / x).astype(np.int64)
+    d = np.where(d == 0, 1, d)  # the case when x is tiny but not zero
     return n, d
 
 
@@ -38,13 +39,16 @@ def as_approx_integer_ratio(x):
     assert x.dtype == np.float64
     sign = np.sign(x).astype(np.int64)
     x = np.abs(x)
+    x_ = np.where(x == 0.0, 1.0, x)
 
-    with np.errstate(divide="ignore", over="ignore"):
-        n, d = np.where(
-            x <= 1,
-            _as_approx_integer_ratio(x),
-            _as_approx_integer_ratio(1 / x)[::-1],
-        )
+    n, d = np.where(
+        x <= 1,
+        _as_approx_integer_ratio(np.where(x_ <= 1.0, x_, 1.0)),
+        _as_approx_integer_ratio(np.where(1 / x_ <= 1.0, 1 / x_, 1.0))[::-1],
+    )
+    n = np.where(x == 0.0, 0, n)
+    d = np.where(x == 0.0, 1, d)
+    assert np.all(d > 0), d
     return normalize_integer_ratio(sign * n, d)
 
 
