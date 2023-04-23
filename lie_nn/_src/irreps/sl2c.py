@@ -6,7 +6,7 @@ from typing import Iterator
 import numpy as np
 
 from ..irrep import Irrep
-from ..util import sign, vmap
+from ..util import permutation_sign, vmap
 from .su2 import SU2, clebsch_gordanSU2mat
 
 
@@ -83,10 +83,10 @@ class SL2C(Irrep):
 
         # for generators X_0, X_1, X_2, Y_0, Y_1, Y_2
         for i, j, k in itertools.permutations((0, 1, 2)):
-            algebra[i, j, k] = sign((i, j, k))  # [X_i, X_j] = eps_ijk X_k
-            algebra[3 + i, 3 + j, k] = sign((i, j, k))  # [Y_i, Y_j] = eps_ijk X_k
-            algebra[i, 3 + j, 3 + k] = sign((i, j, k))  # [X_i, Y_j] = eps_ijk Y_k
-            algebra[3 + i, j, 3 + k] = sign((i, j, k))  # [Y_i, X_j] = eps_ijk Y_k
+            algebra[i, j, k] = permutation_sign((i, j, k))  # [X_i, X_j] = eps_ijk X_k
+            algebra[3 + i, 3 + j, k] = permutation_sign((i, j, k))  # [Y_i, Y_j] = eps_ijk X_k
+            algebra[i, 3 + j, 3 + k] = permutation_sign((i, j, k))  # [X_i, Y_j] = eps_ijk Y_k
+            algebra[3 + i, j, 3 + k] = permutation_sign((i, j, k))  # [Y_i, X_j] = eps_ijk Y_k
 
         return algebra
 

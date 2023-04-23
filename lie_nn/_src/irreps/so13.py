@@ -82,10 +82,10 @@ class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of S
 
         # for generators J_0, J_1, J_2, K_0, K_1, K_2
         for i, j, k in itertools.permutations((0, 1, 2)):
-            algebra[i, j, k] = lie.util.sign((i, j, k))  # [J_i, J_j] = eps_ijk J_k
-            algebra[3 + i, 3 + j, k] = -lie.util.sign((i, j, k))  # [K_i, K_j] = -eps_ijk J_k
-            algebra[i, 3 + j, 3 + k] = lie.util.sign((i, j, k))  # [J_i, K_j] = eps_ijk K_k
-            algebra[3 + i, j, 3 + k] = lie.util.sign((i, j, k))  # [K_i, J_j] = eps_ijk K_k
+            algebra[i, j, k] = lie.util.permutation_sign((i, j, k))  # [J_i, J_j] = eps_ijk J_k
+            algebra[3 + i, 3 + j, k] = -lie.util.permutation_sign((i, j, k))  # [K_i, K_j] = -eps_ijk J_k
+            algebra[i, 3 + j, 3 + k] = lie.util.permutation_sign((i, j, k))  # [J_i, K_j] = eps_ijk K_k
+            algebra[3 + i, j, 3 + k] = lie.util.permutation_sign((i, j, k))  # [K_i, J_j] = eps_ijk K_k
 
         return algebra
 

@@ -2,6 +2,7 @@ from functools import reduce
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
+import sympy as sp
 
 
 def prod(list_of_numbers: List[Union[int, float]]) -> Union[int, float]:
@@ -36,6 +37,7 @@ def _as_approx_integer_ratio(x):
 
 
 def as_approx_integer_ratio(x):
+    x = np.asarray(x)
     assert x.dtype == np.float64
     sign = np.sign(x).astype(np.int64)
     x = np.abs(x)
@@ -83,6 +85,20 @@ def _round_to_sqrt_rational(x, max_denominator):
     n, d = as_approx_integer_ratio(x**2)
     n, d = limit_denominator(n, d, max_denominator**2 + 1)
     return sign * np.sqrt(n / d)
+
+
+def _round_to_sqrt_rational_sympy(x, max_denominator):
+    sign = np.sign(x)
+    n, d = as_approx_integer_ratio(x**2)
+    n, d = limit_denominator(n, d, max_denominator**2 + 1)
+    sign, n, d = sign.item(), n.item(), d.item()
+    return sign * sp.sqrt(sp.Number(n) / d)
+
+
+def round_to_sqrt_rational_sympy(x, max_denominator):
+    x, y = np.real(x), np.imag(x)
+
+    return _round_to_sqrt_rational_sympy(x, max_denominator) + 1j * _round_to_sqrt_rational_sympy(y, max_denominator)
 
 
 def round_to_sqrt_rational(x: np.ndarray, max_denominator=4096) -> np.ndarray:
@@ -230,7 +246,7 @@ def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x, returns="
         return np.stack(E)
 
 
-def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+def nullspace(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     r"""Compute the null space of a matrix.
 
     .. math::
@@ -259,11 +275,11 @@ def null_space(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarr
     X = vec.T[np.abs(val) < epsilon]
     X = np.conj(X.T) @ X
     X = round_fn(X)
-    X = gram_schmidt(X, round_fn=round_fn)
+    X = gram_schmidt(X, round_fn=round_fn, epsilon=epsilon)
     return X
 
 
-def sequential_null_space(gen_A: List[np.ndarray], dim_null_space: int, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+def sequential_nullspace(gen_A: List[np.ndarray], dim_null_space: int, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
     r"""Compute the null space of a list of matrices.
 
     .. math::
@@ -285,9 +301,9 @@ def sequential_null_space(gen_A: List[np.ndarray], dim_null_space: int, *, epsil
     m = 0
     for A in gen_A:
         if S is None:
-            S = null_space(A, epsilon=epsilon, round_fn=round_fn)  # (num_null_space, dim_total)
+            S = nullspace(A, epsilon=epsilon, round_fn=round_fn)  # (num_null_space, dim_total)
         else:
-            S = null_space(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S  # (num_null_space, dim_total)
+            S = nullspace(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S  # (num_null_space, dim_total)
 
         n += 1
         m += A.shape[0]
@@ -330,14 +346,16 @@ def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round
     assert X1.shape == (n, d1, d1)
     assert X2.shape == (n, d2, d2)
 
-    A = vmap(lambda x1, x2: kron(np.eye(d2), x1) - kron(x2.T, np.eye(d1)))(X1, X2)
-    A = A.reshape(n * d2 * d1, d2 * d1)
-    S = null_space(A, epsilon=epsilon, round_fn=round_fn)
-    S = S.reshape(-1, d2, d1)
-    S = np.swapaxes(S, 1, 2)  # (num_null_space, d1, d2)
+    As = []
+    for x1, x2 in zip(X1, X2):
+        # X1 @ S - S @ X2 = 0
+        # X1 @ S - (X2.T @ S.T).T = 0
+        # A @ vec(S) = 0
+        As.append(np.kron(x1, np.eye(d2)) - np.kron(np.eye(d1), x2.T))
 
-    # In case S is orthogonal, make it orthonormal
-    # S = np.sqrt(min(d1, d2)) * S
+    A = np.concatenate(As, axis=0)  # (n * d1 * d2, d1 * d2)
+    S = nullspace(A, epsilon=epsilon, round_fn=round_fn)  # (m, d1 * d2)
+    S = S.reshape(-1, d1, d2)
 
     # assert np.allclose(X1 @ S[0], S[0] @ X2)
     return S
@@ -434,7 +452,7 @@ def infer_algebra_from_generators(
         return None
 
 
-def sign(p):
+def permutation_sign(p: Tuple[int, ...]) -> int:
     if len(p) == 1:
         return 1
 
@@ -445,3 +463,99 @@ def sign(p):
                 trans += 1
 
     return 1 if (trans % 2) == 0 else -1
+
+
+def unique_with_tol(a: np.array, *, tol: float):
+    """Find unique elements of an array with a tolerance.
+    Input:
+        a: np.array of shape num_elements x d1 x ... x dm of which to find the unique elements
+        tol: tolerance
+    Output:
+        centers: np.array of shape num_clusters x d1 x ... x dm containing the centers of the clusters
+        inverses: np.array of shape num_elements containing the index of the corresponding center for each element of a
+    Raises:
+        ValueError: if the cluster are not clearly distinct
+    Note:
+        this function is "stable", the first element always belongs to the
+        first cluster, the second element not in the first cluster belongs to the
+        second cluster, etc.
+    """
+    assert a.ndim >= 1
+    shape = a.shape
+    a = a.reshape(len(a), -1)
+
+    distances = np.linalg.norm(a[:, None] - a[None, :], axis=-1)
+    inverses = -1 * np.ones(len(a), dtype=int)
+    index = 0
+
+    while True:
+        (m,) = np.nonzero(inverses == -1)
+        if len(m) == 0:
+            break
+        i = m[0]
+
+        if np.any(inverses[distances[i] < tol] != -1):
+            raise ValueError("The clusters are not clearly distinct.")
+
+        inverses[distances[i] < tol] = index
+
+        index += 1
+
+    centers = np.zeros((np.max(inverses) + 1, a.shape[1]), dtype=a.dtype)
+    np.add.at(centers, inverses, a)
+    centers /= np.bincount(inverses)[:, None]
+
+    centers = centers.reshape(len(centers), *shape[1:])
+    return centers, inverses
+
+
+def eigenspaces(val: np.ndarray, vec: np.ndarray, *, epsilon: float = 1e-6) -> List[Tuple[float, np.ndarray]]:
+    """Regroup eigenvectors by eigenvalues.
+    Input:
+        val: eigenvalues (output of np.linalg.eig)
+        vec: eigenvectors (output of np.linalg.eig)
+        tol: tolerance for the eigenvalues similarity
+    Output:
+        list of (eigenvalue, eigenvectors) tuples
+    """
+    unique_val, i = unique_with_tol(val, tol=epsilon)
+    return [(val, vec[:, i == j]) for j, val in enumerate(unique_val)]
+
+
+def decompose_rep_into_irreps(X: np.array, *, epsilon: float = 1e-10, round_fn=lambda x: x) -> List[np.array]:
+    """Decomposes representation into irreducible representations.
+    Input:
+        X: np.array [lie_dim, d, d] - generators of a representation.
+    Output:
+        Ys: List[np.array] - list of generators of irreducible representations.
+    """
+    Q = infer_change_of_basis(X, X, epsilon=epsilon, round_fn=round_fn)  # X @ Q == Q @ X
+    w = np.random.rand(len(Q))
+    M = np.einsum("n,nij->ij", w, Q)
+    val, vec = np.linalg.eig(M)
+    stable_spaces = eigenspaces(val, vec, epsilon=epsilon)
+
+    Ys = []
+    for _, W in stable_spaces:
+        B = gram_schmidt(W.T, epsilon=epsilon)  # Make an orthonormal projector
+        B = gram_schmidt(B.T.conj() @ B, epsilon=epsilon, round_fn=round_fn)  # Make it sparse!!
+
+        Ys += [B @ X @ B.T.conj()]
+    return Ys
+
+
+def regular_representation(table: np.array) -> np.array:
+    """Returns regular representation for group represented by a multiplication table.
+    Input:
+        table: np.array [n, n] where table[i, j] = k means i * j = k.
+    Output:
+        Regular representation. array [n, n, n] where reg_rep[i, :, :] = D(i) and D(i)e_j = e_{ij}.
+                                Equivalently, D(g) |h> = |gh>
+    """
+    n, _ = table.shape
+    g, h = np.meshgrid(np.arange(n), np.arange(n), indexing="ij")
+    gh = table
+    # D[g] |h> = |gh>     =>    <gh| D[g] |h> = 1
+    reg_rep = np.zeros((n, n, n))
+    reg_rep[g, gh, h] = 1
+    return reg_rep

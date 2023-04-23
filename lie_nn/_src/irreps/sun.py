@@ -8,7 +8,7 @@ from typing import Iterator, List, Optional, Tuple
 import numpy as np
 
 from ..irrep import Irrep
-from ..util import commutator, null_space, round_to_sqrt_rational
+from ..util import commutator, nullspace, round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
 GT_PATTERN = Tuple[WEIGHT, ...]
@@ -291,7 +291,7 @@ def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_P
 
 def clebsch_gordan_eldest(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
     A = construct_highest_weight_constraint(S1, S2, M_3_eldest)
-    return null_space(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1].reshape(-1, dim(S1), dim(S2))
+    return nullspace(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1].reshape(-1, dim(S1), dim(S2))
 
 
 def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]:
