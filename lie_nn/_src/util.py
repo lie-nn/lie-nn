@@ -91,8 +91,11 @@ def _round_to_sqrt_rational_sympy(x, max_denominator):
     sign = np.sign(x)
     n, d = as_approx_integer_ratio(x**2)
     n, d = limit_denominator(n, d, max_denominator**2 + 1)
-    sign, n, d = sign.item(), n.item(), d.item()
-    return sign * sp.sqrt(sp.Number(n) / d)
+    n, d = n.item(), d.item()
+    x = sp.sqrt(sp.Number(n) / sp.Number(d))
+    if sign < 0:
+        x = -x
+    return x
 
 
 def round_to_sqrt_rational_sympy(x, max_denominator):
