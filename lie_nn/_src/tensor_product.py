@@ -25,7 +25,7 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
 
 
 @dispatch(TabulatedIrrep, TabulatedIrrep)
-def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> ReducedRep:
+def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> ReducedRep:  # noqa: F811
     assert np.allclose(irrep1.algebra(), irrep2.algebra())  # same lie algebra
     CG_list = []
     irreps_list = []
@@ -41,7 +41,7 @@ def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> ReducedRep
 
 
 @dispatch(MulIrrep, MulIrrep)
-def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:
+def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:  # noqa: F811
     assert np.allclose(mulirrep1.algebra(), mulirrep2.algebra())  # same lie algebra
     m1, m2 = mulirrep1.mul, mulirrep2.mul
     tp_irreps = tensor_product(mulirrep1.rep, mulirrep2.rep)
@@ -67,7 +67,7 @@ def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:
 
 
 @dispatch(ReducedRep, ReducedRep)
-def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
+def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:  # noqa: F811
     q1 = np.eye(rep1.dim) if rep1.Q is None else rep1.Q
     q2 = np.eye(rep2.dim) if rep2.Q is None else rep2.Q
     Q_tp = np.einsum("ij,kl->ikjl", q1, q2).reshape(rep1.dim * rep2.dim, rep1.dim * rep2.dim)
@@ -98,32 +98,32 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
 
 
 @dispatch(MulIrrep, TabulatedIrrep)
-def tensor_product(mulirrep1: MulIrrep, irrep2: TabulatedIrrep) -> ReducedRep:
+def tensor_product(mulirrep1: MulIrrep, irrep2: TabulatedIrrep) -> ReducedRep:  # noqa: F811
     return tensor_product(mulirrep1, MulIrrep(mul=1, rep=irrep2))
 
 
 @dispatch(TabulatedIrrep, MulIrrep)
-def tensor_product(irrep1: TabulatedIrrep, mulirrep2: MulIrrep) -> ReducedRep:
+def tensor_product(irrep1: TabulatedIrrep, mulirrep2: MulIrrep) -> ReducedRep:  # noqa: F811
     return tensor_product(MulIrrep(mul=1, rep=irrep1), mulirrep2)
 
 
 @dispatch(MulIrrep, ReducedRep)
-def tensor_product(mulirrep1: MulIrrep, rep2: ReducedRep) -> ReducedRep:
+def tensor_product(mulirrep1: MulIrrep, rep2: ReducedRep) -> ReducedRep:  # noqa: F811
     return tensor_product(ReducedRep(A=mulirrep1.algebra(), irreps=(mulirrep1,), Q=None), rep2)
 
 
 @dispatch(ReducedRep, MulIrrep)
-def tensor_product(rep1: ReducedRep, mulirrep2: MulIrrep) -> ReducedRep:
+def tensor_product(rep1: ReducedRep, mulirrep2: MulIrrep) -> ReducedRep:  # noqa: F811
     return tensor_product(ReducedRep(A=mulirrep2.algebra(), irreps=(mulirrep2,), Q=None), rep1)
 
 
 @dispatch(ReducedRep, TabulatedIrrep)
-def tensor_product(rep1: ReducedRep, irrep2: TabulatedIrrep) -> ReducedRep:
+def tensor_product(rep1: ReducedRep, irrep2: TabulatedIrrep) -> ReducedRep:  # noqa: F811
     return tensor_product(rep1, MulIrrep(mul=1, rep=irrep2))
 
 
 @dispatch(TabulatedIrrep, ReducedRep)
-def tensor_product(irrep1: TabulatedIrrep, rep2: ReducedRep) -> ReducedRep:
+def tensor_product(irrep1: TabulatedIrrep, rep2: ReducedRep) -> ReducedRep:  # noqa: F811
     return tensor_product(MulIrrep(mul=1, rep=irrep1), rep2)
 
 
@@ -143,7 +143,9 @@ def tensor_power(rep: Rep, n: int) -> Rep:
 
 # @dispatch(ReducedRep, int)
 # def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
-#     # TODO reduce into irreps and wrap with the change of basis that maps to the usual tensor product
+#     # TODO reduce into irreps and wrap with the change of basis that
+#       maps to the usual tensor product
 #     # TODO as well reduce into irreps of S_n
-#     # and diagonalize irreps of S_n in the same basis that diagonalizes irreps of S_{n-1} (unclear how to do this)
+#     # and diagonalize irreps of S_n in the same basis that diagonalizes
+#       irreps of S_{n-1} (unclear how to do this)
 #     raise NotImplementedError

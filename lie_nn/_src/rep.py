@@ -134,7 +134,11 @@ class GenericRep(Rep):
         )
 
     def __repr__(self) -> str:
-        return f"GenericRep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
+        return (
+            f"GenericRep(dim={self.dim}, "
+            "lie_dim={self.lie_dim}, "
+            "len(H)={len(self.discrete_generators())})"
+        )
 
 
 def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):
@@ -158,7 +162,8 @@ def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, at
 
     # Orthogonality
     # left_side = np.einsum('zijk,wijl->zkwl', cg, np.conj(cg))
-    # right_side = np.eye(cg.shape[0] * rep3.dim).reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
+    # right_side = np.eye(cg.shape[0] * rep3.dim)
+    # .reshape((cg.shape[0], rep3.dim, cg.shape[0], rep3.dim))
     # np.testing.assert_allclose(left_side, right_side, rtol=rtol, atol=atol)
 
     # if rep3 in rep1 * rep2:
@@ -179,11 +184,13 @@ def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, at
                 print('Left side: einsum("zijk,dlk->zdijl", cg, X3)')
                 print(left_side[solution][i])
                 print(
-                    'Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)'
+                    "Right side: "
+                    'einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)'
                 )
                 print(right_side[solution][i])
                 np.set_printoptions(precision=8, suppress=False)
                 raise AssertionError(
-                    f"Solution {solution}/{cg.shape[0]} for {rep1} * {rep2} = {rep3} is not correct."
+                    f"Solution {solution}/{cg.shape[0]} for {rep1} * {rep2} = {rep3} "
+                    "is not correct."
                     f"Clebsch-Gordan coefficient is not correct for Lie algebra generator {i}."
                 )

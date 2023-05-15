@@ -306,7 +306,8 @@ def sequential_nullspace(
 
     Args:
         gen_A: List of matrices to compute null space of. Can be a generator.
-        dim_null_space: The dimension of the null space. The algorithm will stop when the null space has this dimension.
+        dim_null_space: The dimension of the null space. The algorithm will stop when
+                        the null space has this dimension.
         epsilon: The tolerance for the eigenvalue.
         round_fn: Function to round the numbers to.
 
@@ -400,10 +401,12 @@ def basis_intersection(
         round_fn (function, optional): Function to round the vectors. Defaults to lambda x: x.
 
     Returns:
-        np.ndarray: A projection matrix that projects vectors of the first basis in the intersection of the two bases.
-            Shape ``(dim_intersection, n1)``
-        np.ndarray: A projection matrix that projects vectors of the second basis in the intersection of the two bases.
-            Shape ``(dim_intersection, n2)``
+        np.ndarray: A projection matrix that projects vectors of the first basis in
+                    the intersection of the two bases.
+                    Shape ``(dim_intersection, n1)``
+        np.ndarray: A projection matrix that projects vectors of the second basis in
+                    the intersection of the two bases.
+                    Shape ``(dim_intersection, n2)``
 
     Example:
         >>> basis1 = np.array([[1, 0, 0], [0, 0, 1.0]])
@@ -458,8 +461,10 @@ def infer_algebra_from_generators(
     Args:
         X (np.ndarray): The generators of the algebra. Shape ``(n, d, d)``.
         round_fn (function, optional): Function to round the matrices. Defaults to the identity.
-        rtol (float, optional): Relative tolerance to test the validity of the algebra. Defaults to 1e-10.
-        atol (float, optional): Absolute tolerance to test the validity of the algebra. Defaults to 1e-10.
+        rtol (float, optional): Relative tolerance to test the validity of the algebra.
+                                Defaults to 1e-10.
+        atol (float, optional): Absolute tolerance to test the validity of the algebra.
+                                Defaults to 1e-10.
 
     Returns:
         np.ndarray: If successful, the algebra. Shape ``(n, n, n)``.
@@ -500,8 +505,10 @@ def unique_with_tol(a: np.array, *, tol: float):
         a: np.array of shape num_elements x d1 x ... x dm of which to find the unique elements
         tol: tolerance
     Output:
-        centers: np.array of shape num_clusters x d1 x ... x dm containing the centers of the clusters
-        inverses: np.array of shape num_elements containing the index of the corresponding center for each element of a
+        centers: np.array of shape num_clusters x d1 x ... x dm containing
+                 the centers of the clusters
+        inverses: np.array of shape num_elements containing the index of the corresponding center
+                  for each element of a
     Raises:
         ValueError: if the cluster are not clearly distinct
     Note:

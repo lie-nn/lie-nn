@@ -95,11 +95,14 @@ def reduced_tensor_product_basis(
     epsilon: float = 1e-5,
     **irreps_dict,
 ) -> RepArray:
-    r"""Reduce a tensor product of multiple irreps subject to some permutation symmetry given by a formula.
+    r"""Reduce a tensor product of multiple irreps subject
+    to some permutation symmetry given by a formula.
 
     Args:
-        formula_or_irreps_list (str or list of Irreps): a formula of the form ``ijk=jik=ikj`` or ``ijk=-jki``.
-            The left hand side is the original formula and the right hand side are the signed permutations.
+        formula_or_irreps_list (str or list of Irreps): a formula
+            of the form ``ijk=jik=ikj`` or ``ijk=-jki``.
+            The left hand side is the original formula and the right hand side are
+            the signed permutations.
             If no index symmetry is present, a list of irreps can be given instead.
 
         epsilon (float): the tolerance for the Gram-Schmidt orthogonalization. Default: ``1e-5``
@@ -108,7 +111,8 @@ def reduced_tensor_product_basis(
     Returns:
         RepArray: The change of basis
             The shape is ``(d1, ..., dn, irreps_out.dim)``
-            where ``di`` is the dimension of the index ``i`` and ``n`` is the number of indices in the formula.
+            where ``di`` is the dimension of the index ``i`` and ``n``
+            is the number of indices in the formula.
     """
 
     if isinstance(formula_or_irreps_list, (tuple, list)):
