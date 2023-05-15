@@ -7,12 +7,12 @@ import numpy as np
 
 import lie_nn as lie
 from scipy.linalg import sqrtm
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 from .sl2c import SL2C
 
 
 @dataclass(frozen=True)
-class SO13(Irrep):  # TODO(ilyes): think if this class shoulb be a subclass of SL2C. mario: Not anymore
+class SO13(TabulatedIrrep):  # TODO(ilyes): think if this class shoulb be a subclass of SL2C. mario: Not anymore
     l: int  # First integer weight
     k: int  # Second integer weight
 

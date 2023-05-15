@@ -26,5 +26,5 @@ def reduce(rep: GenericRep) -> ReducedRep:  # noqa: F811
     This operation is slow and should be avoided if possible.
     """
     Ys = decompose_rep_into_irreps(np.stack([rep.X, rep.H], axis=0))
-
+    # TODO: change of basis
     return ReducedRep(rep.A, tuple(MulIrrep(1, Y) for Y in Ys))

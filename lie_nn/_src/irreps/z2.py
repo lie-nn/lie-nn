@@ -3,11 +3,11 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 
 
 @dataclass(frozen=True)
-class Z2(Irrep):
+class Z2(TabulatedIrrep):
     p: int  # 1 or -1
 
     @classmethod

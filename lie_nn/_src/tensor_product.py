@@ -3,7 +3,7 @@ from multipledispatch import dispatch
 
 import lie_nn as lie
 
-from .irrep import Irrep
+from .irrep import TabulatedIrrep
 from .reduced_rep import MulIrrep, ReducedRep
 from .rep import GenericRep, Rep
 
@@ -22,8 +22,8 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
     )
 
 
-@dispatch(Irrep, Irrep)
-def tensor_product(irrep1: Irrep, irrep2: Irrep) -> ReducedRep:
+@dispatch(TabulatedIrrep, TabulatedIrrep)
+def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> ReducedRep:
     assert np.allclose(irrep1.algebra(), irrep2.algebra())  # same lie algebra
     CG_list = []
     irreps_list = []
@@ -90,13 +90,13 @@ def tensor_product(rep1: ReducedRep, rep2: ReducedRep) -> ReducedRep:
     return ReducedRep(A=rep1.A, irreps=tuple(mulir_list), Q=Q)
 
 
-@dispatch(MulIrrep, Irrep)
-def tensor_product(mulirrep1: MulIrrep, irrep2: Irrep) -> ReducedRep:
+@dispatch(MulIrrep, TabulatedIrrep)
+def tensor_product(mulirrep1: MulIrrep, irrep2: TabulatedIrrep) -> ReducedRep:
     return tensor_product(mulirrep1, MulIrrep(mul=1, rep=irrep2))
 
 
-@dispatch(Irrep, MulIrrep)
-def tensor_product(irrep1: Irrep, mulirrep2: MulIrrep) -> ReducedRep:
+@dispatch(TabulatedIrrep, MulIrrep)
+def tensor_product(irrep1: TabulatedIrrep, mulirrep2: MulIrrep) -> ReducedRep:
     return tensor_product(MulIrrep(mul=1, rep=irrep1), mulirrep2)
 
 
@@ -110,13 +110,13 @@ def tensor_product(rep1: ReducedRep, mulirrep2: MulIrrep) -> ReducedRep:
     return tensor_product(ReducedRep(A=mulirrep2.algebra(), irreps=(mulirrep2,), Q=None), rep1)
 
 
-@dispatch(ReducedRep, Irrep)
-def tensor_product(rep1: ReducedRep, irrep2: Irrep) -> ReducedRep:
+@dispatch(ReducedRep, TabulatedIrrep)
+def tensor_product(rep1: ReducedRep, irrep2: TabulatedIrrep) -> ReducedRep:
     return tensor_product(rep1, MulIrrep(mul=1, rep=irrep2))
 
 
-@dispatch(Irrep, ReducedRep)
-def tensor_product(irrep1: Irrep, rep2: ReducedRep) -> ReducedRep:
+@dispatch(TabulatedIrrep, ReducedRep)
+def tensor_product(irrep1: TabulatedIrrep, rep2: ReducedRep) -> ReducedRep:
     return tensor_product(MulIrrep(mul=1, rep=irrep1), rep2)
 
 

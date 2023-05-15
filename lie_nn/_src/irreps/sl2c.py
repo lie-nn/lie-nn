@@ -5,13 +5,13 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 from ..util import permutation_sign, vmap
 from .su2 import SU2, clebsch_gordanSU2mat
 
 
 @dataclass(frozen=True)
-class SL2C(Irrep):
+class SL2C(TabulatedIrrep):
     l: int  # First integer weight
     k: int  # Second integer weight
 

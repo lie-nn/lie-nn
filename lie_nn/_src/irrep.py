@@ -7,12 +7,12 @@ from .rep import Rep
 
 
 @dataclass(frozen=True)
-class Irrep(Rep):
+class TabulatedIrrep(Rep):
     @classmethod
-    def from_string(cls, string: str) -> "Irrep":
+    def from_string(cls, string: str) -> "TabulatedIrrep":
         raise NotImplementedError
 
-    def __mul__(rep1: "Irrep", rep2: "Irrep") -> Iterator["Irrep"]:
+    def __mul__(rep1: "TabulatedIrrep", rep2: "TabulatedIrrep") -> Iterator["TabulatedIrrep"]:
         # Selection rule
         raise NotImplementedError
 
@@ -21,29 +21,29 @@ class Irrep(Rep):
         return rep.algebra().shape[0]
 
     @property
-    def dim(rep: "Irrep") -> int:
+    def dim(rep: "TabulatedIrrep") -> int:
         raise NotImplementedError
 
-    def __lt__(rep1: "Irrep", rep2: "Irrep") -> bool:
+    def __lt__(rep1: "TabulatedIrrep", rep2: "TabulatedIrrep") -> bool:
         # This is used for sorting the irreps
         raise NotImplementedError
 
     @classmethod
-    def iterator(cls) -> Iterator["Irrep"]:
+    def iterator(cls) -> Iterator["TabulatedIrrep"]:
         # Requirements:
         #  - the first element must be the trivial representation
         #  - the elements must be sorted by the __lt__ method
         raise NotImplementedError
 
     @classmethod
-    def create_trivial(cls) -> "Irrep":
+    def create_trivial(cls) -> "TabulatedIrrep":
         return cls.iterator().__next__()
 
-    def continuous_generators(rep: "Irrep") -> np.ndarray:
+    def continuous_generators(rep: "TabulatedIrrep") -> np.ndarray:
         # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
         raise NotImplementedError
 
-    def discrete_generators(rep: "Irrep") -> np.ndarray:
+    def discrete_generators(rep: "TabulatedIrrep") -> np.ndarray:
         # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
         raise NotImplementedError
 
@@ -52,6 +52,8 @@ class Irrep(Rep):
         pass
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "Irrep", rep2: "Irrep", rep3: "Irrep") -> np.ndarray:
+    def clebsch_gordan(
+        cls, rep1: "TabulatedIrrep", rep2: "TabulatedIrrep", rep3: "TabulatedIrrep"
+    ) -> np.ndarray:
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         raise NotImplementedError

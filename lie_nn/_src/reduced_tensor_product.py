@@ -9,7 +9,7 @@ import functools
 import itertools
 from typing import FrozenSet, List, Optional, Tuple, Union
 
-from lie_nn import Irrep, ReducedRep, MulIrrep, Rep
+from lie_nn import TabulatedIrrep, ReducedRep, MulIrrep, Rep
 import numpy as np
 import lie_nn._src.discrete_groups.perm as perm
 from .util import basis_intersection, round_to_sqrt_rational, prod
@@ -79,7 +79,7 @@ class IrrepsArray:
 
 
 def _to_reducedrep(irreps) -> ReducedRep:
-    if isinstance(irreps, Irrep):
+    if isinstance(irreps, TabulatedIrrep):
         irreps = MulIrrep(1, irreps)
     if isinstance(irreps, MulIrrep):
         irreps = ReducedRep.from_irreps([irreps])
@@ -272,13 +272,13 @@ def germinate_perm_repr(formula: str) -> Tuple[str, FrozenSet[Tuple[int, Tuple[i
 def reduce_basis_product(
     basis1: IrrepsArray,
     basis2: IrrepsArray,
-    filter_ir_out: Optional[List[Irrep]] = None,
+    filter_ir_out: Optional[List[TabulatedIrrep]] = None,
 ) -> IrrepsArray:
     """Reduce the product of two basis."""
     basis1 = basis1.sorted().simplify()
     basis2 = basis2.sorted().simplify()
 
-    new_irreps: List[Tuple[int, Irrep]] = []
+    new_irreps: List[Tuple[int, TabulatedIrrep]] = []
     new_list: List[np.ndarray] = []
 
     for mul_ir1, x1 in zip(basis1.irreps, basis1.list):
@@ -320,7 +320,7 @@ def constrain_rotation_basis_by_permutation_basis(
 
     perm = np.reshape(permutation_basis, (permutation_basis.shape[0], -1))  # (free, dim)
 
-    new_irreps: List[Tuple[int, Irrep]] = []
+    new_irreps: List[Tuple[int, TabulatedIrrep]] = []
     new_list: List[np.ndarray] = []
 
     for rotation_basis_mul_ir, rot_basis in zip(rotation_basis.irreps, rotation_basis.list):

@@ -2,11 +2,11 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn import GenericRep, Irrep, MulIrrep, ReducedRep, tensor_product, tensor_power
+from lie_nn import GenericRep, TabulatedIrrep, MulIrrep, ReducedRep, tensor_product, tensor_power
 from lie_nn.irreps import O3, SL2C, SO3, SO13, SU2
 
 
-def first_reps(IR: Irrep, n: int):
+def first_reps(IR: TabulatedIrrep, n: int):
     return list(itertools.islice(IR.iterator(), n))
 
 

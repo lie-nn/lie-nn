@@ -7,7 +7,7 @@ from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 from ..util import commutator, nullspace, round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
@@ -193,13 +193,6 @@ def M_add_at_lk(M: GT_PATTERN, l: int, k: int, increment: int) -> Optional[GT_PA
     """Add increment to the l-th row and k-th column of M."""
     M = tuple(tuple(M[i][j] + increment if (i, j) == (l, k) else M[i][j] for j in range(len(M[i]))) for i in range(len(M)))
     return M if is_valid_M(M) else None
-
-
-def unique_pairs(n: int, start: int = 0) -> Iterator[Tuple[int, int]]:
-    """Produce pairs of indexes in range(n)"""
-    for i in range(start, n):
-        for j in range(n - i):
-            yield i, j
 
 
 def upper_ladder(l: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
@@ -409,7 +402,7 @@ def algebra(S: WEIGHT):
 
 
 @dataclass(frozen=True)
-class SUN(Irrep):
+class SUN(TabulatedIrrep):
     S: Tuple[int]  # List of weights of the representation
 
     def __post_init__(rep):

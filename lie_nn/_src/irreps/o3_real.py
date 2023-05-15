@@ -4,12 +4,12 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 from .so3_real import SO3
 
 
 @dataclass(frozen=True)
-class O3(Irrep):
+class O3(TabulatedIrrep):
     l: int  # non-negative integer
     p: int  # 1 or -1
 

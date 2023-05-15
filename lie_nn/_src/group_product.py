@@ -6,7 +6,7 @@ from typing import Iterator
 import numpy as np
 from multipledispatch import dispatch
 
-from .irrep import Irrep
+from .irrep import TabulatedIrrep
 from .rep import GenericRep, Rep
 
 
@@ -51,9 +51,9 @@ def group_product(rep1: Rep, rep2: Rep, rep3: Rep) -> GenericRep:
 
 
 @dataclass(frozen=True)
-class IrrepProduct(Irrep):
-    rep1: Irrep
-    rep2: Irrep
+class IrrepProduct(TabulatedIrrep):
+    rep1: TabulatedIrrep
+    rep2: TabulatedIrrep
 
     @classmethod
     def from_string(cls, s: str) -> "IrrepProduct":
@@ -113,11 +113,11 @@ class IrrepProduct(Irrep):
         return A
 
 
-@dispatch(Irrep, Irrep)
-def group_product(rep1: Irrep, rep2: Irrep) -> Irrep:
+@dispatch(TabulatedIrrep, TabulatedIrrep)
+def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:
     return IrrepProduct(rep1, rep2)
 
 
-@dispatch(Irrep, Irrep, Irrep)
-def group_product(rep1: Irrep, rep2: Irrep, rep3: Irrep) -> Irrep:
+@dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
+def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep) -> TabulatedIrrep:
     return IrrepProduct(IrrepProduct(rep1, rep2), rep3)

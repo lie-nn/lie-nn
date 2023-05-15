@@ -1,7 +1,7 @@
 import numpy as np
 from multipledispatch import dispatch
 
-from .irrep import Irrep
+from .irrep import TabulatedIrrep
 from .reduced_rep import MulIrrep, ReducedRep
 from .rep import GenericRep, Rep
 
@@ -42,6 +42,6 @@ def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
     )
 
 
-@dispatch(Irrep, object)
-def change_basis(rep: Irrep, Q: np.ndarray) -> ReducedRep:
+@dispatch(TabulatedIrrep, object)
+def change_basis(rep: TabulatedIrrep, Q: np.ndarray) -> ReducedRep:
     return change_basis(MulIrrep(mul=1, rep=rep), Q)

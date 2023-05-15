@@ -5,7 +5,7 @@ from typing import Iterator
 import numpy as np
 from ..util import is_half_integer, is_integer, round_to_sqrt_rational
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 from .su2 import SU2
 from lie_nn import clebsch_gordan
 
@@ -28,7 +28,7 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
 
 
 @dataclass(frozen=True)
-class SU2Real(Irrep):
+class SU2Real(TabulatedIrrep):
     j: float  # j is a half-integer
 
     def __post_init__(rep):

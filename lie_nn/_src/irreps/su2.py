@@ -5,11 +5,11 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 
 
 @dataclass(frozen=True)
-class SU2(Irrep):
+class SU2(TabulatedIrrep):
     j: int
 
     def __post_init__(self):

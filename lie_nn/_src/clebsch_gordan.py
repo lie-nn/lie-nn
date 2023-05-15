@@ -2,7 +2,7 @@ import numpy as np
 from multipledispatch import dispatch
 
 from .infer_change_of_basis import infer_change_of_basis
-from .irrep import Irrep
+from .irrep import TabulatedIrrep
 from .rep import Rep
 from .tensor_product import tensor_product
 
@@ -27,6 +27,8 @@ def clebsch_gordan(rep1: Rep, rep2: Rep, rep3: Rep, *, round_fn=lambda x: x) -> 
     return cg
 
 
-@dispatch(Irrep, Irrep, Irrep)
-def clebsch_gordan(rep1: Irrep, rep2: Irrep, rep3: Irrep, *, round_fn=lambda x: x) -> np.ndarray:  # noqa: F811
+@dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
+def clebsch_gordan(
+    rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep, *, round_fn=lambda x: x
+) -> np.ndarray:  # noqa: F811
     return rep1.clebsch_gordan(rep1, rep2, rep3)

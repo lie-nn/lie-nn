@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 import pytest
-from lie_nn import Irrep, clebsch_gordan, check_representation_triplet, GenericRep
+from lie_nn import TabulatedIrrep, clebsch_gordan, check_representation_triplet, GenericRep
 from lie_nn.irreps import O3, SL2C, SO3, SO13, SU2Real, SU2, SU2_, SU3, SU4
 from lie_nn.util import round_to_sqrt_rational
 
@@ -19,22 +19,22 @@ def bunch_of_triplets():
 
 
 @pytest.mark.parametrize("ir", bunch_of_reps())
-def test_algebra_vs_generators(ir: Irrep):
+def test_algebra_vs_generators(ir: TabulatedIrrep):
     ir.check_algebra_vs_generators()
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
-def test_numerical_cg_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
+def test_numerical_cg_vs_generators(ir1: TabulatedIrrep, ir2: TabulatedIrrep, ir3: TabulatedIrrep):
     check_representation_triplet(GenericRep.from_rep(ir1), ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
-def test_irreps_clebsch_gordan_vs_generators(ir1: Irrep, ir2: Irrep, ir3: Irrep):
+def test_irreps_clebsch_gordan_vs_generators(ir1: TabulatedIrrep, ir2: TabulatedIrrep, ir3: TabulatedIrrep):
     check_representation_triplet(ir1, ir2, ir3)
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
-def test_recompute_clebsch_gordan(ir1: Irrep, ir2: Irrep, ir3: Irrep):
+def test_recompute_clebsch_gordan(ir1: TabulatedIrrep, ir2: TabulatedIrrep, ir3: TabulatedIrrep):
     tol = 1e-14
     C1 = clebsch_gordan(ir1, ir2, ir3, round_fn=round_to_sqrt_rational)
     C2 = ir1.clebsch_gordan(ir1, ir2, ir3)
@@ -42,7 +42,7 @@ def test_recompute_clebsch_gordan(ir1: Irrep, ir2: Irrep, ir3: Irrep):
 
 
 @pytest.mark.parametrize("ir1, ir2, ir3", bunch_of_triplets())
-def test_selection_rule(ir1: Irrep, ir2: Irrep, ir3: Irrep):
+def test_selection_rule(ir1: TabulatedIrrep, ir2: TabulatedIrrep, ir3: TabulatedIrrep):
     cg = ir1.clebsch_gordan(ir1, ir2, ir3)
 
     if ir3 in ir1 * ir2:

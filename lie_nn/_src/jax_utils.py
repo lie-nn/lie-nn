@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import jax
 import jax.numpy as jnp
-from .irrep import Irrep
+from .irrep import TabulatedIrrep
 
 
 def static_jax_pytree(cls):
@@ -33,7 +33,7 @@ def matrix_power(F, n):
     return result
 
 
-def exp_map(rep: "Irrep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+def exp_map(rep: "TabulatedIrrep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
     # return a matrix of shape ``(rep.dim, rep.dim)``
     discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
     output = jax.scipy.linalg.expm(jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators()))

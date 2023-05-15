@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import Irrep
+from ..irrep import TabulatedIrrep
 from .su2 import SU2
 
 
@@ -22,7 +22,7 @@ def change_basis_real_to_complex(l: int) -> np.ndarray:
 
 
 @dataclass(frozen=True)
-class SO3(Irrep):
+class SO3(TabulatedIrrep):
     l: int
 
     @classmethod
