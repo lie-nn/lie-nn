@@ -28,5 +28,5 @@ def clebsch_gordan(rep1: Rep, rep2: Rep, rep3: Rep, *, round_fn=lambda x: x) -> 
 
 
 @dispatch(Irrep, Irrep, Irrep)
-def clebsch_gordan(rep1: Irrep, rep2: Irrep, rep3: Irrep, *, round_fn=lambda x: x) -> np.ndarray:
+def clebsch_gordan(rep1: Irrep, rep2: Irrep, rep3: Irrep, *, round_fn=lambda x: x) -> np.ndarray:  # noqa: F811
     return rep1.clebsch_gordan(rep1, rep2, rep3)

@@ -11,7 +11,7 @@ from .util import direct_sum
 @dataclasses.dataclass
 class MulIrrep(Rep):
     mul: int
-    rep: Irrep
+    rep: Rep
 
     @classmethod
     def from_string(cls, string: str, cls_irrep: Type[Irrep]) -> "MulIrrep":
