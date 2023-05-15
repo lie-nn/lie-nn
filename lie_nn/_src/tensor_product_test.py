@@ -16,7 +16,10 @@ REPRESENTATIONS = [O3, SU2, SO3, SL2C, SO13]
 # TODO: resolve tensor_product_consistency for SU3, SU4
 
 
-@pytest.mark.parametrize("ir1, ir2", sum((list(itertools.product(first_reps(IR, 4), repeat=2)) for IR in REPRESENTATIONS), []))
+@pytest.mark.parametrize(
+    "ir1, ir2",
+    sum((list(itertools.product(first_reps(IR, 4), repeat=2)) for IR in REPRESENTATIONS), []),
+)
 def test_tensor_product_consistency(ir1, ir2):
     rep1 = ReducedRep.from_irreps([(2, ir1), ir2])
     rep2 = ReducedRep.from_irreps([(3, ir1)])

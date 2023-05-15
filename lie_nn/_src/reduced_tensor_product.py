@@ -65,7 +65,9 @@ class IrrepsArray:
             else:
                 list[-1] = np.concatenate([list[-1], x], axis=-2)
                 muls[-1] += mul
-        return IrrepsArray(list=list, irreps=tuple(MulIrrep(mul, irrep) for mul, irrep in zip(muls, irreps)))
+        return IrrepsArray(
+            list=list, irreps=tuple(MulIrrep(mul, irrep) for mul, irrep in zip(muls, irreps))
+        )
 
     def reshape(self, shape):
         assert shape[-1] == -1 or shape[-1] == sum(mul_irrep.mul for mul_irrep in self.irreps)
@@ -112,7 +114,9 @@ def reduced_tensor_product_basis(
     if isinstance(formula_or_irreps_list, (tuple, list)):
         irreps_list = formula_or_irreps_list
         irreps_tuple = tuple(_to_reducedrep(irreps) for irreps in irreps_list)
-        formulas: FrozenSet[Tuple[int, Tuple[int, ...]]] = frozenset({(1, tuple(range(len(irreps_tuple))))})
+        formulas: FrozenSet[Tuple[int, Tuple[int, ...]]] = frozenset(
+            {(1, tuple(range(len(irreps_tuple))))}
+        )
         out = _reduced_tensor_product_basis(irreps_tuple, formulas, epsilon)
         return RepArray(ReducedRep.from_irreps(out.irreps), out.array, out.list)
 
@@ -167,7 +171,9 @@ def reduced_symmetric_tensor_product_basis(
             where ``d`` is the dimension of ``irreps``.
     """
     irreps = _to_reducedrep(irreps)
-    perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]] = frozenset((1, p) for p in itertools.permutations(range(order)))
+    perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]] = frozenset(
+        (1, p) for p in itertools.permutations(range(order))
+    )
     out = _reduced_tensor_product_basis(tuple([irreps] * order), perm_repr, epsilon)
     return RepArray(ReducedRep.from_irreps(out.irreps), out.array, out.list)
 
@@ -189,12 +195,17 @@ def _reduced_tensor_product_basis(
         cursor = 0
         for mul_ir in reduced_rep.irreps:
             mul, ir = mul_ir.mul, mul_ir.rep
-            x_list.append(x[..., cursor : cursor + mul * ir.dim].reshape(x.shape[:-1] + (mul, ir.dim)))
+            x_list.append(
+                x[..., cursor : cursor + mul * ir.dim].reshape(x.shape[:-1] + (mul, ir.dim))
+            )
             cursor += mul * ir.dim
         return x_list
 
     bases = [
-        (frozenset({i}), IrrepsArray(list=get_initial_basis(reduced_rep, i), irreps=reduced_rep.irreps))
+        (
+            frozenset({i}),
+            IrrepsArray(list=get_initial_basis(reduced_rep, i), irreps=reduced_rep.irreps),
+        )
         for i, reduced_rep in enumerate(irreps_tuple)
     ]
 
@@ -212,7 +223,9 @@ def _reduced_tensor_product_basis(
             if len(subrepr_permutation(f, perm_repr)) == 1:
                 return ab.sorted().simplify()
             p = reduce_subgroup_permutation(f, perm_repr, dims)
-            ab = constrain_rotation_basis_by_permutation_basis(ab, p, epsilon=epsilon, round_fn=round_to_sqrt_rational)
+            ab = constrain_rotation_basis_by_permutation_basis(
+                ab, p, epsilon=epsilon, round_fn=round_to_sqrt_rational
+            )
             return ab.sorted().simplify()
 
         # greedy algorithm
@@ -254,7 +267,9 @@ def germinate_perm_repr(formula: str) -> Tuple[str, FrozenSet[Tuple[int, Tuple[i
 
     # `perm_repr` is a list of (sign, permutation of indices)
     # each formula can be viewed as a permutation of the original formula
-    perm_repr = {(s, tuple(f.index(i) for i in f0)) for s, f in formulas}  # set of generators (permutations)
+    perm_repr = {
+        (s, tuple(f.index(i) for i in f0)) for s, f in formulas
+    }  # set of generators (permutations)
 
     # they can be composed, for instance if you have ijk=jik=ikj
     # you also have ijk=jki
@@ -262,7 +277,9 @@ def germinate_perm_repr(formula: str) -> Tuple[str, FrozenSet[Tuple[int, Tuple[i
     while True:
         n = len(perm_repr)
         perm_repr = perm_repr.union([(s, perm.inverse(p)) for s, p in perm_repr])
-        perm_repr = perm_repr.union([(s1 * s2, perm.compose(p1, p2)) for s1, p1 in perm_repr for s2, p2 in perm_repr])
+        perm_repr = perm_repr.union(
+            [(s1 * s2, perm.compose(p1, p2)) for s1, p1 in perm_repr for s2, p2 in perm_repr]
+        )
         if len(perm_repr) == n:
             break  # we break when the set is stable => it is now a group \o/
 
@@ -305,7 +322,11 @@ def reduce_basis_product(
 
 
 def constrain_rotation_basis_by_permutation_basis(
-    rotation_basis: IrrepsArray, permutation_basis: np.ndarray, *, epsilon=1e-5, round_fn=lambda x: x
+    rotation_basis: IrrepsArray,
+    permutation_basis: np.ndarray,
+    *,
+    epsilon=1e-5,
+    round_fn=lambda x: x,
 ) -> IrrepsArray:
     """Constrain a rotation basis by a permutation basis.
 
@@ -352,7 +373,10 @@ def subrepr_permutation(
 
 
 def reduce_subgroup_permutation(
-    sub_f0: FrozenSet[int], perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]], dims: Tuple[int, ...], return_dim: bool = False
+    sub_f0: FrozenSet[int],
+    perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]],
+    dims: Tuple[int, ...],
+    return_dim: bool = False,
 ) -> np.ndarray:
     sub_perm_repr = subrepr_permutation(sub_f0, perm_repr)
     sub_dims = tuple(dims[i] for i in sub_f0)
@@ -364,7 +388,9 @@ def reduce_subgroup_permutation(
     if return_dim:
         return len(base)
     permutation_basis = reduce_permutation_matrix(base, sub_dims)
-    return np.reshape(permutation_basis, (-1,) + tuple(dims[i] if i in sub_f0 else 1 for i in range(len(dims))))
+    return np.reshape(
+        permutation_basis, (-1,) + tuple(dims[i] if i in sub_f0 else 1 for i in range(len(dims)))
+    )
 
 
 @functools.lru_cache(maxsize=None)

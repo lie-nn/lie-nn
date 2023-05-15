@@ -66,10 +66,14 @@ class IrrepProduct(TabulatedIrrep):
                 yield IrrepProduct(rep3, rep4)
 
     @classmethod
-    def clebsch_gordan(cls, rep1: "IrrepProduct", rep2: "IrrepProduct", rep3: "IrrepProduct") -> np.ndarray:
+    def clebsch_gordan(
+        cls, rep1: "IrrepProduct", rep2: "IrrepProduct", rep3: "IrrepProduct"
+    ) -> np.ndarray:
         C1 = rep1.rep1.clebsch_gordan(rep1.rep1, rep2.rep1, rep3.rep1)  # [n_sol1, d1_1, d2_1, d3_1]
         C2 = rep1.rep2.clebsch_gordan(rep1.rep2, rep2.rep2, rep3.rep2)  # [n_sol2, d1_2, d2_2, d3_2]
-        C = np.einsum("aikm,bjln->abijklmn", C1, C2).reshape(len(C1) * len(C2), rep1.dim, rep2.dim, rep3.dim)
+        C = np.einsum("aikm,bjln->abijklmn", C1, C2).reshape(
+            len(C1) * len(C2), rep1.dim, rep2.dim, rep3.dim
+        )
         return C
 
     @property
@@ -89,8 +93,12 @@ class IrrepProduct(TabulatedIrrep):
         I1 = np.eye(rep.rep1.dim)
         I2 = np.eye(rep.rep2.dim)
         X = np.zeros((rep.lie_dim, rep.dim, rep.dim), dtype=_get_dtype(X1, X2))
-        X[: rep.rep1.lie_dim] = np.einsum("aij,kl->aikjl", X1, I2).reshape(rep.rep1.lie_dim, rep.dim, rep.dim)
-        X[rep.rep1.lie_dim :] = np.einsum("ij,akl->aikjl", I1, X2).reshape(rep.rep2.lie_dim, rep.dim, rep.dim)
+        X[: rep.rep1.lie_dim] = np.einsum("aij,kl->aikjl", X1, I2).reshape(
+            rep.rep1.lie_dim, rep.dim, rep.dim
+        )
+        X[rep.rep1.lie_dim :] = np.einsum("ij,akl->aikjl", I1, X2).reshape(
+            rep.rep2.lie_dim, rep.dim, rep.dim
+        )
         return X
 
     def discrete_generators(rep: "IrrepProduct") -> np.ndarray:
@@ -119,5 +127,7 @@ def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:
 
 
 @dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
-def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep) -> TabulatedIrrep:
+def group_product(
+    rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep
+) -> TabulatedIrrep:
     return IrrepProduct(IrrepProduct(rep1, rep2), rep3)

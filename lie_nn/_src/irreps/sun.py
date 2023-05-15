@@ -191,7 +191,10 @@ def compute_coeff_lower(M: GT_PATTERN, k, l) -> float:
 
 def M_add_at_lk(M: GT_PATTERN, l: int, k: int, increment: int) -> Optional[GT_PATTERN]:
     """Add increment to the l-th row and k-th column of M."""
-    M = tuple(tuple(M[i][j] + increment if (i, j) == (l, k) else M[i][j] for j in range(len(M[i]))) for i in range(len(M)))
+    M = tuple(
+        tuple(M[i][j] + increment if (i, j) == (l, k) else M[i][j] for j in range(len(M[i])))
+        for i in range(len(M))
+    )
     return M if is_valid_M(M) else None
 
 
@@ -228,15 +231,21 @@ def lower_ladder(l: int, N: GT_PATTERN, M: GT_PATTERN) -> float:
 
 
 def upper_ladder_matrices(S: WEIGHT) -> np.ndarray:
-    return np.array([[[upper_ladder(l, N, M) for M in S_to_Ms(S)] for N in S_to_Ms(S)] for l in range(len(S) - 1)]).reshape(
-        len(S) - 1, dim(S), dim(S)
-    )
+    return np.array(
+        [
+            [[upper_ladder(l, N, M) for M in S_to_Ms(S)] for N in S_to_Ms(S)]
+            for l in range(len(S) - 1)
+        ]
+    ).reshape(len(S) - 1, dim(S), dim(S))
 
 
 def lower_ladder_matrices(S: WEIGHT) -> np.ndarray:
-    return np.array([[[lower_ladder(l, N, M) for M in S_to_Ms(S)] for N in S_to_Ms(S)] for l in range(len(S) - 1)]).reshape(
-        len(S) - 1, dim(S), dim(S)
-    )
+    return np.array(
+        [
+            [[lower_ladder(l, N, M) for M in S_to_Ms(S)] for N in S_to_Ms(S)]
+            for l in range(len(S) - 1)
+        ]
+    ).reshape(len(S) - 1, dim(S), dim(S))
 
 
 def Jz_matrices(S: WEIGHT) -> np.ndarray:
@@ -249,7 +258,9 @@ def Jz_matrices(S: WEIGHT) -> np.ndarray:
     return Jz
 
 
-def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
+def construct_highest_weight_constraint(
+    S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN
+) -> np.ndarray:
     n = len(M_3_eldest)  # SU(n)
     dimS1 = dim(S1)
     dimS2 = dim(S2)
@@ -261,9 +272,13 @@ def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_P
                 for n2 in range(dimS2):
                     for l in range(n - 1):
                         if n2 == m2:
-                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(S1, n1), index_to_M(S1, m1))
+                            A[m1, m2, n1, n2, l] += upper_ladder(
+                                l, index_to_M(S1, n1), index_to_M(S1, m1)
+                            )
                         if n1 == m1:
-                            A[m1, m2, n1, n2, l] += upper_ladder(l, index_to_M(S2, n2), index_to_M(S2, m2))
+                            A[m1, m2, n1, n2, l] += upper_ladder(
+                                l, index_to_M(S2, n2), index_to_M(S2, m2)
+                            )
 
     A = A.reshape(dimS1, dimS2, -1)
 
@@ -284,7 +299,9 @@ def construct_highest_weight_constraint(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_P
 
 def clebsch_gordan_eldest(S1: WEIGHT, S2: WEIGHT, M_3_eldest: GT_PATTERN) -> np.ndarray:
     A = construct_highest_weight_constraint(S1, S2, M_3_eldest)
-    return nullspace(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1].reshape(-1, dim(S1), dim(S2))
+    return nullspace(A[:, ::-1], round_fn=round_to_sqrt_rational)[:, ::-1].reshape(
+        -1, dim(S1), dim(S2)
+    )
 
 
 def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]:
@@ -305,7 +322,14 @@ def search_state(M_list: List[GT_PATTERN]) -> Tuple[GT_PATTERN, GT_PATTERN, int]
 
 
 def construct_lower_cg(
-    S1: WEIGHT, S2: WEIGHT, S3: WEIGHT, Mp: GT_PATTERN, Mc: GT_PATTERN, l: int, alpha: int, C: np.array
+    S1: WEIGHT,
+    S2: WEIGHT,
+    S3: WEIGHT,
+    Mp: GT_PATTERN,
+    Mc: GT_PATTERN,
+    l: int,
+    alpha: int,
+    C: np.array,
 ) -> Tuple[np.ndarray, int]:
     dimS1 = dim(S1)
     dimS2 = dim(S2)
@@ -338,7 +362,10 @@ def clebsch_gordan_matrix(S1: WEIGHT, S2: WEIGHT, S3: WEIGHT):
     M_eldest = tuple(S_to_Ms(S3))[-1]
     C_eldest = clebsch_gordan_eldest(S1, S2, M_eldest)
     C = np.concatenate(
-        (np.zeros((C_eldest.shape[0], dimS1, dimS2, dimS3 - 1)), (C_eldest.reshape(C_eldest.shape[0], dimS1, dimS2, 1))),
+        (
+            np.zeros((C_eldest.shape[0], dimS1, dimS2, dimS3 - 1)),
+            (C_eldest.reshape(C_eldest.shape[0], dimS1, dimS2, 1)),
+        ),
         axis=-1,
     )
     M_list = [M_eldest]
@@ -375,8 +402,18 @@ def generators(S: WEIGHT):
     Jm = lower_ladder_matrices(S)
     Jz = Jz_matrices(S)
 
-    Xi = np.stack([1j * (E_basis(k, l, Jp, Jm) + E_basis(l, k, Jp, Jm)) for k in range(N) for l in range(k + 1, N)], axis=0)
-    Xr = np.stack([E_basis(k, l, Jp, Jm) - E_basis(l, k, Jp, Jm) for k in range(N) for l in range(k + 1, N)], axis=0)
+    Xi = np.stack(
+        [
+            1j * (E_basis(k, l, Jp, Jm) + E_basis(l, k, Jp, Jm))
+            for k in range(N)
+            for l in range(k + 1, N)
+        ],
+        axis=0,
+    )
+    Xr = np.stack(
+        [E_basis(k, l, Jp, Jm) - E_basis(l, k, Jp, Jm) for k in range(N) for l in range(k + 1, N)],
+        axis=0,
+    )
     Xd = 2j * Jz
     return np.concatenate([Xi, Xr, Xd], axis=0)
 

@@ -12,7 +12,9 @@ from .sl2c import SL2C
 
 
 @dataclass(frozen=True)
-class SO13(TabulatedIrrep):  # TODO(ilyes): think if this class shoulb be a subclass of SL2C. mario: Not anymore
+class SO13(
+    TabulatedIrrep
+):  # TODO(ilyes): think if this class shoulb be a subclass of SL2C. mario: Not anymore
     l: int  # First integer weight
     k: int  # Second integer weight
 
@@ -36,7 +38,9 @@ class SO13(TabulatedIrrep):  # TODO(ilyes): think if this class shoulb be a subc
     @classmethod
     def clebsch_gordan(cls, rep1: "SO13", rep2: "SO13", rep3: "SO13") -> np.ndarray:
         # Call the generic implementation
-        return lie.clebsch_gordan(lie.GenericRep.from_rep(rep1), rep2, rep3, round_fn=lie.util.round_to_sqrt_rational)
+        return lie.clebsch_gordan(
+            lie.GenericRep.from_rep(rep1), rep2, rep3, round_fn=lie.util.round_to_sqrt_rational
+        )
 
     @property
     def dim(rep: "SO13") -> int:
@@ -65,7 +69,9 @@ class SO13(TabulatedIrrep):  # TODO(ilyes): think if this class shoulb be a subc
         X[3:] *= 1j
 
         # Make the generators explicitly real, if possible
-        S = lie.util.infer_change_of_basis(np.conjugate(X), X, round_fn=lie.util.round_to_sqrt_rational) * np.sqrt(rep.dim)
+        S = lie.util.infer_change_of_basis(
+            np.conjugate(X), X, round_fn=lie.util.round_to_sqrt_rational
+        ) * np.sqrt(rep.dim)
         if S.shape[0] == 0:
             assert rep.l != rep.k
             return X
@@ -83,9 +89,15 @@ class SO13(TabulatedIrrep):  # TODO(ilyes): think if this class shoulb be a subc
         # for generators J_0, J_1, J_2, K_0, K_1, K_2
         for i, j, k in itertools.permutations((0, 1, 2)):
             algebra[i, j, k] = lie.util.permutation_sign((i, j, k))  # [J_i, J_j] = eps_ijk J_k
-            algebra[3 + i, 3 + j, k] = -lie.util.permutation_sign((i, j, k))  # [K_i, K_j] = -eps_ijk J_k
-            algebra[i, 3 + j, 3 + k] = lie.util.permutation_sign((i, j, k))  # [J_i, K_j] = eps_ijk K_k
-            algebra[3 + i, j, 3 + k] = lie.util.permutation_sign((i, j, k))  # [K_i, J_j] = eps_ijk K_k
+            algebra[3 + i, 3 + j, k] = -lie.util.permutation_sign(
+                (i, j, k)
+            )  # [K_i, K_j] = -eps_ijk J_k
+            algebra[i, 3 + j, 3 + k] = lie.util.permutation_sign(
+                (i, j, k)
+            )  # [J_i, K_j] = eps_ijk K_k
+            algebra[3 + i, j, 3 + k] = lie.util.permutation_sign(
+                (i, j, k)
+            )  # [K_i, J_j] = eps_ijk K_k
 
         return algebra
 

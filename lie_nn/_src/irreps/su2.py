@@ -210,7 +210,8 @@ def clebsch_gordanSU2coeffs(idx1, idx2, idx3):
     S = 0
     for v in range(vmin, vmax + 1):
         S += (-1) ** (v + j2 + m2) * Fraction(
-            f(j2 + j3 + m1 - v) * f(j1 - m1 + v), f(v) * f(j3 - j1 + j2 - v) * f(j3 + m3 - v) * f(v + j1 - j2 - m3)
+            f(j2 + j3 + m1 - v) * f(j1 - m1 + v),
+            f(v) * f(j3 - j1 + j2 - v) * f(j3 + m3 - v) * f(v + j1 - j2 - m3),
         )
 
     if S > 0:

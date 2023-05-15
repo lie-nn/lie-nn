@@ -72,7 +72,9 @@ class SL2C(TabulatedIrrep):
         real = vmap(kron_add)(Xl, Xk)
         imag = vmap(kron_add)(Xl, -Xk)
         X = np.concatenate([real, imag], axis=0)
-        C = SL2C.clebsch_gordan(SL2C(l=rep.l, k=0), SL2C(l=0, k=rep.k), SL2C(l=rep.l, k=rep.k)).reshape(
+        C = SL2C.clebsch_gordan(
+            SL2C(l=rep.l, k=0), SL2C(l=0, k=rep.k), SL2C(l=rep.l, k=rep.k)
+        ).reshape(
             rep.dim, rep.dim
         )  # [d, d]
         return C.T @ X @ np.conj(C)
@@ -127,10 +129,16 @@ def clebsch_gordansl2mat(rep1, rep2, rep3, fastcgmat=clebsch_gordanSU2mat):
     l1, k1 = rep1
     l2, k2 = rep2
     l, k = rep3
-    B1 = np.concatenate([fastcgmat(l / 2, k / 2, i / 2) for i in range(abs(l - k), l + k + 1, 2)], axis=-1)
+    B1 = np.concatenate(
+        [fastcgmat(l / 2, k / 2, i / 2) for i in range(abs(l - k), l + k + 1, 2)], axis=-1
+    )
     B2a = fastcgmat(l1 / 2, l2 / 2, l / 2)
     B2b = fastcgmat(k1 / 2, k2 / 2, k / 2)
-    B3a = np.concatenate([fastcgmat(l1 / 2, k1 / 2, i1 / 2) for i1 in range(abs(l1 - k1), l1 + k1 + 1, 2)], axis=-1)
-    B3b = np.concatenate([fastcgmat(l2 / 2, k2 / 2, i2 / 2) for i2 in range(abs(l2 - k2), l2 + k2 + 1, 2)], axis=-1)
+    B3a = np.concatenate(
+        [fastcgmat(l1 / 2, k1 / 2, i1 / 2) for i1 in range(abs(l1 - k1), l1 + k1 + 1, 2)], axis=-1
+    )
+    B3b = np.concatenate(
+        [fastcgmat(l2 / 2, k2 / 2, i2 / 2) for i2 in range(abs(l2 - k2), l2 + k2 + 1, 2)], axis=-1
+    )
     cg_matrix = np.einsum("cab", np.einsum("abc,dea,ghb,dgk,ehn", B1, B2a, B2b, B3a, B3b))
     return cg_matrix

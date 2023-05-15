@@ -64,19 +64,29 @@ class Rep:
         Returns:
             ``(dim, dim)`` array
         """
-        output = scipy.linalg.expm(np.einsum("a,aij->ij", continuous_params, self.continuous_generators()))
+        output = scipy.linalg.expm(
+            np.einsum("a,aij->ij", continuous_params, self.continuous_generators())
+        )
         for k, h in reversed(list(zip(discrete_params, self.discrete_generators()))):
             output = np.linalg.matrix_power(h, k) @ output
         return output
 
     def __repr__(self) -> str:
-        return f"Rep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
+        return (
+            f"Rep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
+        )
 
     def is_trivial(self) -> bool:
-        return self.dim == 1 and np.all(self.continuous_generators() == 0.0) and np.all(self.discrete_generators() == 1.0)
+        return (
+            self.dim == 1
+            and np.all(self.continuous_generators() == 0.0)
+            and np.all(self.discrete_generators() == 1.0)
+        )
 
     def check_algebra_vs_generators(rep: "Rep", rtol=1e-10, atol=1e-10):
-        check_algebra_vs_generators(rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol, assert_=True)
+        check_algebra_vs_generators(
+            rep.algebra(), rep.continuous_generators(), rtol=rtol, atol=atol, assert_=True
+        )
 
 
 @dataclasses.dataclass(init=False)
@@ -161,12 +171,16 @@ def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, at
 
     for solution in range(cg.shape[0]):
         for i in range(X1.shape[0]):
-            if not np.allclose(left_side[solution][i], right_side[solution][i], rtol=rtol, atol=atol):
+            if not np.allclose(
+                left_side[solution][i], right_side[solution][i], rtol=rtol, atol=atol
+            ):
                 np.set_printoptions(precision=3, suppress=True)
                 print(rep1, rep2, rep3)
                 print('Left side: einsum("zijk,dlk->zdijl", cg, X3)')
                 print(left_side[solution][i])
-                print('Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)')
+                print(
+                    'Right side: einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)'
+                )
                 print(right_side[solution][i])
                 np.set_printoptions(precision=8, suppress=False)
                 raise AssertionError(

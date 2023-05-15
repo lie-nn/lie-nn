@@ -28,15 +28,24 @@ def matrix_power(F, n):
 
         return (new_n, new_z, new_result), None
 
-    result = jax.lax.cond(n == 1, lambda _: F, lambda _: jax.lax.scan(body, init_carry, None, length=upper_limit)[0][2], None)
+    result = jax.lax.cond(
+        n == 1,
+        lambda _: F,
+        lambda _: jax.lax.scan(body, init_carry, None, length=upper_limit)[0][2],
+        None,
+    )
 
     return result
 
 
-def exp_map(rep: "TabulatedIrrep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray) -> jnp.ndarray:
+def exp_map(
+    rep: "TabulatedIrrep", continuous_params: jnp.ndarray, discrete_params: jnp.ndarray
+) -> jnp.ndarray:
     # return a matrix of shape ``(rep.dim, rep.dim)``
     discrete = jax.vmap(matrix_power)(rep.discrete_generators(), discrete_params)
-    output = jax.scipy.linalg.expm(jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators()))
+    output = jax.scipy.linalg.expm(
+        jnp.einsum("a,aij->ij", continuous_params, rep.continuous_generators())
+    )
     for x in reversed(discrete):
         output = x @ output
     return output

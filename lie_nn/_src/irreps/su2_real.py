@@ -38,7 +38,9 @@ class SU2Real(TabulatedIrrep):
 
     def __mul__(rep1: "SU2Real", rep2: "SU2Real") -> Iterator["SU2Real"]:
         assert isinstance(rep2, SU2Real)
-        return [SU2Real(j=float(j)) for j in np.arange(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 1)]
+        return [
+            SU2Real(j=float(j)) for j in np.arange(abs(rep1.j - rep2.j), rep1.j + rep2.j + 1, 1)
+        ]
 
     @classmethod
     def clebsch_gordan(cls, rep1: "SU2Real", rep2: "SU2Real", rep3: "SU2Real") -> np.ndarray:
@@ -46,13 +48,17 @@ class SU2Real(TabulatedIrrep):
 
         # return an array of shape ``(number_of_paths, rep1.dim, rep2.dim, rep3.dim)``
         if is_integer(rep1.j) and is_integer(rep2.j) and is_integer(rep3.j):
-            C = SU2.clebsch_gordan(SU2(j=int(2 * rep1.j)), SU2(j=int(2 * rep2.j)), SU2(j=int(2 * rep3.j)))
+            C = SU2.clebsch_gordan(
+                SU2(j=int(2 * rep1.j)), SU2(j=int(2 * rep2.j)), SU2(j=int(2 * rep3.j))
+            )
             Q1 = change_basis_real_to_complex(rep1.j)
             Q2 = change_basis_real_to_complex(rep2.j)
             Q3 = change_basis_real_to_complex(rep3.j)
             C = np.einsum("ij,kl,mn,zikn->zjlm", Q1, Q2, np.conj(Q3.T), C)
         else:
-            C = clebsch_gordan(GenericRep.from_rep(rep1), rep2, rep3, round_fn=round_to_sqrt_rational)
+            C = clebsch_gordan(
+                GenericRep.from_rep(rep1), rep2, rep3, round_fn=round_to_sqrt_rational
+            )
 
         assert np.all(np.abs(np.imag(C)) < 1e-5)
         return np.real(C)

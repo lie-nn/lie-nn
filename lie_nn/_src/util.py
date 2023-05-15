@@ -101,13 +101,17 @@ def _round_to_sqrt_rational_sympy(x, max_denominator):
 def round_to_sqrt_rational_sympy(x, max_denominator):
     x, y = np.real(x), np.imag(x)
 
-    return _round_to_sqrt_rational_sympy(x, max_denominator) + 1j * _round_to_sqrt_rational_sympy(y, max_denominator)
+    return _round_to_sqrt_rational_sympy(x, max_denominator) + 1j * _round_to_sqrt_rational_sympy(
+        y, max_denominator
+    )
 
 
 def round_to_sqrt_rational(x: np.ndarray, max_denominator=4096) -> np.ndarray:
     x = np.array(x)
     if np.iscomplex(x).any():
-        return _round_to_sqrt_rational(np.real(x), max_denominator) + 1j * _round_to_sqrt_rational(np.imag(x), max_denominator)
+        return _round_to_sqrt_rational(np.real(x), max_denominator) + 1j * _round_to_sqrt_rational(
+            np.imag(x), max_denominator
+        )
     return _round_to_sqrt_rational(np.real(x), max_denominator)
 
 
@@ -137,7 +141,12 @@ def vmap(
 
         output = []
         for i in range(dim):
-            out = fun(*[arg if in_axis is None else np.take(arg, i, in_axis) for arg, in_axis in zip(args, in_axes_)])
+            out = fun(
+                *[
+                    arg if in_axis is None else np.take(arg, i, in_axis)
+                    for arg, in_axis in zip(args, in_axes_)
+                ]
+            )
             output.append(out)
 
         if len(output) == 0:
@@ -205,7 +214,10 @@ def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
     Orthogonalize a matrix using the Gram-Schmidt process.
     """
     assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
-    assert A.dtype in [np.float64, np.complex128], "Gram-Schmidt process only works for float64 matrices."
+    assert A.dtype in [
+        np.float64,
+        np.complex128,
+    ], "Gram-Schmidt process only works for float64 matrices."
     Q = []
     for i in range(A.shape[0]):
         v = np.copy(A[i])
@@ -282,7 +294,9 @@ def nullspace(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarra
     return X
 
 
-def sequential_nullspace(gen_A: List[np.ndarray], dim_null_space: int, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+def sequential_nullspace(
+    gen_A: List[np.ndarray], dim_null_space: int, *, epsilon=1e-4, round_fn=lambda x: x
+) -> np.ndarray:
     r"""Compute the null space of a list of matrices.
 
     .. math::
@@ -306,7 +320,9 @@ def sequential_nullspace(gen_A: List[np.ndarray], dim_null_space: int, *, epsilo
         if S is None:
             S = nullspace(A, epsilon=epsilon, round_fn=round_fn)  # (num_null_space, dim_total)
         else:
-            S = nullspace(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S  # (num_null_space, dim_total)
+            S = (
+                nullspace(A @ S.T, epsilon=epsilon, round_fn=round_fn) @ S
+            )  # (num_null_space, dim_total)
 
         n += 1
         m += A.shape[0]
@@ -322,7 +338,9 @@ def sequential_nullspace(gen_A: List[np.ndarray], dim_null_space: int, *, epsilo
     )
 
 
-def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
+def infer_change_of_basis(
+    X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x
+) -> np.ndarray:
     r"""
     Compute the change of basis matrix from X1 to X2.
 
@@ -336,8 +354,14 @@ def infer_change_of_basis(X1: np.ndarray, X2: np.ndarray, *, epsilon=1e-4, round
     Returns:
         The change of basis S of shape (n_solutions, d1, d2).
     """
-    assert X1.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
-    assert X2.dtype in [np.float64, np.complex128], "Change of basis only works for float64 matrices."
+    assert X1.dtype in [
+        np.float64,
+        np.complex128,
+    ], "Change of basis only works for float64 matrices."
+    assert X2.dtype in [
+        np.float64,
+        np.complex128,
+    ], "Change of basis only works for float64 matrices."
 
     if X1.ndim == 2:
         X1 = X1[np.newaxis]
@@ -412,7 +436,9 @@ def basis_intersection(
     return x1, x2
 
 
-def check_algebra_vs_generators(A: np.ndarray, X: np.ndarray, rtol: float = 1e-10, atol: float = 1e-10, assert_: bool = False):
+def check_algebra_vs_generators(
+    A: np.ndarray, X: np.ndarray, rtol: float = 1e-10, atol: float = 1e-10, assert_: bool = False
+):
     left_side = vmap(vmap(commutator, (0, None), 0), (None, 0), 1)(X, X)
     right_side = np.einsum("ijk,kab->ijab", A, X)
     if assert_:
@@ -512,7 +538,9 @@ def unique_with_tol(a: np.array, *, tol: float):
     return centers, inverses
 
 
-def eigenspaces(val: np.ndarray, vec: np.ndarray, *, epsilon: float = 1e-6) -> List[Tuple[float, np.ndarray]]:
+def eigenspaces(
+    val: np.ndarray, vec: np.ndarray, *, epsilon: float = 1e-6
+) -> List[Tuple[float, np.ndarray]]:
     """Regroup eigenvectors by eigenvalues.
     Input:
         val: eigenvalues (output of np.linalg.eig)
@@ -525,7 +553,9 @@ def eigenspaces(val: np.ndarray, vec: np.ndarray, *, epsilon: float = 1e-6) -> L
     return [(val, vec[:, i == j]) for j, val in enumerate(unique_val)]
 
 
-def decompose_rep_into_irreps(X: np.array, *, epsilon: float = 1e-10, round_fn=lambda x: x) -> List[np.array]:
+def decompose_rep_into_irreps(
+    X: np.array, *, epsilon: float = 1e-10, round_fn=lambda x: x
+) -> List[np.array]:
     """Decomposes representation into irreducible representations.
     Input:
         X: np.array [lie_dim, d, d] - generators of a representation.

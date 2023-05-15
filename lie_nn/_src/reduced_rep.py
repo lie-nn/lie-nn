@@ -61,8 +61,12 @@ class ReducedRep(Rep):
         self.Q = Q
 
     @classmethod
-    def from_string(cls, string: str, cls_irrep: Type[TabulatedIrrep], Q: Optional[np.ndarray] = None) -> "ReducedRep":
-        return cls.from_irreps([MulIrrep.from_string(term, cls_irrep) for term in string.split("+")], Q)
+    def from_string(
+        cls, string: str, cls_irrep: Type[TabulatedIrrep], Q: Optional[np.ndarray] = None
+    ) -> "ReducedRep":
+        return cls.from_irreps(
+            [MulIrrep.from_string(term, cls_irrep) for term in string.split("+")], Q
+        )
 
     @classmethod
     def from_irreps(

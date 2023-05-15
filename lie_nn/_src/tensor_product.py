@@ -17,7 +17,9 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
     d = rep1.dim * rep2.dim
     return GenericRep(
         A=rep1.algebra(),
-        X=(np.einsum("aij,kl->aikjl", X1, I2) + np.einsum("ij,akl->aikjl", I1, X2)).reshape(X1.shape[0], d, d),
+        X=(np.einsum("aij,kl->aikjl", X1, I2) + np.einsum("ij,akl->aikjl", I1, X2)).reshape(
+            X1.shape[0], d, d
+        ),
         H=np.einsum("aij,akl->aikjl", H1, H2).reshape(H1.shape[0], d, d),
     )
 
@@ -50,9 +52,14 @@ def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:
     s = 0
     for mul_ir in irreps:
         irreps_out.append(MulIrrep(mul=m1 * m2 * mul_ir.mul, rep=mul_ir.rep))
-        q = Q[:, s : s + mul_ir.dim].reshape(mulirrep1.rep.dim, mulirrep2.rep.dim, mul_ir.mul, mul_ir.rep.dim)
+        q = Q[:, s : s + mul_ir.dim].reshape(
+            mulirrep1.rep.dim, mulirrep2.rep.dim, mul_ir.mul, mul_ir.rep.dim
+        )
         q = np.einsum("ijsk,ur,vt->uivjrtsk", q, np.eye(m1), np.eye(m2))
-        q = q.reshape(q.shape[0] * q.shape[1] * q.shape[2] * q.shape[3], q.shape[4] * q.shape[5] * q.shape[6] * q.shape[7])
+        q = q.reshape(
+            q.shape[0] * q.shape[1] * q.shape[2] * q.shape[3],
+            q.shape[4] * q.shape[5] * q.shape[6] * q.shape[7],
+        )
         Q_out.append(q)
         s += mul_ir.dim
     Q_out = np.concatenate(Q_out, axis=-1)
