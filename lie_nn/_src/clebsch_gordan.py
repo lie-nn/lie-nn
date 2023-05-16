@@ -28,7 +28,7 @@ def clebsch_gordan(rep1: Rep, rep2: Rep, rep3: Rep, *, round_fn=lambda x: x) -> 
 
 
 @dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
-def clebsch_gordan(
+def clebsch_gordan(  # noqa: F811
     rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep, *, round_fn=lambda x: x
-) -> np.ndarray:  # noqa: F811
+) -> np.ndarray:
     return rep1.clebsch_gordan(rep1, rep2, rep3)
