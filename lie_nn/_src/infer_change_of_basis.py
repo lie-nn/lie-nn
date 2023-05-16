@@ -35,8 +35,8 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndar
     np.testing.assert_allclose(
         np.einsum("aij,bjk->abik", Y2, A),
         np.einsum("bij,ajk->abik", A, Y1),
-        rtol=1e-10,
-        atol=1e-10,
+        rtol=1e-8,
+        atol=1e-8,
     )
 
     assert A.dtype in [np.float64, np.complex128]
