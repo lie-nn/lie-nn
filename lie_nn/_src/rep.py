@@ -72,9 +72,7 @@ class Rep:
         return output
 
     def __repr__(self) -> str:
-        return (
-            f"Rep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.discrete_generators())})"
-        )
+        return f"Rep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.H)})"
 
     def is_trivial(self) -> bool:
         return (
@@ -134,11 +132,7 @@ class GenericRep(Rep):
         )
 
     def __repr__(self) -> str:
-        return (
-            f"GenericRep(dim={self.dim}, "
-            "lie_dim={self.lie_dim}, "
-            "len(H)={len(self.discrete_generators())})"
-        )
+        return f"GenericRep(dim={self.dim}, lie_dim={self.lie_dim}, len(H)={len(self.H)})"
 
 
 def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):

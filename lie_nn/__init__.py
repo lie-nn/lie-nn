@@ -4,6 +4,7 @@ from ._src.rep import Rep, GenericRep, check_representation_triplet
 from ._src.irrep import TabulatedIrrep
 from ._src.reduced_rep import MulIrrep, ReducedRep
 from ._src.change_basis import change_basis
+from ._src.reduce import reduce
 from ._src.change_algebra import change_algebra
 from ._src.tensor_product import tensor_product, tensor_power
 from ._src.direct_sum import direct_sum
@@ -29,6 +30,7 @@ __all__ = [
     "MulIrrep",
     "ReducedRep",
     "change_basis",
+    "reduce",
     "change_algebra",
     "tensor_product",
     "tensor_power",
