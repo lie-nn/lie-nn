@@ -28,6 +28,8 @@
 ## Example
 
 ```python
+import lie_nn as lie
+
 lie.clebsch_gordan(
     lie.irreps.SU3((1, 1, 0)),
     lie.irreps.SU3((1, 0, 0)),
