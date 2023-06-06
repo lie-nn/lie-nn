@@ -21,6 +21,7 @@ from ._src.group_product import group_product
 
 from lie_nn import irreps as irreps
 from lie_nn import util as util
+from lie_nn import finite as finite
 
 __all__ = [
     "Rep",
@@ -46,4 +47,5 @@ __all__ = [
     "group_product",
     "irreps",
     "util",
+    "finite",
 ]
