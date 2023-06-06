@@ -21,7 +21,7 @@ The current tabulated irreps include:
 | $SU(3)$ | QCD                                   | 
 | $SL(2, \mathbb{C})$| -                          |
  
- We aim to add new tabulated irreps groups including the other classical Lie groups $Sp(2n)$, $SO(2n+1)$ and $SO(2n)$. 
+ We aim to add new tabulated irreps groups including the other classical Lie groups $Sp(2n)$, $SO(2n+1)$ and $SO(2n)$ (PR are welcomed). 
 
 ## Functions
 
