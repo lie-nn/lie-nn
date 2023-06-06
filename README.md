@@ -55,8 +55,20 @@ lie.clebsch_gordan(
 ```
 
 ## Formatting the code
-
 ```
 pycln .
 black .
+```
+## References
+
+If you use this code, please cite our papers:
+```text
+@misc{batatia2023general,
+      title={A General Framework for Equivariant Neural Networks on Reductive Lie Groups}, 
+      author={Ilyes Batatia and Mario Geiger and Jose Munoz and Tess Smidt and Lior Silberman and Christoph Ortner},
+      year={2023},
+      eprint={2306.00091},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML}
+}
 ```
