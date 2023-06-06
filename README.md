@@ -1,10 +1,27 @@
 # lie-nn
+The aim of this library is to help the development of equivariant neural networks on reductive Lie groups. It contains fundamental mathematical operations such as tensor products, symmetric products, irreducible representations.
+
+The library is modular, and new groups can be easily implemented. 
+
 
 ## Data Types
+The data are organised in three categories:
 
 - `GenericRep` - a generic representation of a Lie group
 - `ReducedRep` - a reduced representation into irreps
 - `TabulatedIrrep` - a tabulated irreps (`SU2`, `SU2Real`, `O3`, `SO3`, `SL2C`, `SO13`, `SU3`, `SU4`, `Z2`)
+
+The current tabulated irreps include:
+
+|    Groups     | Potential Applications          |
+| ------------- | -------------                   |
+| $SO(3)$  | 3D Point Clouds (Molecules, Vision)  |
+| $SO(1,3)$  | Particles Physics                  |
+| $SU(2^{n})$ | Quantum Physics                   |
+| $SU(3)$ | QCD                                   | 
+| $SL(2, \mathbb{C})$| -                          |
+ 
+ We aim to add new tabulated irreps groups including the other classical Lie groups $Sp(2n)$, $SO(2n+1)$ and $SO(2n)$. 
 
 ## Functions
 
