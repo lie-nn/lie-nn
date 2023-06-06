@@ -17,10 +17,6 @@ class TabulatedIrrep(Rep):
         raise NotImplementedError
 
     @property
-    def lie_dim(rep) -> int:
-        return rep.algebra().shape[0]
-
-    @property
     def dim(rep: "TabulatedIrrep") -> int:
         raise NotImplementedError
 
@@ -38,18 +34,6 @@ class TabulatedIrrep(Rep):
     @classmethod
     def create_trivial(cls) -> "TabulatedIrrep":
         return cls.iterator().__next__()
-
-    def continuous_generators(rep: "TabulatedIrrep") -> np.ndarray:
-        # return an array of shape ``(lie_group_dimension, rep.dim, rep.dim)``
-        raise NotImplementedError
-
-    def discrete_generators(rep: "TabulatedIrrep") -> np.ndarray:
-        # return an array of shape ``(num_discrete_generators, rep.dim, rep.dim)``
-        raise NotImplementedError
-
-    def algebra(rep=None) -> np.ndarray:
-        """``[X_i, X_j] = A_ijk X_k``"""
-        pass
 
     @classmethod
     def clebsch_gordan(

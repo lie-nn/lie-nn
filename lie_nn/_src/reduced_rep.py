@@ -3,8 +3,8 @@ from typing import Optional, Tuple, Union, Type
 
 import numpy as np
 
-from .irrep import TabulatedIrrep
 from .rep import Rep
+from .irrep import TabulatedIrrep
 from .util import direct_sum
 
 
@@ -14,7 +14,7 @@ class MulIrrep(Rep):
     rep: Rep
 
     @classmethod
-    def from_string(cls, string: str, cls_irrep: Type[TabulatedIrrep]) -> "MulIrrep":
+    def from_string(cls, string: str, cls_irrep: Type[Rep]) -> "MulIrrep":
         if "x" in string:
             mul, rep = string.split("x")
         else:
@@ -38,7 +38,7 @@ class MulIrrep(Rep):
             return np.empty((0, self.dim, self.dim))
         return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in H], axis=0)
 
-    def create_trivial(self) -> TabulatedIrrep:
+    def create_trivial(self) -> Rep:
         return self.rep.create_trivial()
 
     def __repr__(self) -> str:
@@ -71,7 +71,7 @@ class ReducedRep(Rep):
     @classmethod
     def from_irreps(
         cls,
-        mul_irreps: Tuple[Union[TabulatedIrrep, Tuple[int, TabulatedIrrep], MulIrrep], ...],
+        mul_irreps: Tuple[Union[Rep, Tuple[int, Rep], MulIrrep], ...],
         Q: Optional[np.ndarray] = None,
     ) -> "ReducedRep":
         A = None
@@ -80,13 +80,13 @@ class ReducedRep(Rep):
         for mul_ir in mul_irreps:
             if isinstance(mul_ir, tuple):
                 mul_ir = MulIrrep(mul=mul_ir[0], rep=mul_ir[1])
-            elif isinstance(mul_ir, TabulatedIrrep):
-                mul_ir = MulIrrep(mul=1, rep=mul_ir)
             elif isinstance(mul_ir, MulIrrep):
                 pass
+            elif isinstance(mul_ir, Rep):
+                mul_ir = MulIrrep(mul=1, rep=mul_ir)
 
             assert mul_ir.mul >= 0
-            assert isinstance(mul_ir.rep, TabulatedIrrep)
+            assert isinstance(mul_ir.rep, Rep)
 
             irreps += [mul_ir]
 
@@ -128,7 +128,7 @@ class ReducedRep(Rep):
             Xs += [X]
         return np.stack(Xs)
 
-    def create_trivial(self) -> TabulatedIrrep:
+    def create_trivial(self) -> Rep:
         return self.irreps[0].create_trivial()
 
     def __repr__(self) -> str:
