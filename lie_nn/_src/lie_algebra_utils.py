@@ -14,8 +14,8 @@ def RootsWeightsA(rank):
         for i in range(1, rank + 1)
     ]
     weights_3 = np.hstack([1, np.zeros(rank - 1), -1])
-    dynkin  = "---".join("0" for i in range(1, rank+1)) + "\n"
-    dynkin += "   ".join(str(i) for i in range(1, rank+1))
+    dynkin = "---".join("0" for i in range(1, rank + 1)) + "\n"
+    dynkin += "   ".join(str(i) for i in range(1, rank + 1))
     return roots, weights_1, weights_2, weights_3, dynkin
 
 
@@ -36,7 +36,7 @@ def RootsWeightsB(rank):
     )
     weights_3 = np.concatenate(([1, 1], np.zeros(rank - 2)))
     dynkin = "---".join("0" for i in range(1, rank)) + "=>=0\n"
-    dynkin += "   ".join(str(i) for i in range(1, rank+1))
+    dynkin += "   ".join(str(i) for i in range(1, rank + 1))
     return roots, weights_1, weights_2, weights_3, dynkin
 
 
@@ -55,7 +55,7 @@ def RootsWeightsC(rank):
     weights_3 = [sum(epsilon[j] for j in range(i)) for i in range(1, rank + 1)]
     weights_4 = np.concatenate(([2], np.zeros(rank - 1)))
     dynkin = "---".join("0" for i in range(1, rank)) + "=<=0\n"
-    dynkin += "   ".join(str(i) for i in range(1, rank+1))
+    dynkin += "   ".join(str(i) for i in range(1, rank + 1))
     return roots, weights_2, weights_3, weights_4, dynkin
 
 
@@ -81,14 +81,15 @@ def RootsWeightsD(rank):
             (weight_sum, [0.5 * sum(epsilon) - epsilon[rank - 1]], weight_sum, [0.5 * sum(epsilon)])
         )
     weights_3 = np.concatenate(([1, 1], np.zeros(rank - 2)))
-    dynkin = " "*4*(rank-2)  + "0\n"
-    dynkin += " "*4*(rank-2) + "|\n"
-    dynkin += "---".join("0" for i in range(1,rank)) + "\n"
-    dynkin += "   ".join(str(i) for i in range(1, rank-1)) + "   "+str(rank)
-    dynkin += " "*4*(rank-2) +"\n"
-    dynkin += " "*4*(rank-2) + "|\n"
-    dynkin += " "*4*(rank-2) + "0\n"
+    dynkin = " " * 4 * (rank - 2) + "0\n"
+    dynkin += " " * 4 * (rank - 2) + "|\n"
+    dynkin += "---".join("0" for i in range(1, rank)) + "\n"
+    dynkin += "   ".join(str(i) for i in range(1, rank - 1)) + "   " + str(rank)
+    dynkin += " " * 4 * (rank - 2) + "\n"
+    dynkin += " " * 4 * (rank - 2) + "|\n"
+    dynkin += " " * 4 * (rank - 2) + "0\n"
     return roots, weights_1, weights_2, weights_3, dynkin
+
 
 def cartan_matrix(simple_roots):
     rank = len(simple_roots)
@@ -96,8 +97,9 @@ def cartan_matrix(simple_roots):
     for i, root_i in enumerate(simple_roots):
         for j, root_j in enumerate(simple_roots):
             if i != j:
-                C[i,j] = 2 * root_i.dot(root_j) / root_i.dot(root_i)
+                C[i, j] = 2 * root_i.dot(root_j) / root_i.dot(root_i)
     return C
+
 
 def structure_algebra(group, rank):
     if group == "A":
