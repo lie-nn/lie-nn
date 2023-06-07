@@ -17,7 +17,7 @@ def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
     """
     iQ = np.linalg.pinv(Q)
     return GenericRep(
-        A=np.einsum("ia,jb,abc,ck->ijk", Q, Q, rep.algebra(), iQ),
-        X=np.einsum("ia,auv->iuv", Q, rep.continuous_generators()),
-        H=rep.discrete_generators(),
+        A=np.einsum("ia,jb,abc,ck->ijk", Q, Q, rep.A, iQ),
+        X=np.einsum("ia,auv->iuv", Q, rep.X),
+        H=rep.H,
     )

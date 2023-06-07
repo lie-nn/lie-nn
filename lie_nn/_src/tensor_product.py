@@ -10,13 +10,13 @@ from .rep import GenericRep, Rep
 
 @dispatch(Rep, Rep)
 def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
-    assert np.allclose(rep1.algebra(), rep2.algebra())  # same lie algebra
-    X1, H1, I1 = rep1.continuous_generators(), rep1.discrete_generators(), np.eye(rep1.dim)
-    X2, H2, I2 = rep2.continuous_generators(), rep2.discrete_generators(), np.eye(rep2.dim)
+    assert np.allclose(rep1.A, rep2.A)  # same lie algebra
+    X1, H1, I1 = rep1.X, rep1.H, np.eye(rep1.dim)
+    X2, H2, I2 = rep2.X, rep2.H, np.eye(rep2.dim)
     assert H1.shape[0] == H2.shape[0]  # same discrete dimension
     d = rep1.dim * rep2.dim
     return GenericRep(
-        A=rep1.algebra(),
+        A=rep1.A,
         X=(np.einsum("aij,kl->aikjl", X1, I2) + np.einsum("ij,akl->aikjl", I1, X2)).reshape(
             X1.shape[0], d, d
         ),
@@ -26,7 +26,7 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
 
 @dispatch(TabulatedIrrep, TabulatedIrrep)
 def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> ReducedRep:  # noqa: F811
-    assert np.allclose(irrep1.algebra(), irrep2.algebra())  # same lie algebra
+    assert np.allclose(irrep1.A, irrep2.A)  # same lie algebra
     CG_list = []
     irreps_list = []
     for ir_out in irrep1 * irrep2:
@@ -37,12 +37,12 @@ def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> ReducedRep
         irreps_list.append(MulIrrep(mul=mul, rep=ir_out))
     CG = np.concatenate(CG_list, axis=0)
     Q = np.linalg.inv(CG)
-    return ReducedRep(A=irrep1.algebra(), irreps=tuple(irreps_list), Q=Q)
+    return ReducedRep(A=irrep1.A, irreps=tuple(irreps_list), Q=Q)
 
 
 @dispatch(MulIrrep, MulIrrep)
 def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:  # noqa: F811
-    assert np.allclose(mulirrep1.algebra(), mulirrep2.algebra())  # same lie algebra
+    assert np.allclose(mulirrep1.A, mulirrep2.A)  # same lie algebra
     m1, m2 = mulirrep1.mul, mulirrep2.mul
     tp_irreps = tensor_product(mulirrep1.rep, mulirrep2.rep)
     Q = tp_irreps.Q
@@ -63,7 +63,7 @@ def tensor_product(mulirrep1: MulIrrep, mulirrep2: MulIrrep) -> ReducedRep:  # n
         Q_out.append(q)
         s += mul_ir.dim
     Q_out = np.concatenate(Q_out, axis=-1)
-    return ReducedRep(A=mulirrep1.algebra(), irreps=tuple(irreps_out), Q=Q_out)
+    return ReducedRep(A=mulirrep1.A, irreps=tuple(irreps_out), Q=Q_out)
 
 
 @dispatch(ReducedRep, ReducedRep)
@@ -109,12 +109,12 @@ def tensor_product(irrep1: TabulatedIrrep, mulirrep2: MulIrrep) -> ReducedRep:  
 
 @dispatch(MulIrrep, ReducedRep)
 def tensor_product(mulirrep1: MulIrrep, rep2: ReducedRep) -> ReducedRep:  # noqa: F811
-    return tensor_product(ReducedRep(A=mulirrep1.algebra(), irreps=(mulirrep1,), Q=None), rep2)
+    return tensor_product(ReducedRep(A=mulirrep1.A, irreps=(mulirrep1,), Q=None), rep2)
 
 
 @dispatch(ReducedRep, MulIrrep)
 def tensor_product(rep1: ReducedRep, mulirrep2: MulIrrep) -> ReducedRep:  # noqa: F811
-    return tensor_product(ReducedRep(A=mulirrep2.algebra(), irreps=(mulirrep2,), Q=None), rep1)
+    return tensor_product(ReducedRep(A=mulirrep2.A, irreps=(mulirrep2,), Q=None), rep1)
 
 
 @dispatch(ReducedRep, TabulatedIrrep)

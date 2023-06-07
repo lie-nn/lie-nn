@@ -9,7 +9,7 @@ def is_real(rep: lie.Rep) -> bool:
     return S.shape[0] > 0
 
 
-def make_explicitly_real(rep, round_fn=lambda x: x):
+def make_explicitly_real(rep: lie.Rep, *, round_fn=lambda x: x):
     S = lie.infer_change_of_basis(rep, lie.conjugate(rep), round_fn=round_fn)
     if S.shape[0] == 0:
         raise ValueError("The representation is not real")

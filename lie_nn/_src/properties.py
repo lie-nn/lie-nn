@@ -3,7 +3,7 @@ import numpy as np
 import lie_nn as lie
 
 
-def is_unitary(rep: lie.Rep):
+def is_unitary(rep: lie.Rep) -> bool:
     X = rep.continuous_generators()
     H = rep.discrete_generators()
     H_unit = np.allclose(H @ np.conj(np.transpose(H, (0, 2, 1))), np.eye(rep.dim), atol=1e-13)

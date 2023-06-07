@@ -584,6 +584,11 @@ def decompose_rep_into_irreps(
     return Ys
 
 
+def is_irreducible(X: np.array, *, epsilon: float = 1e-10) -> bool:
+    Q = infer_change_of_basis(X, X, epsilon=epsilon)  # X @ Q == Q @ X
+    return len(Q) == 1
+
+
 def regular_representation(table: np.array) -> np.array:
     """Returns regular representation for group represented by a multiplication table.
     Input:

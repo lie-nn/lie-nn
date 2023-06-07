@@ -28,13 +28,13 @@ def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
 
 
 @dispatch(ReducedRep, object)
-def change_basis(rep: ReducedRep, Q: np.ndarray) -> ReducedRep:
+def change_basis(rep: ReducedRep, Q: np.ndarray) -> ReducedRep:  # noqa: F811
     Q = Q if rep.Q is None else Q @ rep.Q
     return ReducedRep(A=rep.A, irreps=rep.irreps, Q=Q)
 
 
 @dispatch(MulIrrep, object)
-def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
+def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:  # noqa: F811
     return ReducedRep(
         A=rep.algebra(),
         irreps=(rep,),
@@ -43,5 +43,5 @@ def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:
 
 
 @dispatch(TabulatedIrrep, object)
-def change_basis(rep: TabulatedIrrep, Q: np.ndarray) -> ReducedRep:
+def change_basis(rep: TabulatedIrrep, Q: np.ndarray) -> ReducedRep:  # noqa: F811
     return change_basis(MulIrrep(mul=1, rep=rep), Q)

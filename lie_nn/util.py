@@ -19,6 +19,7 @@ from ._src.util import (
     permutation_sign,
     unique_with_tol,
     decompose_rep_into_irreps,
+    is_irreducible,
     regular_representation,
 )
 
@@ -43,5 +44,6 @@ __all__ = [
     "permutation_sign",
     "unique_with_tol",
     "decompose_rep_into_irreps",
+    "is_irreducible",
     "regular_representation",
 ]

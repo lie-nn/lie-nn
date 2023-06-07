@@ -18,6 +18,7 @@ def reduce(rep: MulIrrep) -> ReducedRep:
 
 @dispatch(ReducedRep)
 def reduce(rep: ReducedRep) -> ReducedRep:  # noqa: F811
+    # TODO if we change ReducedRep into SumRep, then reduce its constituents
     return rep
 
 

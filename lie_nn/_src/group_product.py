@@ -46,28 +46,33 @@ def group_product(rep1: Rep, rep2: Rep) -> GenericRep:
 
 
 @dispatch(Rep, Rep, Rep)
-def group_product(rep1: Rep, rep2: Rep, rep3: Rep) -> GenericRep:
+def group_product(rep1: Rep, rep2: Rep, rep3: Rep) -> GenericRep:  # noqa: F811
     return group_product(group_product(rep1, rep2), rep3)
 
 
 @dataclass(frozen=True)
-class IrrepProduct(TabulatedIrrep):
+class TabulatedIrrepProduct(TabulatedIrrep):
     rep1: TabulatedIrrep
     rep2: TabulatedIrrep
 
     @classmethod
-    def from_string(cls, s: str) -> "IrrepProduct":
+    def from_string(cls, s: str) -> "TabulatedIrrepProduct":
         raise NotImplementedError
 
-    def __mul__(rep1: "IrrepProduct", rep2: "IrrepProduct") -> Iterator["IrrepProduct"]:
-        assert isinstance(rep2, IrrepProduct)
+    def __mul__(
+        rep1: "TabulatedIrrepProduct", rep2: "TabulatedIrrepProduct"
+    ) -> Iterator["TabulatedIrrepProduct"]:
+        assert isinstance(rep2, TabulatedIrrepProduct)
         for rep3 in rep1.rep1 * rep2.rep1:
             for rep4 in rep1.rep2 * rep2.rep2:
-                yield IrrepProduct(rep3, rep4)
+                yield TabulatedIrrepProduct(rep3, rep4)
 
     @classmethod
     def clebsch_gordan(
-        cls, rep1: "IrrepProduct", rep2: "IrrepProduct", rep3: "IrrepProduct"
+        cls,
+        rep1: "TabulatedIrrepProduct",
+        rep2: "TabulatedIrrepProduct",
+        rep3: "TabulatedIrrepProduct",
     ) -> np.ndarray:
         C1 = rep1.rep1.clebsch_gordan(rep1.rep1, rep2.rep1, rep3.rep1)  # [n_sol1, d1_1, d2_1, d3_1]
         C2 = rep1.rep2.clebsch_gordan(rep1.rep2, rep2.rep2, rep3.rep2)  # [n_sol2, d1_2, d2_2, d3_2]
@@ -77,17 +82,17 @@ class IrrepProduct(TabulatedIrrep):
         return C
 
     @property
-    def dim(rep: "IrrepProduct") -> int:
+    def dim(rep: "TabulatedIrrepProduct") -> int:
         return rep.rep1.dim * rep.rep2.dim
 
-    def __lt__(rep1: "IrrepProduct", rep2: "IrrepProduct") -> bool:
+    def __lt__(rep1: "TabulatedIrrepProduct", rep2: "TabulatedIrrepProduct") -> bool:
         return (rep1.rep1, rep1.rep2) < (rep2.rep1, rep2.rep2)
 
     @classmethod
-    def iterator(cls) -> Iterator["IrrepProduct"]:
+    def iterator(cls) -> Iterator["TabulatedIrrepProduct"]:
         raise NotImplementedError
 
-    def continuous_generators(rep: "IrrepProduct") -> np.ndarray:
+    def continuous_generators(rep: "TabulatedIrrepProduct") -> np.ndarray:
         X1 = rep.rep1.X
         X2 = rep.rep2.X
         I1 = np.eye(rep.rep1.dim)
@@ -101,7 +106,7 @@ class IrrepProduct(TabulatedIrrep):
         )
         return X
 
-    def discrete_generators(rep: "IrrepProduct") -> np.ndarray:
+    def discrete_generators(rep: "TabulatedIrrepProduct") -> np.ndarray:
         H1 = rep.rep1.H
         H2 = rep.rep2.H
         I1 = np.eye(rep.rep1.dim)
@@ -111,7 +116,7 @@ class IrrepProduct(TabulatedIrrep):
         H[H1.shape[0] :] = np.einsum("ij,akl->aikjl", I1, H2).reshape(H2.shape[0], rep.dim, rep.dim)
         return H
 
-    def algebra(rep: "IrrepProduct") -> np.ndarray:
+    def algebra(rep: "TabulatedIrrepProduct") -> np.ndarray:
         A1 = rep.rep1.A
         A2 = rep.rep2.A
         lie_dim = rep.rep1.lie_dim + rep.rep2.lie_dim
@@ -122,12 +127,12 @@ class IrrepProduct(TabulatedIrrep):
 
 
 @dispatch(TabulatedIrrep, TabulatedIrrep)
-def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:
-    return IrrepProduct(rep1, rep2)
+def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:  # noqa: F811
+    return TabulatedIrrepProduct(rep1, rep2)
 
 
 @dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
-def group_product(
+def group_product(  # noqa: F811
     rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep
 ) -> TabulatedIrrep:
-    return IrrepProduct(IrrepProduct(rep1, rep2), rep3)
+    return TabulatedIrrepProduct(TabulatedIrrepProduct(rep1, rep2), rep3)
