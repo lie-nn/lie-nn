@@ -565,7 +565,7 @@ def decompose_rep_into_irreps(
 ) -> List[np.array]:
     """Decomposes representation into irreducible representations.
     Input:
-        X: np.array [lie_dim, d, d] - generators of a representation.
+        X: np.array [num_gen, d, d] - generators of a representation.
     Output:
         Ys: List[np.array] - list of generators of irreducible representations.
     """

@@ -3,7 +3,7 @@ from multipledispatch import dispatch
 
 from .infer_change_of_basis import infer_change_of_basis
 from .reduced_rep import MulIrrep, ReducedRep
-from .rep import GenericRep
+from .rep import GenericRep, Rep
 from .util import decompose_rep_into_irreps
 
 
@@ -21,12 +21,13 @@ def reduce(rep: ReducedRep) -> ReducedRep:  # noqa: F811
     return rep
 
 
-@dispatch(GenericRep)
-def reduce(rep: GenericRep) -> ReducedRep:  # noqa: F811
+@dispatch(Rep)
+def reduce(rep: Rep) -> ReducedRep:  # noqa: F811
     r"""Reduce an unknown representation to a reduced form.
     This operation is slow and should be avoided if possible.
     """
     Ys = decompose_rep_into_irreps(np.concatenate([rep.X, rep.H]))
+    Ys = sorted(Ys, key=lambda x: x.shape[1])
     d = rep.lie_dim
     Qs = []
     irs = []

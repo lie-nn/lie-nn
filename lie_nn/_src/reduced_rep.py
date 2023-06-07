@@ -30,6 +30,8 @@ class MulIrrep(Rep):
 
     def continuous_generators(self) -> np.ndarray:
         X = self.rep.continuous_generators()
+        if X.shape[0] == 0:
+            return np.empty((0, self.dim, self.dim))
         return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in X], axis=0)
 
     def discrete_generators(self) -> np.ndarray:

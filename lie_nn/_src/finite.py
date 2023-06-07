@@ -9,7 +9,7 @@ def _num_transpositions(n: int):
     return n * (n - 1) // 2
 
 
-def _perm_matrix(p: Tuple[int, ...]) -> np.ndarray:
+def _permutation_matrix(p: Tuple[int, ...]) -> np.ndarray:
     n = len(p)
     m = np.zeros([n, n])
     m[range(n), p] = 1
@@ -40,15 +40,20 @@ class Sn_natural(lie.Rep):
         return np.zeros((0, self.n, self.n))
 
     def discrete_generators(self) -> np.ndarray:
-        H = []
-        for i in range(self.n):
-            for j in range(i + 1, self.n):
-                H.append(_transposition_matrix(self.n, i, j))
-        return np.stack(H)
+        if self.n == 1:
+            return np.zeros((0, 1, 1))
+        if self.n == 2:
+            return _transposition_matrix(2, 0, 1)[None, :, :]
+        if self.n >= 3:
+            return np.stack(
+                [
+                    _transposition_matrix(self.n, 0, 1),
+                    _permutation_matrix(tuple((i + 1) % self.n for i in range(self.n))),
+                ]
+            )
 
     def create_trivial(self) -> lie.GenericRep:
-        num = _num_transpositions(self.n)
-        return lie.GenericRep(A=self.A, X=np.zeros((0, 1, 1)), H=np.ones((num, 1, 1)))
+        return lie.GenericRep(A=self.A, X=np.zeros((0, 1, 1)), H=np.ones((2, 1, 1)))
 
 
 class Sn_trivial(lie.Rep):
@@ -64,8 +69,12 @@ class Sn_trivial(lie.Rep):
         return np.zeros((0, 1, 1))
 
     def discrete_generators(self) -> np.ndarray:
-        num = _num_transpositions(self.n)
-        return np.ones((num, 1, 1))
+        if self.n == 1:
+            return np.ones((0, 1, 1))
+        if self.n == 2:
+            return np.ones((1, 1, 1))
+        if self.n >= 3:
+            return np.ones((2, 1, 1))
 
     def create_trivial(self) -> lie.GenericRep:
         return self
