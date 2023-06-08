@@ -277,25 +277,35 @@ class SumRep(Rep):
         return r
 
 
-class QRep(Rep):
-    r"""Representation of the form
+class PQRep(Rep):
+    r"""Change of basis or Projection of a representation
 
     .. math::
 
         Q \rho Q^{-1}
+
+    where :math:`Q^{-1}` is the pseudo-inverse of :math:`Q`.
+
+    The projector is defined as
+
+    .. math::
+
+        P = Q^{-1} Q
     """
     rep: Rep
     Q: np.ndarray
 
     def __init__(self, Q: np.ndarray, rep: Rep, *, force=False):
-        if not force:
-            raise RuntimeError("Use lie_nn.change_basis instead")
+        assert force
+        assert Q.ndim == 2
+        assert Q.shape[0] <= Q.shape[1]
+
         self.rep = rep
         self.Q = Q
 
     @property
     def dim(self) -> int:
-        return self.rep.dim
+        return self.Q.shape[0]
 
     def algebra(self) -> np.ndarray:
         return self.rep.algebra()
@@ -311,3 +321,25 @@ class QRep(Rep):
 
     def __repr__(self) -> str:
         return f"Q({self.rep})Q^{{-1}}"
+
+
+class QRep(PQRep):
+    """Change of basis of a representation"""
+
+    def __init__(self, Q: np.ndarray, rep: Rep, *, force=False):
+        if not force:
+            raise RuntimeError("Use lie_nn.change_basis instead")
+
+        super().__init__(Q, rep, force=force)
+        assert Q.shape[0] == Q.shape[1]
+
+
+class PRep(PQRep):
+    """Projection of a representation"""
+
+    def __init__(self, Q: np.ndarray, rep: Rep, *, force=False):
+        if not force:
+            raise RuntimeError("Use lie_nn.project instead")
+
+        super().__init__(Q, rep, force=force)
+        assert Q.shape[0] < Q.shape[1]

@@ -9,7 +9,7 @@ from ._src.rep import (
     SumRep,
     QRep,
 )
-from ._src.change_basis import change_basis
+from ._src.change_basis import change_basis, project
 from ._src.reduce import reduce
 from ._src.change_algebra import change_algebra
 from ._src.tensor_product import tensor_product, tensor_power
@@ -36,6 +36,7 @@ __all__ = [
     "SumRep",
     "QRep",
     "change_basis",
+    "project",
     "reduce",
     "change_algebra",
     "tensor_product",

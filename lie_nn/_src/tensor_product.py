@@ -9,7 +9,6 @@ from .rep import GenericRep, MulRep, QRep, Rep, SumRep, TabulatedIrrep
 
 @dispatch(Rep, Rep)
 def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
-    print("tensor_product(Rep, Rep)")
     assert np.allclose(rep1.A, rep2.A)  # same lie algebra
     X1, H1, I1 = rep1.X, rep1.H, np.eye(rep1.dim)
     X2, H2, I2 = rep2.X, rep2.H, np.eye(rep2.dim)
@@ -26,7 +25,6 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
 
 @dispatch(TabulatedIrrep, TabulatedIrrep)
 def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> Rep:  # noqa: F811
-    print("tensor_product(TabulatedIrrep, TabulatedIrrep)")
     assert np.allclose(irrep1.A, irrep2.A)  # same lie algebra
     CG_list = []
     irreps_list = []
@@ -45,21 +43,18 @@ def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> Rep:  # no
 
 @dispatch(MulRep, Rep)
 def tensor_product(mulrep: MulRep, rep: Rep) -> Rep:  # noqa: F811
-    print("tensor_product(MulRep, Rep)")
     assert np.allclose(mulrep.A, rep.A)  # same lie algebra
     return multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
 
 
 @dispatch(MulRep, MulRep)
 def tensor_product(mulrep: MulRep, rep: MulRep) -> Rep:  # noqa: F811
-    print("tensor_product(MulRep, MulRep)")
     assert np.allclose(mulrep.A, rep.A)  # same lie algebra
     return multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
 
 
 @dispatch(Rep, MulRep)
 def tensor_product(rep: Rep, mulrep: MulRep) -> Rep:  # noqa: F811
-    print("tensor_product(Rep, MulRep)")
     assert np.allclose(rep.A, mulrep.A)  # same lie algebra
 
     Q = np.reshape(
@@ -79,20 +74,16 @@ def tensor_product(rep: Rep, mulrep: MulRep) -> Rep:  # noqa: F811
 
 @dispatch(SumRep, Rep)
 def tensor_product(sumrep: SumRep, rep: Rep) -> Rep:  # noqa: F811
-    print("tensor_product(SumRep, Rep)")
     return direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
 
 
 @dispatch(SumRep, SumRep)
 def tensor_product(sumrep: SumRep, rep: SumRep) -> Rep:  # noqa: F811
-    print("tensor_product(SumRep, SumRep)")
     return direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
 
 
 @dispatch(Rep, SumRep)
 def tensor_product(rep: Rep, sumrep: SumRep) -> Rep:  # noqa: F811
-    print("tensor_product(Rep, SumRep)")
-
     list = []
     Q = np.zeros((rep.dim, sumrep.dim, rep.dim * sumrep.dim))
     k = 0
@@ -111,7 +102,6 @@ def tensor_product(rep: Rep, sumrep: SumRep) -> Rep:  # noqa: F811
 
 @dispatch(QRep, Rep)
 def tensor_product(qrep: QRep, rep: Rep) -> Rep:  # noqa: F811
-    print("tensor_product(QRep, Rep)")
     dim = qrep.dim * rep.dim
     Q = np.einsum("ij,kl->ikjl", qrep.Q, np.eye(rep.dim)).reshape(dim, dim)
     return change_basis(Q, tensor_product(qrep.rep, rep))
@@ -119,7 +109,6 @@ def tensor_product(qrep: QRep, rep: Rep) -> Rep:  # noqa: F811
 
 @dispatch(Rep, QRep)
 def tensor_product(rep: Rep, qrep: QRep) -> Rep:  # noqa: F811
-    print("tensor_product(Rep, QRep)")
     dim = rep.dim * qrep.dim
     Q = np.einsum("ij,kl->ikjl", np.eye(rep.dim), qrep.Q).reshape(dim, dim)
     return change_basis(Q, tensor_product(rep, qrep.rep))
@@ -127,7 +116,6 @@ def tensor_product(rep: Rep, qrep: QRep) -> Rep:  # noqa: F811
 
 @dispatch(QRep, QRep)
 def tensor_product(qrep1: QRep, qrep2: QRep) -> Rep:  # noqa: F811
-    print("tensor_product(QRep, QRep)")
     dim = qrep1.dim * qrep2.dim
     Q = np.einsum("ij,kl->ikjl", qrep1.Q, qrep2.Q).reshape(dim, dim)
     return change_basis(Q, tensor_product(qrep1.rep, qrep2.rep))

@@ -1,8 +1,8 @@
 import numpy as np
-
-from .rep import Rep, QRep
-from .util import infer_change_of_basis as _infer_change_of_basis
 from multipledispatch import dispatch
+
+from .rep import QRep, Rep
+from .util import infer_change_of_basis as _infer_change_of_basis
 
 
 @dispatch(Rep, Rep)

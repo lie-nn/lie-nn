@@ -1,10 +1,10 @@
 import numpy as np
 from multipledispatch import dispatch
 
-from .change_basis import change_basis
+from .change_basis import project
 from .direct_sum import direct_sum
 from .multiply import multiply
-from .rep import GenericRep, MulRep, QRep, Rep, SumRep
+from .rep import GenericRep, MulRep, PQRep, Rep, SumRep
 
 
 @dispatch(Rep, object)
@@ -28,9 +28,9 @@ def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
     )
 
 
-@dispatch(QRep, object)
-def change_algebra(rep: QRep, Q: np.ndarray) -> Rep:  # noqa: F811
-    return change_basis(rep.Q, change_algebra(rep.rep, Q))
+@dispatch(PQRep, object)
+def change_algebra(rep: PQRep, Q: np.ndarray) -> Rep:  # noqa: F811
+    return project(rep.Q, change_algebra(rep.rep, Q))
 
 
 @dispatch(SumRep, object)
