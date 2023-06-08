@@ -17,6 +17,9 @@ def change_basis(Q: np.ndarray, rep: Rep) -> Rep:
         v' = Q v
 
     """
+    if np.allclose(Q.imag, 0.0, atol=1e-10):
+        Q = Q.real
+
     if np.allclose(Q, np.eye(rep.dim), atol=1e-10):
         return rep
 
@@ -25,9 +28,4 @@ def change_basis(Q: np.ndarray, rep: Rep) -> Rep:
 
 @dispatch(object, QRep)
 def change_basis(Q: np.ndarray, rep: QRep) -> QRep:  # noqa: F811
-    Q = Q @ rep.Q
-
-    if np.allclose(Q, np.eye(rep.dim), atol=1e-10):
-        return rep.rep
-
-    return QRep(Q, rep.rep)
+    return change_basis(Q @ rep.Q, rep.rep)
