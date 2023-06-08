@@ -21,25 +21,25 @@ def _chk(r1, r2):
 @dispatch(Rep, Rep)
 def _direct_sum(rep1: Rep, rep2: Rep) -> SumRep:
     _chk(rep1, rep2)
-    return SumRep((rep1, rep2))
+    return SumRep((rep1, rep2), force=True)
 
 
 @dispatch(SumRep, Rep)
 def _direct_sum(sumrep: SumRep, rep: Rep) -> SumRep:  # noqa: F811
     _chk(sumrep, rep)
-    return SumRep(sumrep.reps + (rep,))
+    return SumRep(sumrep.reps + (rep,), force=True)
 
 
 @dispatch(Rep, SumRep)
 def _direct_sum(rep: Rep, sumrep: SumRep) -> SumRep:  # noqa: F811
     _chk(rep, sumrep)
-    return SumRep((rep,) + sumrep.reps)
+    return SumRep((rep,) + sumrep.reps, force=True)
 
 
 @dispatch(SumRep, SumRep)
 def _direct_sum(sumrep1: SumRep, sumrep2: SumRep) -> SumRep:  # noqa: F811
     _chk(sumrep1, sumrep2)
-    return SumRep(sumrep1.reps + sumrep2.reps)
+    return SumRep(sumrep1.reps + sumrep2.reps, force=True)
 
 
 @dispatch(QRep, Rep)

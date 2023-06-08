@@ -1,12 +1,8 @@
-import numpy as np
-
-# import math
-import lie_nn as lie
 from typing import Tuple
 
+import numpy as np
 
-def _num_transpositions(n: int):
-    return n * (n - 1) // 2
+import lie_nn as lie
 
 
 def _permutation_matrix(p: Tuple[int, ...]) -> np.ndarray:
@@ -63,7 +59,7 @@ class Sn_natural(lie.Rep):
         return lie.GenericRep(A=self.A, X=np.zeros((0, 1, 1)), H=np.ones((len(self.H), 1, 1)))
 
 
-class Sn_standard(lie.Rep):
+class Sn_standard(lie.Irrep):
     """Standard representation of S(n)
 
     Basis for S(m+1):
@@ -118,7 +114,7 @@ class Sn_standard(lie.Rep):
         return lie.GenericRep(A=self.A, X=np.zeros((0, 1, 1)), H=np.ones((len(self.H), 1, 1)))
 
 
-class Sn_trivial(lie.Rep):
+class Sn_trivial(lie.Irrep):
     def __init__(self, n) -> None:
         super().__init__()
         self.n = n

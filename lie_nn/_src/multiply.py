@@ -12,12 +12,12 @@ def multiply(mul: int, rep: Rep) -> Rep:
     if mul == 1:
         return rep
 
-    return MulRep(mul, rep)
+    return MulRep(mul, rep, force=True)
 
 
 @dispatch(int, MulRep)
 def multiply(mul: int, mulrep: MulRep) -> MulRep:  # noqa: F811
-    return MulRep(mul * mulrep.mul, mulrep.rep)
+    return multiply(mul * mulrep.mul, mulrep.rep)
 
 
 @dispatch(int, QRep)

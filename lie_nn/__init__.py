@@ -3,7 +3,6 @@ __version__ = "0.0.0"
 from ._src.rep import (
     Rep,
     GenericRep,
-    check_representation_triplet,
     Irrep,
     TabulatedIrrep,
     MulRep,
@@ -26,11 +25,11 @@ from ._src.group_product import group_product
 from lie_nn import irreps as irreps
 from lie_nn import util as util
 from lie_nn import finite as finite
+from lie_nn import test as test
 
 __all__ = [
     "Rep",
     "GenericRep",
-    "check_representation_triplet",
     "Irrep",
     "TabulatedIrrep",
     "MulRep",
@@ -56,4 +55,5 @@ __all__ = [
     "irreps",
     "util",
     "finite",
+    "test",
 ]

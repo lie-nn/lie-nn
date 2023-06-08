@@ -23,7 +23,7 @@ def change_basis(Q: np.ndarray, rep: Rep) -> Rep:
     if np.allclose(Q, np.eye(rep.dim), atol=1e-10):
         return rep
 
-    return QRep(Q, rep)
+    return QRep(Q, rep, force=True)
 
 
 @dispatch(object, QRep)
