@@ -1,13 +1,16 @@
-# Group direct product
-
-from dataclasses import dataclass
 from typing import Iterator
 
 import numpy as np
 from multipledispatch import dispatch
 
-from .irrep import TabulatedIrrep
-from .rep import GenericRep, Rep
+from .rep import GenericRep, Rep, TabulatedIrrep
+
+
+def group_product(*reps) -> Rep:
+    assert len(reps) > 0
+    if len(reps) == 1:
+        return reps[0]
+    return _group_product(reps[0], group_product(*reps[1:]))
 
 
 def _get_dtype(*args):
@@ -18,7 +21,7 @@ def _get_dtype(*args):
 
 
 @dispatch(Rep, Rep)
-def group_product(rep1: Rep, rep2: Rep) -> GenericRep:
+def _group_product(rep1: Rep, rep2: Rep) -> GenericRep:
     A1 = rep1.A
     A2 = rep2.A
     lie_dim = rep1.lie_dim + rep2.lie_dim
@@ -45,12 +48,6 @@ def group_product(rep1: Rep, rep2: Rep) -> GenericRep:
     return GenericRep(A=A, X=X, H=H)
 
 
-@dispatch(Rep, Rep, Rep)
-def group_product(rep1: Rep, rep2: Rep, rep3: Rep) -> GenericRep:  # noqa: F811
-    return group_product(group_product(rep1, rep2), rep3)
-
-
-@dataclass(frozen=True)
 class TabulatedIrrepProduct(TabulatedIrrep):
     rep1: TabulatedIrrep
     rep2: TabulatedIrrep
@@ -127,12 +124,5 @@ class TabulatedIrrepProduct(TabulatedIrrep):
 
 
 @dispatch(TabulatedIrrep, TabulatedIrrep)
-def group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:  # noqa: F811
+def _group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:  # noqa: F811
     return TabulatedIrrepProduct(rep1, rep2)
-
-
-@dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
-def group_product(  # noqa: F811
-    rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep
-) -> TabulatedIrrep:
-    return TabulatedIrrepProduct(TabulatedIrrepProduct(rep1, rep2), rep3)

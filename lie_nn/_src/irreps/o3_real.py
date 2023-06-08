@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import TabulatedIrrep
+from ..rep import TabulatedIrrep
 from .so3_real import SO3
 
 

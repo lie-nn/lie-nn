@@ -7,7 +7,7 @@ import numpy as np
 
 import lie_nn as lie
 from scipy.linalg import sqrtm
-from ..irrep import TabulatedIrrep
+from ..rep import TabulatedIrrep
 from .sl2c import SL2C
 
 

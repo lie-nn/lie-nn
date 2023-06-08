@@ -1,9 +1,10 @@
 import numpy as np
 from multipledispatch import dispatch
 
-from .rep import GenericRep, Rep
-
-# TODO(mario): Implement conjugate for Irreps
+from .change_basis import change_basis
+from .direct_sum import direct_sum
+from .multiply import multiply
+from .rep import GenericRep, MulRep, QRep, Rep, SumRep
 
 
 @dispatch(Rep)
@@ -13,3 +14,18 @@ def conjugate(rep: Rep) -> GenericRep:
         X=np.conjugate(rep.X),
         H=np.conjugate(rep.H),
     )
+
+
+@dispatch(QRep)
+def conjugate(rep: QRep) -> QRep:  # noqa: F811
+    return change_basis(np.conjugate(rep.Q), conjugate(rep.rep))
+
+
+@dispatch(SumRep)
+def conjugate(rep: SumRep) -> SumRep:  # noqa: F811
+    return direct_sum(*[conjugate(subrep) for subrep in rep.reps])
+
+
+@dispatch(MulRep)
+def conjugate(rep: MulRep) -> MulRep:  # noqa: F811
+    return multiply(rep.mul, conjugate(rep.rep))

@@ -1,12 +1,12 @@
 import numpy as np
 
-from .rep import Rep
+from .rep import Rep, QRep
 from .util import infer_change_of_basis as _infer_change_of_basis
+from multipledispatch import dispatch
 
-# TODO (mario): Can be specialized for ReducedRep
 
-
-def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndarray:
+@dispatch(Rep, Rep)
+def infer_change_of_basis(rep1: Rep, rep2: Rep, *, round_fn=lambda x: x) -> np.ndarray:
     r"""Infers the change of basis matrix between two representations.
 
     .. math::
@@ -26,10 +26,10 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndar
         The change of basis matrix ``Q``.
     """
     # Check the group structure
-    assert np.allclose(rep1.algebra(), rep2.algebra())
+    assert np.allclose(rep1.A, rep2.A)
 
-    Y1 = np.concatenate([rep1.continuous_generators(), rep1.discrete_generators()])
-    Y2 = np.concatenate([rep2.continuous_generators(), rep2.discrete_generators()])
+    Y1 = np.concatenate([rep1.X, rep1.H])
+    Y2 = np.concatenate([rep2.X, rep2.H])
 
     A = _infer_change_of_basis(Y2, Y1, round_fn=round_fn)
     np.testing.assert_allclose(
@@ -44,3 +44,39 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, round_fn=lambda x: x) -> np.ndar
     A = A * np.sqrt(rep2.dim)
     A = round_fn(A)
     return A
+
+
+@dispatch(QRep, Rep)
+def infer_change_of_basis(  # noqa: F811
+    rep1: QRep, rep2: Rep, *, round_fn=lambda x: x
+) -> np.ndarray:
+    r"""
+    Q \rho_1 = \rho_2 Q
+    (Q q) \rho_1 q^{-1} = \rho_2 Q
+    """
+    inv = np.linalg.pinv(rep1.Q)
+    return infer_change_of_basis(rep1.rep, rep2, round_fn=round_fn) @ inv
+
+
+@dispatch(Rep, QRep)
+def infer_change_of_basis(  # noqa: F811
+    rep1: Rep, rep2: QRep, *, round_fn=lambda x: x
+) -> np.ndarray:
+    r"""
+    Q \rho_1 = \rho_2 Q
+    Q \rho_1 = q \rho_2 (q^{-1} Q)
+    """
+    return rep2.Q @ infer_change_of_basis(rep1, rep2.rep, round_fn=round_fn)
+
+
+@dispatch(QRep, QRep)
+def infer_change_of_basis(  # noqa: F811
+    rep1: QRep, rep2: QRep, *, round_fn=lambda x: x
+) -> np.ndarray:
+    r"""
+    Q \rho_1 = \rho_2 Q
+    Q q1 \rho_1 q1^{-1} = q2 \rho_2 q2^{-1} Q
+    (q2^{-1} Q q1) \rho_1 = \rho_2 q2^{-1} Q q1
+    """
+    inv1 = np.linalg.pinv(rep1.Q)
+    return rep2.Q @ infer_change_of_basis(rep1.rep, rep2.rep, round_fn=round_fn) @ inv1

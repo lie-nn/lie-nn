@@ -7,7 +7,7 @@ from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
-from ..irrep import TabulatedIrrep
+from ..rep import TabulatedIrrep
 from ..util import commutator, nullspace, round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]

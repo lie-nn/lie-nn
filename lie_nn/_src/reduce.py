@@ -1,44 +1,57 @@
 import numpy as np
 from multipledispatch import dispatch
 
+from .change_basis import change_basis
+from .direct_sum import direct_sum
 from .infer_change_of_basis import infer_change_of_basis
-from .reduced_rep import MulIrrep, ReducedRep
-from .rep import GenericRep, Rep
+from .multiply import multiply
+from .rep import GenericRep, Irrep, MulRep, QRep, Rep, SumRep
 from .util import decompose_rep_into_irreps
 
 
-@dispatch(MulIrrep)
-def reduce(rep: MulIrrep) -> ReducedRep:
-    return ReducedRep(
-        A=rep.algebra(),
-        irreps=(rep,),
-        Q=None,
-    )
+@dispatch(MulRep)
+def reduce(rep: MulRep) -> Rep:
+    return multiply(rep.mul, reduce(rep.rep))
 
 
-@dispatch(ReducedRep)
-def reduce(rep: ReducedRep) -> ReducedRep:  # noqa: F811
-    # TODO if we change ReducedRep into SumRep, then reduce its constituents
+@dispatch(QRep)
+def reduce(rep: QRep) -> QRep:  # noqa: F811
+    return change_basis(rep.Q, reduce(rep.rep))
+
+
+@dispatch(SumRep)
+def reduce(rep: SumRep) -> SumRep:  # noqa: F811
+    return direct_sum(*[reduce(subrep) for subrep in rep.reps])
+
+
+@dispatch(Irrep)
+def reduce(rep: Irrep) -> Irrep:  # noqa: F811
     return rep
 
 
 @dispatch(Rep)
-def reduce(rep: Rep) -> ReducedRep:  # noqa: F811
+def reduce(rep: Rep) -> Rep:  # noqa: F811
     r"""Reduce an unknown representation to a reduced form.
     This operation is slow and should be avoided if possible.
     """
     Ys = decompose_rep_into_irreps(np.concatenate([rep.X, rep.H]))
-    Ys = sorted(Ys, key=lambda x: x.shape[1])
     d = rep.lie_dim
     Qs = []
     irs = []
-    for Y in Ys:
+    for mul, Y in Ys:
         ir = GenericRep(rep.A, Y[:d], Y[d:])
         Q = infer_change_of_basis(ir, rep)
-        Q = np.einsum("mij->imj", Q).reshape((rep.dim, ir.dim))
+        assert len(Q) == mul
+        Q = np.einsum("mij->imj", Q).reshape((rep.dim, mul * ir.dim))
         Qs.append(Q)
+        if mul > 1:
+            ir = MulRep(mul, ir)
         irs.append(ir)
 
+    rep = direct_sum(*irs)
+
     Q = np.concatenate(Qs, axis=1)
-    rep = ReducedRep(rep.A, tuple(MulIrrep(1, ir) for ir in irs), Q)
-    return rep
+    if np.allclose(Q, np.eye(rep.dim), atol=1e-10):
+        return rep
+
+    return change_basis(Q, rep)

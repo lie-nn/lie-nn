@@ -560,6 +560,13 @@ def eigenspaces(
     return [(val, vec[:, i == j]) for j, val in enumerate(unique_val)]
 
 
+def are_isomorphic(X1: np.array, X2: np.array, *, epsilon: float = 1e-10) -> bool:
+    """Checks if representations are isomorphic."""
+    if X1.shape != X2.shape:
+        return False
+    return infer_change_of_basis(X1, X2, epsilon=epsilon).shape[0] > 0
+
+
 def decompose_rep_into_irreps(
     X: np.array, *, epsilon: float = 1e-10, round_fn=lambda x: x
 ) -> List[np.array]:
@@ -567,7 +574,8 @@ def decompose_rep_into_irreps(
     Input:
         X: np.array [num_gen, d, d] - generators of a representation.
     Output:
-        Ys: List[np.array] - list of generators of irreducible representations.
+        List of (multiplicity, irreducible representation) pairs.
+                    int      , np.array [num_gen, d, d]
     """
     Q = infer_change_of_basis(X, X, epsilon=epsilon, round_fn=round_fn)  # X @ Q == Q @ X
     w = np.random.rand(len(Q))
@@ -581,7 +589,21 @@ def decompose_rep_into_irreps(
         B = gram_schmidt(B.T.conj() @ B, epsilon=epsilon, round_fn=round_fn)  # Make it sparse!!
 
         Ys += [B @ X @ B.T.conj()]
-    return Ys
+
+    Ys = sorted(Ys, key=lambda x: x.shape[1])
+
+    Zs = []
+    while len(Ys) > 0:
+        Y = Ys.pop(0)
+        mul = 1
+        for i in range(len(Ys) - 1, -1, -1):
+            if are_isomorphic(Y, Ys[i], epsilon=epsilon):
+                Ys.pop(i)
+                mul += 1
+
+        Zs += [(mul, Y)]
+
+    return Zs
 
 
 def is_irreducible(X: np.array, *, epsilon: float = 1e-10) -> bool:

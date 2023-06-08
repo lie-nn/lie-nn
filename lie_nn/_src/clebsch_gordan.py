@@ -2,8 +2,7 @@ import numpy as np
 from multipledispatch import dispatch
 
 from .infer_change_of_basis import infer_change_of_basis
-from .irrep import TabulatedIrrep
-from .rep import Rep
+from .rep import Rep, TabulatedIrrep
 from .tensor_product import tensor_product
 
 
