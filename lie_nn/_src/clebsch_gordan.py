@@ -1,12 +1,12 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .infer_change_of_basis import infer_change_of_basis
 from .rep import Rep, TabulatedIrrep
 from .tensor_product import tensor_product
 
 
-@dispatch(Rep, Rep, Rep)
+@multimethod
 def clebsch_gordan(rep1: Rep, rep2: Rep, rep3: Rep, *, round_fn=lambda x: x) -> np.ndarray:
     r"""Computes the Clebsch-Gordan coefficient of the triplet (rep1, rep2, rep3).
 
@@ -26,7 +26,7 @@ def clebsch_gordan(rep1: Rep, rep2: Rep, rep3: Rep, *, round_fn=lambda x: x) -> 
     return cg
 
 
-@dispatch(TabulatedIrrep, TabulatedIrrep, TabulatedIrrep)
+@multimethod
 def clebsch_gordan(  # noqa: F811
     rep1: TabulatedIrrep, rep2: TabulatedIrrep, rep3: TabulatedIrrep, *, round_fn=lambda x: x
 ) -> np.ndarray:

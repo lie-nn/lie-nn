@@ -1,11 +1,11 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .rep import QRep, Rep
 from .util import infer_change_of_basis as _infer_change_of_basis
 
 
-@dispatch(Rep, Rep)
+@multimethod
 def infer_change_of_basis(rep1: Rep, rep2: Rep, *, round_fn=lambda x: x) -> np.ndarray:
     r"""Infers the change of basis matrix between two representations.
 
@@ -46,7 +46,7 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, *, round_fn=lambda x: x) -> np.n
     return A
 
 
-@dispatch(QRep, Rep)
+@multimethod
 def infer_change_of_basis(  # noqa: F811
     rep1: QRep, rep2: Rep, *, round_fn=lambda x: x
 ) -> np.ndarray:
@@ -58,7 +58,7 @@ def infer_change_of_basis(  # noqa: F811
     return infer_change_of_basis(rep1.rep, rep2, round_fn=round_fn) @ inv
 
 
-@dispatch(Rep, QRep)
+@multimethod
 def infer_change_of_basis(  # noqa: F811
     rep1: Rep, rep2: QRep, *, round_fn=lambda x: x
 ) -> np.ndarray:
@@ -69,7 +69,7 @@ def infer_change_of_basis(  # noqa: F811
     return rep2.Q @ infer_change_of_basis(rep1, rep2.rep, round_fn=round_fn)
 
 
-@dispatch(QRep, QRep)
+@multimethod
 def infer_change_of_basis(  # noqa: F811
     rep1: QRep, rep2: QRep, *, round_fn=lambda x: x
 ) -> np.ndarray:

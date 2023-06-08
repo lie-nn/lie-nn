@@ -1,5 +1,5 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .change_basis import project
 from .direct_sum import direct_sum
@@ -7,7 +7,7 @@ from .multiply import multiply
 from .rep import GenericRep, MulRep, PQRep, Rep, SumRep
 
 
-@dispatch(Rep, object)
+@multimethod
 def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
     """Apply change of basis to algebra.
 
@@ -28,16 +28,16 @@ def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
     )
 
 
-@dispatch(PQRep, object)
+@multimethod
 def change_algebra(rep: PQRep, Q: np.ndarray) -> Rep:  # noqa: F811
     return project(rep.Q, change_algebra(rep.rep, Q))
 
 
-@dispatch(SumRep, object)
+@multimethod
 def change_algebra(rep: SumRep, Q: np.ndarray) -> Rep:  # noqa: F811
     return direct_sum(*[change_algebra(subrep, Q) for subrep in rep.reps])
 
 
-@dispatch(MulRep, object)
+@multimethod
 def change_algebra(rep: MulRep, Q: np.ndarray) -> Rep:  # noqa: F811
     return multiply(rep.mul, change_algebra(rep.rep, Q))

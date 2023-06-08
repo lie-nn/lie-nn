@@ -1,13 +1,13 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .rep import PRep, QRep, Rep, SumRep
 
 # change_basis:
 
 
-@dispatch(object, Rep)
-def change_basis(Q: np.ndarray, rep: Rep) -> Rep:
+@multimethod
+def change_basis(Q: np.ndarray, rep: Rep) -> QRep:
     """Apply change of basis to generators.
 
     .. math::
@@ -30,15 +30,15 @@ def change_basis(Q: np.ndarray, rep: Rep) -> Rep:
     return QRep(Q, rep, force=True)
 
 
-@dispatch(object, QRep)
-def change_basis(Q: np.ndarray, rep: QRep) -> QRep:  # noqa: F811
+@multimethod
+def change_basis(Q: np.ndarray, rep: QRep) -> Rep:  # noqa: F811
     return change_basis(Q @ rep.Q, rep.rep)
 
 
 # project:
 
 
-@dispatch(object, Rep)
+@multimethod
 def project(U: np.ndarray, rep: Rep) -> Rep:
     """Project onto subspace.
 
@@ -62,7 +62,7 @@ def project(U: np.ndarray, rep: Rep) -> Rep:
     return PRep(U, rep, force=True)
 
 
-@dispatch(object, QRep)
+@multimethod
 def project(U: np.ndarray, qrep: QRep) -> Rep:  # noqa: F811
     if U.shape == (qrep.dim, qrep.dim):
         return change_basis(U, qrep)
@@ -73,7 +73,7 @@ def project(U: np.ndarray, qrep: QRep) -> Rep:  # noqa: F811
     return change_basis(Q, project(U, qrep.rep))
 
 
-@dispatch(object, SumRep)
+@multimethod
 def project(U: np.ndarray, sumrep: SumRep) -> Rep:  # noqa: F811
     raise NotImplementedError
     # TODO

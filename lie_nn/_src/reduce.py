@@ -1,5 +1,5 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .change_basis import change_basis
 from .direct_sum import direct_sum
@@ -9,27 +9,27 @@ from .rep import GenericRep, Irrep, MulRep, QRep, Rep, SumRep
 from .util import decompose_rep_into_irreps
 
 
-@dispatch(MulRep)
+@multimethod
 def reduce(rep: MulRep) -> Rep:
     return multiply(rep.mul, reduce(rep.rep))
 
 
-@dispatch(QRep)
-def reduce(rep: QRep) -> QRep:  # noqa: F811
+@multimethod
+def reduce(rep: QRep) -> Rep:  # noqa: F811
     return change_basis(rep.Q, reduce(rep.rep))
 
 
-@dispatch(SumRep)
-def reduce(rep: SumRep) -> SumRep:  # noqa: F811
+@multimethod
+def reduce(rep: SumRep) -> Rep:  # noqa: F811
     return direct_sum(*[reduce(subrep) for subrep in rep.reps])
 
 
-@dispatch(Irrep)
+@multimethod
 def reduce(rep: Irrep) -> Irrep:  # noqa: F811
     return rep
 
 
-@dispatch(Rep)
+@multimethod
 def reduce(rep: Rep) -> Rep:  # noqa: F811
     r"""Reduce an unknown representation to a reduced form.
     This operation is slow and should be avoided if possible.

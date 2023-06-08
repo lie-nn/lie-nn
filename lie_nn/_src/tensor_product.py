@@ -1,5 +1,5 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .multiply import multiply
 from .direct_sum import direct_sum
@@ -7,7 +7,7 @@ from .change_basis import change_basis
 from .rep import GenericRep, MulRep, QRep, Rep, SumRep, TabulatedIrrep
 
 
-@dispatch(Rep, Rep)
+@multimethod
 def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
     assert np.allclose(rep1.A, rep2.A)  # same lie algebra
     X1, H1, I1 = rep1.X, rep1.H, np.eye(rep1.dim)
@@ -23,7 +23,7 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
     )
 
 
-@dispatch(TabulatedIrrep, TabulatedIrrep)
+@multimethod
 def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> Rep:  # noqa: F811
     assert np.allclose(irrep1.A, irrep2.A)  # same lie algebra
     CG_list = []
@@ -41,19 +41,19 @@ def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> Rep:  # no
     return change_basis(Q, direct_sum(*irreps_list))
 
 
-@dispatch(MulRep, Rep)
+@multimethod
 def tensor_product(mulrep: MulRep, rep: Rep) -> Rep:  # noqa: F811
     assert np.allclose(mulrep.A, rep.A)  # same lie algebra
     return multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
 
 
-@dispatch(MulRep, MulRep)
+@multimethod
 def tensor_product(mulrep: MulRep, rep: MulRep) -> Rep:  # noqa: F811
     assert np.allclose(mulrep.A, rep.A)  # same lie algebra
     return multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
 
 
-@dispatch(Rep, MulRep)
+@multimethod
 def tensor_product(rep: Rep, mulrep: MulRep) -> Rep:  # noqa: F811
     assert np.allclose(rep.A, mulrep.A)  # same lie algebra
 
@@ -72,17 +72,17 @@ def tensor_product(rep: Rep, mulrep: MulRep) -> Rep:  # noqa: F811
     return change_basis(Q, multiply(mulrep.mul, tensor_product(rep, mulrep.rep)))
 
 
-@dispatch(SumRep, Rep)
+@multimethod
 def tensor_product(sumrep: SumRep, rep: Rep) -> Rep:  # noqa: F811
     return direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
 
 
-@dispatch(SumRep, SumRep)
+@multimethod
 def tensor_product(sumrep: SumRep, rep: SumRep) -> Rep:  # noqa: F811
     return direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
 
 
-@dispatch(Rep, SumRep)
+@multimethod
 def tensor_product(rep: Rep, sumrep: SumRep) -> Rep:  # noqa: F811
     list = []
     Q = np.zeros((rep.dim, sumrep.dim, rep.dim * sumrep.dim))
@@ -100,21 +100,21 @@ def tensor_product(rep: Rep, sumrep: SumRep) -> Rep:  # noqa: F811
     return change_basis(Q, direct_sum(*list))
 
 
-@dispatch(QRep, Rep)
+@multimethod
 def tensor_product(qrep: QRep, rep: Rep) -> Rep:  # noqa: F811
     dim = qrep.dim * rep.dim
     Q = np.einsum("ij,kl->ikjl", qrep.Q, np.eye(rep.dim)).reshape(dim, dim)
     return change_basis(Q, tensor_product(qrep.rep, rep))
 
 
-@dispatch(Rep, QRep)
+@multimethod
 def tensor_product(rep: Rep, qrep: QRep) -> Rep:  # noqa: F811
     dim = rep.dim * qrep.dim
     Q = np.einsum("ij,kl->ikjl", np.eye(rep.dim), qrep.Q).reshape(dim, dim)
     return change_basis(Q, tensor_product(rep, qrep.rep))
 
 
-@dispatch(QRep, QRep)
+@multimethod
 def tensor_product(qrep1: QRep, qrep2: QRep) -> Rep:  # noqa: F811
     dim = qrep1.dim * qrep2.dim
     Q = np.einsum("ij,kl->ikjl", qrep1.Q, qrep2.Q).reshape(dim, dim)
@@ -140,7 +140,6 @@ def tensor_power(rep: Rep, n: int) -> Rep:
         rep = tensor_product(rep, rep)
 
 
-# @dispatch(ReducedRep, int)
 # def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
 #     # TODO reduce into irreps and wrap with the change of basis that
 #       maps to the usual tensor product

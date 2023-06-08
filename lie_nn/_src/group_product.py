@@ -1,7 +1,7 @@
 from typing import Iterator
 
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .rep import GenericRep, Rep, TabulatedIrrep
 
@@ -20,7 +20,7 @@ def _get_dtype(*args):
     return x.dtype
 
 
-@dispatch(Rep, Rep)
+@multimethod
 def _group_product(rep1: Rep, rep2: Rep) -> GenericRep:
     A1 = rep1.A
     A2 = rep2.A
@@ -123,6 +123,6 @@ class TabulatedIrrepProduct(TabulatedIrrep):
         return A
 
 
-@dispatch(TabulatedIrrep, TabulatedIrrep)
+@multimethod
 def _group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:  # noqa: F811
     return TabulatedIrrepProduct(rep1, rep2)

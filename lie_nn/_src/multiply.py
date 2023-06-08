@@ -1,4 +1,4 @@
-from multipledispatch import dispatch
+from multimethod import multimethod
 
 from .rep import Rep, MulRep, QRep, SumRep
 from .util import direct_sum as ds
@@ -7,7 +7,7 @@ from .direct_sum import direct_sum
 import numpy as np
 
 
-@dispatch(int, Rep)
+@multimethod
 def multiply(mul: int, rep: Rep) -> Rep:
     if mul == 1:
         return rep
@@ -15,17 +15,17 @@ def multiply(mul: int, rep: Rep) -> Rep:
     return MulRep(mul, rep, force=True)
 
 
-@dispatch(int, MulRep)
-def multiply(mul: int, mulrep: MulRep) -> MulRep:  # noqa: F811
+@multimethod
+def multiply(mul: int, mulrep: MulRep) -> Rep:  # noqa: F811
     return multiply(mul * mulrep.mul, mulrep.rep)
 
 
-@dispatch(int, QRep)
+@multimethod
 def multiply(mul: int, qrep: QRep) -> Rep:  # noqa: F811
     return change_basis(ds(*(qrep.Q,) * mul), multiply(mul, qrep.rep))
 
 
-@dispatch(int, SumRep)
+@multimethod
 def multiply(mul: int, sumrep: SumRep) -> Rep:  # noqa: F811
     Q = np.zeros((mul, sumrep.dim, mul * sumrep.dim))
     k = 0
