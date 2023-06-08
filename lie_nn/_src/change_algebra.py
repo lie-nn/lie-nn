@@ -1,7 +1,7 @@
 import numpy as np
 from multimethod import multimethod
 
-from .change_basis import project
+from .project import project
 from .direct_sum import direct_sum
 from .multiply import multiply
 from .rep import GenericRep, MulRep, PQRep, Rep, SumRep

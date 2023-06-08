@@ -1,9 +1,10 @@
 import numpy as np
 from multimethod import multimethod
 
-from .change_basis import change_basis, project
+from .change_basis import change_basis
 from .direct_sum import direct_sum
 from .multiply import multiply
+from .project import project
 from .rep import GenericRep, MulRep, PRep, QRep, Rep, SumRep
 
 

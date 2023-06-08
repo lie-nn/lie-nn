@@ -298,7 +298,6 @@ class PQRep(Rep):
     def __init__(self, Q: np.ndarray, rep: Rep, *, force=False):
         assert force
         assert Q.ndim == 2
-        assert Q.shape[0] <= Q.shape[1]
 
         self.rep = rep
         self.Q = Q
@@ -342,4 +341,3 @@ class PRep(PQRep):
             raise RuntimeError("Use lie_nn.project instead")
 
         super().__init__(Q, rep, force=force)
-        assert Q.shape[0] < Q.shape[1]
