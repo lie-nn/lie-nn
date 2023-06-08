@@ -147,7 +147,7 @@ class Irrep(Rep):
     pass
 
 
-class TabulatedIrrep(Rep):
+class TabulatedIrrep(Irrep):
     @classmethod
     def from_string(cls, string: str) -> "TabulatedIrrep":
         raise NotImplementedError
