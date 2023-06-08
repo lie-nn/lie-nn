@@ -318,9 +318,6 @@ class PQRep(Rep):
     def create_trivial(self) -> "Rep":
         return self.rep.create_trivial()
 
-    def __repr__(self) -> str:
-        return f"Q({self.rep})Q^{{-1}}"
-
 
 class QRep(PQRep):
     """Change of basis of a representation"""
@@ -332,6 +329,9 @@ class QRep(PQRep):
         super().__init__(Q, rep, force=force)
         assert Q.shape[0] == Q.shape[1]
 
+    def __repr__(self) -> str:
+        return f"Q({self.rep})Q^{{-1}}"
+
 
 class PRep(PQRep):
     """Projection of a representation"""
@@ -341,3 +341,6 @@ class PRep(PQRep):
             raise RuntimeError("Use lie_nn.project instead")
 
         super().__init__(Q, rep, force=force)
+
+    def __repr__(self) -> str:
+        return f"Proj(dim={self.dim} of {self.rep})"

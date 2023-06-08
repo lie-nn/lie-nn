@@ -52,3 +52,15 @@ def _direct_sum(qrep: QRep, rep: Rep) -> Rep:  # noqa: F811
 def _direct_sum(rep: Rep, qrep: QRep) -> Rep:  # noqa: F811
     _chk(rep, qrep)
     return change_basis(ds(np.eye(rep.dim), qrep.Q), direct_sum(rep, qrep.rep))
+
+
+@multimethod
+def _direct_sum(qrep: QRep, rep: SumRep) -> Rep:  # noqa: F811
+    _chk(qrep, rep)
+    return change_basis(ds(qrep.Q, np.eye(rep.dim)), direct_sum(qrep.rep, rep))
+
+
+@multimethod
+def _direct_sum(rep: SumRep, qrep: QRep) -> Rep:  # noqa: F811
+    _chk(rep, qrep)
+    return change_basis(ds(np.eye(rep.dim), qrep.Q), direct_sum(rep, qrep.rep))
