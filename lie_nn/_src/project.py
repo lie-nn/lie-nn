@@ -2,7 +2,7 @@ import numpy as np
 from multimethod import multimethod
 
 from .change_basis import change_basis
-from .rep import PRep, QRep, Rep  # , SumRep, GenericRep
+from .rep import PRep, QRep, Rep  # , SumRep
 
 
 @multimethod
@@ -51,6 +51,13 @@ def project(U: np.ndarray, qrep: QRep) -> Rep:  # noqa: F811
 # @multimethod
 # def project(U: np.ndarray, sumrep: SumRep) -> Rep:  # noqa: F811
 #     assert U.shape[1] == sumrep.dim
+
+#     base = np.linalg.pinv(U).T
+
+#     for r in sumrep.reps:  # independent irreps
+#         R = np.eye(rep.dim)[i:j]
+#         P, _ = basis_intersection(base, R)
+
 
 #     # TODO: can we do this better? without GenericRep?
 #     newreps = []

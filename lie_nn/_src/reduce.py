@@ -5,7 +5,8 @@ from .change_basis import change_basis
 from .direct_sum import direct_sum
 from .infer_change_of_basis import infer_change_of_basis
 from .multiply import multiply
-from .rep import GenericRep, Irrep, MulRep, QRep, Rep, SumRep
+from .project import project
+from .rep import GenericRep, Irrep, MulRep, PRep, QRep, Rep, SumRep
 from .util import decompose_rep_into_irreps
 
 
@@ -27,6 +28,11 @@ def reduce(rep: SumRep) -> Rep:  # noqa: F811
 @multimethod
 def reduce(rep: Irrep) -> Irrep:  # noqa: F811
     return rep
+
+
+@multimethod
+def reduce(prep: PRep) -> Rep:  # noqa: F811
+    return project(prep.U, reduce(prep.rep))
 
 
 @multimethod
