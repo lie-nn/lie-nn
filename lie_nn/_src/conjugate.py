@@ -4,8 +4,7 @@ from multimethod import multimethod
 from .change_basis import change_basis
 from .direct_sum import direct_sum
 from .multiply import multiply
-from .project import project
-from .rep import GenericRep, MulRep, PRep, QRep, Rep, SumRep
+from .rep import GenericRep, MulRep, QRep, Rep, SumRep
 
 
 @multimethod
@@ -20,11 +19,6 @@ def conjugate(rep: Rep) -> GenericRep:
 @multimethod
 def conjugate(rep: QRep) -> Rep:  # noqa: F811
     return change_basis(np.conjugate(rep.Q), conjugate(rep.rep))
-
-
-@multimethod
-def conjugate(rep: PRep) -> Rep:  # noqa: F811
-    return project(np.conjugate(rep.Q), conjugate(rep.rep))
 
 
 @multimethod

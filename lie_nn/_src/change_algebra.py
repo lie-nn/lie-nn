@@ -1,10 +1,10 @@
 import numpy as np
 from multimethod import multimethod
 
-from .project import project
+from .change_basis import change_basis
 from .direct_sum import direct_sum
 from .multiply import multiply
-from .rep import GenericRep, MulRep, PQRep, Rep, SumRep
+from .rep import GenericRep, MulRep, QRep, Rep, SumRep
 
 
 @multimethod
@@ -29,8 +29,8 @@ def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
 
 
 @multimethod
-def change_algebra(rep: PQRep, Q: np.ndarray) -> Rep:  # noqa: F811
-    return project(rep.Q, change_algebra(rep.rep, Q))
+def change_algebra(rep: QRep, Q: np.ndarray) -> Rep:  # noqa: F811
+    return change_basis(rep.Q, change_algebra(rep.rep, Q))
 
 
 @multimethod
