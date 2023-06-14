@@ -1,3 +1,4 @@
+from .._src.irreps.u1 import U1
 from .._src.irreps.su2 import SU2
 from .._src.irreps.su2_real import SU2Real
 from .._src.irreps.o3_real import O3
@@ -9,6 +10,7 @@ from .._src.irreps.z2 import Z2
 
 
 __all__ = [
+    "U1",
     "SU2",
     "SU2Real",
     "O3",

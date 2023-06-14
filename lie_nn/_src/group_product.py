@@ -52,6 +52,11 @@ class TabulatedIrrepProduct(TabulatedIrrep):
     rep1: TabulatedIrrep
     rep2: TabulatedIrrep
 
+    def __init__(self, rep1, rep2) -> None:
+        super().__init__()
+        self.rep1 = rep1
+        self.rep2 = rep2
+
     @classmethod
     def from_string(cls, s: str) -> "TabulatedIrrepProduct":
         raise NotImplementedError
