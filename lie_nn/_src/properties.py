@@ -1,9 +1,8 @@
 import numpy as np
 from multimethod import multimethod
 
-from .rep import Irrep, MulRep, Rep, SumRep, QRep
+from .rep import ConjRep, Irrep, MulRep, QRep, Rep, SumRep
 from .util import is_irreducible as _is_irreducible
-
 
 # is_irreducible:
 
@@ -12,6 +11,11 @@ from .util import is_irreducible as _is_irreducible
 def is_irreducible(rep: Rep, *, epsilon: float = 1e-10) -> bool:
     """Returns True if the representation is irreducible."""
     return _is_irreducible(np.concatenate([rep.X, rep.H], axis=0), epsilon=epsilon)
+
+
+@multimethod
+def is_irreducible(rep: ConjRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+    return is_irreducible(rep.rep, epsilon=epsilon)
 
 
 @multimethod

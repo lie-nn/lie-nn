@@ -4,16 +4,12 @@ from multimethod import multimethod
 from .change_basis import change_basis
 from .direct_sum import direct_sum
 from .multiply import multiply
-from .rep import GenericRep, MulRep, QRep, Rep, SumRep
+from .rep import ConjRep, GenericRep, MulRep, QRep, Rep, SumRep
 
 
 @multimethod
 def conjugate(rep: Rep) -> GenericRep:
-    return GenericRep(
-        A=rep.A,
-        X=np.conjugate(rep.X),
-        H=np.conjugate(rep.H),
-    )
+    return ConjRep(rep, force=True)
 
 
 @multimethod

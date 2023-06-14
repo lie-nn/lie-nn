@@ -316,3 +316,35 @@ class QRep:
 
     def __repr__(self) -> str:
         return f"Q({self.rep})Q^{{-1}}"
+
+
+class ConjRep(Rep):
+    rep: Rep
+
+    def __init__(self, rep: Rep, *, force=False):
+        if not force:
+            raise RuntimeError("Use lie_nn.conjugate instead")
+        self.rep = rep
+
+    @property
+    def dim(self) -> int:
+        return self.rep.dim
+
+    @property
+    def lie_dim(self) -> int:
+        return self.rep.lie_dim
+
+    def algebra(self) -> np.ndarray:
+        return self.rep.algebra()
+
+    def continuous_generators(self) -> np.ndarray:
+        return np.conjugate(self.rep.X)
+
+    def discrete_generators(self) -> np.ndarray:
+        return np.conjugate(self.rep.H)
+
+    def create_trivial(self) -> "Rep":
+        return self.rep.create_trivial()
+
+    def __repr__(self) -> str:
+        return f"({self.rep})*"

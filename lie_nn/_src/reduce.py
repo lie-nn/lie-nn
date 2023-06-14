@@ -2,15 +2,21 @@ import numpy as np
 from multimethod import multimethod
 
 from .change_basis import change_basis
+from .conjugate import conjugate
 from .direct_sum import direct_sum
 from .infer_change_of_basis import infer_change_of_basis
 from .multiply import multiply
-from .rep import GenericRep, Irrep, MulRep, QRep, Rep, SumRep
+from .rep import ConjRep, GenericRep, Irrep, MulRep, QRep, Rep, SumRep
 from .util import decompose_rep_into_irreps
 
 
 @multimethod
-def reduce(rep: MulRep) -> Rep:
+def reduce(rep: ConjRep) -> Rep:  # noqa: F811
+    return conjugate(reduce(rep.rep))
+
+
+@multimethod
+def reduce(rep: MulRep) -> Rep:  # noqa: F811
     return multiply(rep.mul, reduce(rep.rep))
 
 

@@ -1,10 +1,11 @@
 import numpy as np
 from multimethod import multimethod
 
-from .multiply import multiply
-from .direct_sum import direct_sum
 from .change_basis import change_basis
-from .rep import GenericRep, MulRep, QRep, Rep, SumRep, TabulatedIrrep
+from .conjugate import conjugate
+from .direct_sum import direct_sum
+from .multiply import multiply
+from .rep import ConjRep, GenericRep, MulRep, QRep, Rep, SumRep, TabulatedIrrep
 
 
 @multimethod
@@ -121,6 +122,11 @@ def tensor_product(qrep1: QRep, qrep2: QRep) -> Rep:  # noqa: F811
     return change_basis(Q, tensor_product(qrep1.rep, qrep2.rep))
 
 
+@multimethod
+def tensor_product(rep1: ConjRep, rep2: ConjRep) -> Rep:  # noqa: F811
+    return conjugate(tensor_product(rep1.rep, rep2.rep))
+
+
 def tensor_power(rep: Rep, n: int) -> Rep:
     result = None
 
@@ -138,12 +144,3 @@ def tensor_power(rep: Rep, n: int) -> Rep:
             else:
                 return result
         rep = tensor_product(rep, rep)
-
-
-# def tensor_power(rep: ReducedRep, n: int) -> ReducedRep:
-#     # TODO reduce into irreps and wrap with the change of basis that
-#       maps to the usual tensor product
-#     # TODO as well reduce into irreps of S_n
-#     # and diagonalize irreps of S_n in the same basis that diagonalizes
-#       irreps of S_{n-1} (unclear how to do this)
-#     raise NotImplementedError
