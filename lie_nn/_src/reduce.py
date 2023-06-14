@@ -51,7 +51,7 @@ def reduce(rep: Rep) -> Rep:  # noqa: F811
         Q = np.einsum("mij->imj", Q).reshape((rep.dim, mul * ir.dim))
         Qs.append(Q)
         if mul > 1:
-            ir = MulRep(mul, ir)
+            ir = MulRep(mul, ir, force=True)
         irs.append(ir)
 
     rep = direct_sum(*irs)
