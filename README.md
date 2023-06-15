@@ -44,6 +44,7 @@ The data are organised in three categories:
 
 - `GenericRep` - a generic representation of a Lie group
 - `ReducedRep` - a reduced representation into irreps
+- `Rep` - a reducible representations (`Sn`, `so(2n)_adjoint`, `so(2n+1)_adjoint`)
 - `TabulatedIrrep` - a tabulated irreps (`SU2`, `SU2Real`, `O3`, `SO3`, `SL2C`, `SO13`, `SU3`, `SU4`, `Z2`)
 
 ## Functions
