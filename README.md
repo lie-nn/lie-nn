@@ -3,6 +3,15 @@ The aim of this library is to help the development of equivariant neural network
 
 The library is modular, and new groups can be easily implemented. 
 
+## Installation
+
+To install via `pip`, follow the steps below:
+
+```
+git clone git@github.com:lie-nn/lie-nn.git
+pip install ./lie-nn
+```
+
 
 ## Data Types
 The data are organised in three categories:
