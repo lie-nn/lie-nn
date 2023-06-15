@@ -9,5 +9,5 @@ def test_change_algebra():
     Q = np.array([[1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]]) / np.sqrt(2.0)
     rep = lie.change_algebra(rep, Q)
 
-    rep.check_algebra_vs_generators()
-    lie.check_representation_triplet(rep, rep, rep)
+    lie.test.check_algebra_vs_generators(rep.A, rep.X)
+    lie.test.check_representation_triplet(rep, rep, rep)

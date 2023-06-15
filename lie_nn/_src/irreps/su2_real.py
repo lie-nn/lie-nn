@@ -27,6 +27,7 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
     raise ValueError(f"j={j} is not an integer")
 
 
+# TODO: move this class somewhere else, and make it not a TabulatedIrrep
 @dataclass(frozen=True)
 class SU2Real(TabulatedIrrep):
     j: float  # j is a half-integer

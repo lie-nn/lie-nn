@@ -47,7 +47,7 @@ def reduce(rep: Rep) -> Rep:  # noqa: F811
     for mul, Y in Ys:
         ir = GenericRep(rep.A, Y[:d], Y[d:])
         Q = infer_change_of_basis(ir, rep)
-        assert len(Q) == mul
+        assert len(Q) == mul, (len(Q), mul)
         Q = np.einsum("mij->imj", Q).reshape((rep.dim, mul * ir.dim))
         Qs.append(Q)
         if mul > 1:

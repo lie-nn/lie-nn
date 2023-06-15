@@ -277,7 +277,7 @@ class SumRep(Rep):
         return r
 
 
-class QRep:
+class QRep(Rep):
     r"""Change of basis of a representation
 
     .. math::

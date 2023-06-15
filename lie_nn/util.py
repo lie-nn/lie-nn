@@ -14,7 +14,6 @@ from ._src.util import (
     sequential_nullspace,
     infer_change_of_basis,
     basis_intersection,
-    check_algebra_vs_generators,
     infer_algebra_from_generators,
     permutation_sign,
     unique_with_tol,

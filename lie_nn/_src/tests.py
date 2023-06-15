@@ -1,14 +1,15 @@
 import numpy as np
 from .rep import Rep
+from .util import check_algebra_vs_generators
 
 
 def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):
     assert np.allclose(rep1.algebra(), rep2.algebra(), rtol=rtol, atol=atol)
     assert np.allclose(rep1.algebra(), rep3.algebra(), rtol=rtol, atol=atol)
 
-    rep1.check_algebra_vs_generators(rtol=rtol, atol=atol)
-    rep2.check_algebra_vs_generators(rtol=rtol, atol=atol)
-    rep3.check_algebra_vs_generators(rtol=rtol, atol=atol)
+    check_algebra_vs_generators(rep1.A, rep1.X, rtol=rtol, atol=atol)
+    check_algebra_vs_generators(rep2.A, rep2.X, rtol=rtol, atol=atol)
+    check_algebra_vs_generators(rep3.A, rep3.X, rtol=rtol, atol=atol)
 
     X1 = rep1.continuous_generators()  # (lie_group_dimension, rep1.dim, rep1.dim)
     X2 = rep2.continuous_generators()  # (lie_group_dimension, rep2.dim, rep2.dim)
@@ -49,6 +50,8 @@ def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, at
                     'einsum("dil,zijk->zdljk", X1, cg) + einsum("djl,zijk->zdilk", X2, cg)'
                 )
                 print(right_side[solution][i])
+                diff = left_side[solution][i] - right_side[solution][i]
+                print("Difference:", np.abs(diff).max())
                 np.set_printoptions(precision=8, suppress=False)
                 raise AssertionError(
                     f"Solution {solution}/{cg.shape[0]} for {rep1} * {rep2} = {rep3} "
