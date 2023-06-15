@@ -1,7 +1,7 @@
 # lie-nn
-The aim of this library is to help the development of equivariant neural networks on reductive Lie groups. It contains fundamental mathematical operations such as tensor products, symmetric products, irreducible representations.
+This library aims to help the development of equivariant polynomials on reductive Lie groups and finite groups. It contains fundamental mathematical operations such as tensor products, symmetric products, and direct sums of reducible and irreducible representations of groups.
 
-The library is modular, and new groups can be easily implemented. 
+The library is modular, and new groups can be easily implemented.
 
 ## Installation
 
@@ -12,25 +12,39 @@ git clone git@github.com:lie-nn/lie-nn.git
 pip install ./lie-nn
 ```
 
+## Tabulated Irreducible Representations
 
+Irreducible representations (irreps) of reductive Lie groups play an essential role as they are budling blocks of other finite-dimensional representations.
+We implement irreducible representations for a variety of Lie groups by providing the following:
+- labelling of the irreps
+- their dimensions
+- an explicit basis (called generators)
+- direct sums of irreps
+- decompositions of tensor product of irreps into irreps (**Clebsch Gordans**)
+- symmetric power of irreps (Symmetric generalized Clebsch **Clebsch Gordans**)
+
+`lie-nn` currently has tabulated the irreps of the following groups:
+
+|    Groups     | Potential Applications          |
+| ------------- | -------------                   |
+| $\mathrm{SO}_{\mathbb{R}}(3)$  | 3D Point Clouds (Molecules, Vision)  |
+| $\mathrm{O}_{\mathbb{R}}(3)$   | Rotations + Reflections              |
+| $\mathrm{SO}_{\mathbb{R}}(1,3)$  | Particles Physics                  |
+| $\mathrm{SU}_{\mathbb{R}}(N)$ | Quantum Physics                   |
+| $\mathrm{SU}_{\mathbb{R}}(3)$ | QCD                                   | 
+| $\mathrm{U}_{\mathbb{R}}(1)$  | Electromagnetism                      |
+| $\mathrm{SL}_{\mathbb{R}}(2, \mathbb{C})$| -                          |
+ 
+Irreps of a product of all these groups are also supported.
+ 
+We aim to add new tabulated irreps groups, including the other classical Lie groups $Sp(2n)$, $SO(2n+1)$ and $SO(2n)$ (PR are welcomed). 
+ 
 ## Data Types
 The data are organised in three categories:
 
 - `GenericRep` - a generic representation of a Lie group
 - `ReducedRep` - a reduced representation into irreps
 - `TabulatedIrrep` - a tabulated irreps (`SU2`, `SU2Real`, `O3`, `SO3`, `SL2C`, `SO13`, `SU3`, `SU4`, `Z2`)
-
-The current tabulated irreps include:
-
-|    Groups     | Potential Applications          |
-| ------------- | -------------                   |
-| $SO(3)$  | 3D Point Clouds (Molecules, Vision)  |
-| $SO(1,3)$  | Particles Physics                  |
-| $SU(2^{n})$ | Quantum Physics                   |
-| $SU(3)$ | QCD                                   | 
-| $SL(2, \mathbb{C})$| -                          |
- 
- We aim to add new tabulated irreps groups including the other classical Lie groups $Sp(2n)$, $SO(2n+1)$ and $SO(2n)$ (PR are welcomed). 
 
 ## Functions
 
