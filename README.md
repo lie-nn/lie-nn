@@ -35,7 +35,13 @@ We implement irreducible representations for a variety of Lie groups by providin
 | $\mathrm{U}_{\mathbb{R}}(1)$  | Electromagnetism                      |
 | $\mathrm{SL}_{\mathbb{R}}(2, \mathbb{C})$| -                          |
  
-Irreps of a product of all these groups are also supported.
+Irreps of a product of all these groups are also supported. Moreover isomorphics groups have the same irreducible representations. As all the irreps of $\mathfrak{sl}_ {n}$ ($SU(N)$ in the code) are implemented, the irreps of following Lie algebras can also be obtained:
+
+$\mathfrak{so}_ {3} \simeq \mathfrak{sp}_ {2}  = \mathfrak{sl}_ {2}$
+
+$\mathfrak{so}_ {4} \simeq \mathfrak{sl}_ {2} \oplus \mathfrak{sl} _{2}$
+
+$\mathfrak{so}_ {6} \simeq \mathfrak{sl}_ {4}$
  
 We aim to add new tabulated irreps groups, including the other classical Lie groups $Sp(2n)$, $SO(2n+1)$ and $SO(2n)$ (PR are welcomed). 
  
