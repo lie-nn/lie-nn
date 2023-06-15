@@ -1,3 +1,5 @@
+import lie_nn as lie
+
 from typing import List, Tuple
 import numpy as np
 import re
@@ -60,3 +62,44 @@ class SON(TabulatedIrrep):
 
     def algebra(rep: "SON") -> np.ndarray:
         return NotImplementedError
+
+def E(i,j, rank):
+    """Returns the matrix with a 1 in the (i,j) entry and 0s elsewhere"""
+    E = np.zeros((rank, rank))
+    E[i,j] = 1
+    return E
+
+class SON_adjoint(lie.Rep):
+    """Adjoint representation of SON" from Fulton-Harris"""
+    def __init__(self, n) -> None:
+        super().__init__()
+        assert n >= 3
+        self.n = n
+    
+    def algebra(self) -> np.ndarray:
+        return NotImplementedError
+    
+    def continuous_generators(self) -> np.ndarray:
+        if self.n % 2 == 0:
+            n2 = self.n // 2
+            Hs = np.stack([E(i,i,self.n) - E(i+n2,i+n2, self.n) for i in range(n2)])
+            Xs = np.stack([E(i,j, self.n) -  E(n2 + j,n2 + i, self.n) for i in range(n2) for j in range(n2) if i != j])
+            Ys = np.stack([E(i,n2 + j, self.n) -  E(j,n2 + i, self.n) for i in range(n2) for j in range(n2)  if i != j])
+            Zs = np.stack([E(n2 + i,j, self.n) -  E(n2 + j,i, self.n) for i in range(n2) for j in range(n2)  if i != j])
+            return np.concatenate([Hs, Xs, Ys, Zs])
+        else:
+            n2 = ((self.n - 1)// 2)
+            Hs = np.stack([E(i,i,self.n) - E(i+n2,i+n2, self.n) for i in range(n2)])
+            Xs = np.stack([E(i,j, self.n) -  E(n2 + j,n2 + i, self.n) for i in range(n2) for j in range(n2) if i != j])
+            Ys = np.stack([E(i,n2 + j, self.n) -  E(j,n2 + i, self.n) for i in range(n2) for j in range(n2)  if i != j])
+            Zs = np.stack([E(n2 + i,j, self.n) -  E(n2 + j,i, self.n) for i in range(n2) for j in range(n2)  if i != j])
+            Us = np.stack([E(i, self.n - 1, self.n) - E(self.n - 1, i, self.n) for i in range(self.n)])
+            Vs = np.stack([E(n2 + i, self.n - 1, self.n) - E(self.n - 1, i, self.n) for i in range(n2)])
+            return np.concatenate([Hs, Xs, Ys, Zs, Us, Vs])
+    
+    def discrete_generators(self) -> np.ndarray:
+        return np.zeros((0, self.n, self.n))
+    
+    def create_trivial(self) -> lie.GenericRep:
+        return lie.GenericRep(A=self.A, X=np.ones((0, self.n, self.n)), H=np.zeros((0, self.n, self.n)))
+
