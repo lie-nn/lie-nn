@@ -2,7 +2,6 @@ from functools import reduce
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
-import sympy as sp
 
 
 def prod(list_of_numbers: List[Union[int, float]]) -> Union[int, float]:
@@ -88,6 +87,8 @@ def _round_to_sqrt_rational(x, max_denominator):
 
 
 def _round_to_sqrt_rational_sympy(x, max_denominator):
+    import sympy as sp
+
     sign = np.sign(x)
     n, d = as_approx_integer_ratio(x**2)
     n, d = limit_denominator(n, d, max_denominator**2 + 1)
