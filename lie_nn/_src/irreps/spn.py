@@ -1,15 +1,18 @@
-from typing import List, Tuple
-import numpy as np
 import re
 from dataclasses import dataclass
+from typing import List, Tuple
 
-from lie_nn._src.irrep import TabulatedIrrep
+import numpy as np
+
+from lie_nn import TabulatedIrrep
 from lie_nn._src.lie_algebra_utils import RootsWeightsC, weyl_dim
+
 
 def root_weights(rank):
     _, PositiveRoots, FundamentalWeights, _, _ = RootsWeightsC(rank)
     WeylVector = sum(PositiveRoots) / 2
     return PositiveRoots, FundamentalWeights, WeylVector
+
 
 def weights(rep: "SPN") -> np.ndarray:
     fundamental_weights = root_weights(len(rep.S))[1]
@@ -25,7 +28,7 @@ class SPN(TabulatedIrrep):
         # (4,3,2,1,0)
         m = re.match(r"\((\d+(?:,\d+)*)\)", s)
         return cls(S=tuple(map(int, m.group(1).split(","))))
-    
+
     def __mul__(rep1: "SPN", rep2: "SPN") -> List["SPN"]:
         return NotImplementedError
 
