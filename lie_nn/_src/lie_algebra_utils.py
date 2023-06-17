@@ -100,8 +100,14 @@ def cartan_matrix(simple_roots):
                 C[i, j] = 2 * root_i.dot(root_j) / root_i.dot(root_i)
     return C
 
+
 def weyl_dim(weight, positiveroots, weylvector):
-    return np.prod([(weight + weylvector).dot(positiveroot) / weylvector.dot(positiveroot) for positiveroot in positiveroots])
+    return np.prod(
+        [
+            (weight + weylvector).dot(positiveroot) / weylvector.dot(positiveroot)
+            for positiveroot in positiveroots
+        ]
+    )
 
 
 def structure_algebra(group, rank):
