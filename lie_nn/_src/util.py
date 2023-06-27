@@ -1,5 +1,7 @@
+import functools
+import itertools
 from functools import reduce
-from typing import List, Optional, Tuple, Union
+from typing import FrozenSet, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -627,3 +629,60 @@ def regular_representation(table: np.array) -> np.array:
     reg_rep = np.zeros((n, n, n))
     reg_rep[g, gh, h] = 1
     return reg_rep
+
+
+@functools.lru_cache(maxsize=None)
+def full_base_fn(dims: Tuple[int, ...]) -> List[Tuple[int, ...]]:
+    return list(itertools.product(*(range(d) for d in dims)))
+
+
+@functools.lru_cache(maxsize=None)
+def permutation_base(
+    perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]], dims: Tuple[int, ...]
+) -> FrozenSet[FrozenSet[FrozenSet[Tuple[int, Tuple[int, ...]]]]]:
+    full_base = full_base_fn(dims)  # (0, 0, 0), (0, 0, 1), (0, 0, 2), ... (3, 3, 3)
+    # len(full_base) degrees of freedom in an unconstrained tensor
+
+    # but there is constraints given by the group `formulas`
+    # For instance if `ij=-ji`, then 00=-00, 01=-01 and so on
+    base = set()
+    for x in full_base:
+        # T[x] is a coefficient of the tensor T and is related to other coefficient T[y]
+        # if x and y are related by a formula
+        xs = {(s, tuple(x[i] for i in p)) for s, p in perm_repr}
+        # s * T[x] are all equal for all (s, x) in xs
+        # if T[x] = -T[x] it is then equal to 0 and we lose this degree of freedom
+        if not (-1, x) in xs:
+            # the sign is arbitrary, put both possibilities
+            base.add(frozenset({frozenset(xs), frozenset({(-s, x) for s, x in xs})}))
+
+    # len(base) is the number of degrees of freedom in the tensor.
+
+    return frozenset(base)
+
+
+@functools.lru_cache(maxsize=None)
+def permutation_base_to_matrix(
+    base: FrozenSet[FrozenSet[FrozenSet[Tuple[int, Tuple[int, ...]]]]],
+    dims: Tuple[int, ...],
+) -> np.ndarray:
+    base = sorted(
+        [sorted([sorted(xs) for xs in x]) for x in base]
+    )  # requested for python 3.7 but not for 3.8 (probably a bug in 3.7)
+
+    # First we compute the change of basis (projection) between full_base and base
+    d_sym = len(base)
+    Q = np.zeros((d_sym, prod(dims)), np.float64)
+
+    for i, x in enumerate(base):
+        x = max(x, key=lambda xs: sum(s for s, x in xs))
+        for s, e in x:
+            j = 0
+            for k, d in zip(e, dims):
+                j *= d
+                j += k
+            Q[i, j] = s / len(x) ** 0.5
+
+    np.testing.assert_allclose(Q @ Q.T, np.eye(d_sym))
+
+    return Q.reshape(d_sym, *dims)
