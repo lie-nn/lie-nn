@@ -21,9 +21,10 @@ from ._src.conjugate import conjugate
 from ._src.real import make_explicitly_real, is_real
 from ._src.properties import is_unitary, is_irreducible
 from ._src.group_product import group_product
+from ._src.symmetric_tensor_power import symmetric_tensor_power
 
 from lie_nn import irreps as irreps
-from lie_nn import util as util
+from lie_nn import util as util  # TODO: rename to utils
 from lie_nn import finite as finite
 from lie_nn import test as test
 
@@ -52,6 +53,7 @@ __all__ = [
     "is_unitary",
     "is_irreducible",
     "group_product",
+    "symmetric_tensor_power",
     "irreps",
     "util",
     "finite",

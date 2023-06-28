@@ -213,9 +213,7 @@ def direct_sum(A, *BCD):
 
 
 def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
-    """
-    Orthogonalize a matrix using the Gram-Schmidt process.
-    """
+    """Orthogonalize a matrix using the Gram-Schmidt process."""
     assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
     assert A.dtype in [
         np.float64,
@@ -231,6 +229,38 @@ def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
             v = round_fn(v / norm)
             Q += [v]
     return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
+
+
+def gram_schmidt_with_change_of_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x):
+    """Gram-Schmidt process returning the change of basis matrix.
+
+    Q, U = gram_schmidt_with_change_of_basis(A)
+    Q = U @ A
+    """
+    assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
+    assert A.dtype in [
+        np.float64,
+        np.complex128,
+    ], "Gram-Schmidt process only works for float64 matrices."
+    Q = []
+    U = []
+    for i in range(A.shape[0]):
+        v = np.copy(A[i])
+        u = np.zeros_like(v, shape=(A.shape[0],))
+        u[i] = 1.0
+        for v_, u_ in zip(Q, U):
+            c = np.dot(np.conj(v_), v)
+            v -= c * v_
+            u -= c * u_
+        norm = np.linalg.norm(v)
+        if norm > epsilon:
+            v = round_fn(v / norm)
+            u = u / norm
+            Q += [v]
+            U += [u]
+    if len(Q) > 0:
+        return np.stack(Q), np.stack(U)
+    return np.empty((0, A.shape[1])), np.empty((0, A.shape[0]))
 
 
 def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x, returns="Q") -> np.ndarray:
