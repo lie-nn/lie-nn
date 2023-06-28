@@ -3,10 +3,10 @@ from typing import Iterator
 import numpy as np
 from multimethod import multimethod
 
-from .rep import GenericRep, Rep, TabulatedIrrep
+import lie_nn as lie
 
 
-def group_product(*reps) -> Rep:
+def group_product(*reps) -> lie.Rep:
     assert len(reps) > 0
     if len(reps) == 1:
         return reps[0]
@@ -21,7 +21,7 @@ def _get_dtype(*args):
 
 
 @multimethod
-def _group_product(rep1: Rep, rep2: Rep) -> GenericRep:
+def _group_product(rep1: lie.Rep, rep2: lie.Rep) -> lie.GenericRep:
     A1 = rep1.A
     A2 = rep2.A
     lie_dim = rep1.lie_dim + rep2.lie_dim
@@ -45,12 +45,12 @@ def _group_product(rep1: Rep, rep2: Rep) -> GenericRep:
     H[: H1.shape[0]] = np.einsum("aij,kl->aikjl", H1, I2).reshape(H1.shape[0], dim, dim)
     H[H1.shape[0] :] = np.einsum("ij,akl->aikjl", I1, H2).reshape(H2.shape[0], dim, dim)
 
-    return GenericRep(A=A, X=X, H=H)
+    return lie.GenericRep(A=A, X=X, H=H)
 
 
-class TabulatedIrrepProduct(TabulatedIrrep):
-    rep1: TabulatedIrrep
-    rep2: TabulatedIrrep
+class TabulatedIrrepProduct(lie.TabulatedIrrep):
+    rep1: lie.TabulatedIrrep
+    rep2: lie.TabulatedIrrep
 
     def __init__(self, rep1, rep2) -> None:
         super().__init__()
@@ -129,5 +129,7 @@ class TabulatedIrrepProduct(TabulatedIrrep):
 
 
 @multimethod
-def _group_product(rep1: TabulatedIrrep, rep2: TabulatedIrrep) -> TabulatedIrrep:  # noqa: F811
+def _group_product(  # noqa: F811
+    rep1: lie.TabulatedIrrep, rep2: lie.TabulatedIrrep
+) -> lie.TabulatedIrrep:
     return TabulatedIrrepProduct(rep1, rep2)

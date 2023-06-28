@@ -1,12 +1,12 @@
 import numpy as np
 from multimethod import multimethod
 
-from .rep import QRep, Rep
-from .utils import infer_change_of_basis as _infer_change_of_basis
+
+import lie_nn as lie
 
 
 @multimethod
-def infer_change_of_basis(rep1: Rep, rep2: Rep, *, round_fn=lambda x: x) -> np.ndarray:
+def infer_change_of_basis(rep1: lie.Rep, rep2: lie.Rep, *, round_fn=lambda x: x) -> np.ndarray:
     r"""Infers the change of basis matrix between two representations.
 
     .. math::
@@ -31,7 +31,7 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, *, round_fn=lambda x: x) -> np.n
     Y1 = np.concatenate([rep1.X, rep1.H])
     Y2 = np.concatenate([rep2.X, rep2.H])
 
-    A = _infer_change_of_basis(Y2, Y1, round_fn=round_fn)
+    A = lie.utils.infer_change_of_basis(Y2, Y1, round_fn=round_fn)
     np.testing.assert_allclose(
         np.einsum("aij,bjk->abik", Y2, A),
         np.einsum("bij,ajk->abik", A, Y1),
@@ -48,7 +48,7 @@ def infer_change_of_basis(rep1: Rep, rep2: Rep, *, round_fn=lambda x: x) -> np.n
 
 @multimethod
 def infer_change_of_basis(  # noqa: F811
-    rep1: QRep, rep2: Rep, *, round_fn=lambda x: x
+    rep1: lie.QRep, rep2: lie.Rep, *, round_fn=lambda x: x
 ) -> np.ndarray:
     r"""
     Q \rho_1 = \rho_2 Q
@@ -60,7 +60,7 @@ def infer_change_of_basis(  # noqa: F811
 
 @multimethod
 def infer_change_of_basis(  # noqa: F811
-    rep1: Rep, rep2: QRep, *, round_fn=lambda x: x
+    rep1: lie.Rep, rep2: lie.QRep, *, round_fn=lambda x: x
 ) -> np.ndarray:
     r"""
     Q \rho_1 = \rho_2 Q
@@ -71,7 +71,7 @@ def infer_change_of_basis(  # noqa: F811
 
 @multimethod
 def infer_change_of_basis(  # noqa: F811
-    rep1: QRep, rep2: QRep, *, round_fn=lambda x: x
+    rep1: lie.QRep, rep2: lie.QRep, *, round_fn=lambda x: x
 ) -> np.ndarray:
     r"""
     Q \rho_1 = \rho_2 Q

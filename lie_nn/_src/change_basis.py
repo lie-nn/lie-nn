@@ -1,11 +1,11 @@
 import numpy as np
 from multimethod import multimethod
 
-from .rep import QRep, Rep
+import lie_nn as lie
 
 
 @multimethod
-def change_basis(Q: np.ndarray, rep: Rep) -> QRep:
+def change_basis(Q: np.ndarray, rep: lie.Rep) -> lie.QRep:
     """Apply change of basis to generators.
 
     .. math::
@@ -25,9 +25,9 @@ def change_basis(Q: np.ndarray, rep: Rep) -> QRep:
     if np.allclose(Q, np.eye(rep.dim), atol=1e-10):
         return rep
 
-    return QRep(Q, rep, force=True)
+    return lie.QRep(Q, rep, force=True)
 
 
 @multimethod
-def change_basis(Q: np.ndarray, rep: QRep) -> Rep:  # noqa: F811
+def change_basis(Q: np.ndarray, rep: lie.QRep) -> lie.Rep:  # noqa: F811
     return change_basis(Q @ rep.Q, rep.rep)

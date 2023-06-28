@@ -1,14 +1,11 @@
 import numpy as np
 from multimethod import multimethod
 
-from .change_basis import change_basis
-from .direct_sum import direct_sum
-from .multiply import multiply
-from .rep import GenericRep, MulRep, QRep, Rep, SumRep
+import lie_nn as lie
 
 
 @multimethod
-def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
+def change_algebra(rep: lie.Rep, Q: np.ndarray) -> lie.GenericRep:
     """Apply change of basis to algebra.
 
     .. math::
@@ -21,7 +18,7 @@ def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
 
     """
     iQ = np.linalg.pinv(Q)
-    return GenericRep(
+    return lie.GenericRep(
         A=np.einsum("ia,jb,abc,ck->ijk", Q, Q, rep.A, iQ),
         X=np.einsum("ia,auv->iuv", Q, rep.X),
         H=rep.H,
@@ -29,15 +26,15 @@ def change_algebra(rep: Rep, Q: np.ndarray) -> GenericRep:
 
 
 @multimethod
-def change_algebra(rep: QRep, Q: np.ndarray) -> Rep:  # noqa: F811
-    return change_basis(rep.Q, change_algebra(rep.rep, Q))
+def change_algebra(rep: lie.QRep, Q: np.ndarray) -> lie.Rep:  # noqa: F811
+    return lie.change_basis(rep.Q, change_algebra(rep.rep, Q))
 
 
 @multimethod
-def change_algebra(rep: SumRep, Q: np.ndarray) -> Rep:  # noqa: F811
-    return direct_sum(*[change_algebra(subrep, Q) for subrep in rep.reps])
+def change_algebra(rep: lie.SumRep, Q: np.ndarray) -> lie.Rep:  # noqa: F811
+    return lie.direct_sum(*[change_algebra(subrep, Q) for subrep in rep.reps])
 
 
 @multimethod
-def change_algebra(rep: MulRep, Q: np.ndarray) -> Rep:  # noqa: F811
-    return multiply(rep.mul, change_algebra(rep.rep, Q))
+def change_algebra(rep: lie.MulRep, Q: np.ndarray) -> lie.Rep:  # noqa: F811
+    return lie.multiply(rep.mul, change_algebra(rep.rep, Q))

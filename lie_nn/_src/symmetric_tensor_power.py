@@ -3,9 +3,6 @@ import itertools
 import numpy as np
 from multimethod import multimethod
 
-from .conjugate import conjugate
-from .change_basis import change_basis
-from .rep import ConjRep, MulRep, QRep, Rep, SumRep
 from .utils import kron, permutation_base, permutation_base_to_matrix
 import lie_nn as lie
 
@@ -22,25 +19,25 @@ def _symmetric_perm_matrix(d: int, n: int):
 
 
 @multimethod
-def symmetric_tensor_power(rep: QRep, n: int) -> Rep:  # noqa: F811
+def symmetric_tensor_power(rep: lie.QRep, n: int) -> lie.Rep:  # noqa: F811
     # out = P @ Q @ tensorpower(rep, n) @ Q^-1 @ P^T
     Q = kron(*[rep.Q] * n)  # [d**n, d**n]
     P = _symmetric_perm_matrix(rep.dim, n)  # [symmetric, d**n]
     S = P @ Q @ P.T
 
     # out = S @ P @ tensorpower(rep, n) @ P^T @ S^-1
-    return change_basis(S, symmetric_tensor_power(rep.rep, n))
+    return lie.change_basis(S, symmetric_tensor_power(rep.rep, n))
 
 
 @multimethod
-def symmetric_tensor_power(rep: SumRep, n: int) -> Rep:  # noqa: F811
+def symmetric_tensor_power(rep: lie.SumRep, n: int) -> lie.Rep:  # noqa: F811
     # for all subreps in rep.reps
     # run symmetric_tensor_power(subrep, i) for i = 1, ..., n
     raise NotImplementedError
 
 
 @multimethod
-def symmetric_tensor_power(rep: MulRep, n: int) -> Rep:  # noqa: F811
+def symmetric_tensor_power(rep: lie.MulRep, n: int) -> lie.Rep:  # noqa: F811
     # stp = [symmetric_tensor_power(rep.rep, i) for i in range(0, n + 1)]
     # i j if rep.mul == 2 and n == 3
     # 3 0
@@ -51,12 +48,12 @@ def symmetric_tensor_power(rep: MulRep, n: int) -> Rep:  # noqa: F811
 
 
 @multimethod
-def symmetric_tensor_power(rep: ConjRep, n: int) -> Rep:  # noqa: F811
-    return conjugate(symmetric_tensor_power(rep.rep, n))
+def symmetric_tensor_power(rep: lie.ConjRep, n: int) -> lie.Rep:  # noqa: F811
+    return lie.conjugate(symmetric_tensor_power(rep.rep, n))
 
 
 @multimethod
-def symmetric_tensor_power(rep: Rep, n: int) -> Rep:  # noqa: F811
+def symmetric_tensor_power(rep: lie.Rep, n: int) -> lie.Rep:  # noqa: F811
     if n == 1:
         return rep
 

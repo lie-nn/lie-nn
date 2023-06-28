@@ -1,21 +1,17 @@
 import numpy as np
 from multimethod import multimethod
 
-from .change_basis import change_basis
-from .conjugate import conjugate
-from .direct_sum import direct_sum
-from .multiply import multiply
-from .rep import ConjRep, GenericRep, MulRep, QRep, Rep, SumRep, TabulatedIrrep
+import lie_nn as lie
 
 
 @multimethod
-def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
+def tensor_product(rep1: lie.Rep, rep2: lie.Rep) -> lie.GenericRep:
     assert np.allclose(rep1.A, rep2.A)  # same lie algebra
     X1, H1, I1 = rep1.X, rep1.H, np.eye(rep1.dim)
     X2, H2, I2 = rep2.X, rep2.H, np.eye(rep2.dim)
     assert H1.shape[0] == H2.shape[0]  # same discrete dimension
     d = rep1.dim * rep2.dim
-    return GenericRep(
+    return lie.GenericRep(
         A=rep1.A,
         X=(np.einsum("aij,kl->aikjl", X1, I2) + np.einsum("ij,akl->aikjl", I1, X2)).reshape(
             X1.shape[0], d, d
@@ -25,7 +21,7 @@ def tensor_product(rep1: Rep, rep2: Rep) -> GenericRep:
 
 
 @multimethod
-def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> Rep:  # noqa: F811
+def tensor_product(irrep1: lie.TabulatedIrrep, irrep2: lie.TabulatedIrrep) -> lie.Rep:  # noqa: F811
     assert np.allclose(irrep1.A, irrep2.A)  # same lie algebra
     CG_list = []
     irreps_list = []
@@ -36,26 +32,26 @@ def tensor_product(irrep1: TabulatedIrrep, irrep2: TabulatedIrrep) -> Rep:  # no
         mul = CG.shape[0]
         CG = CG.reshape(CG.shape[0] * CG.shape[1], CG.shape[2] * CG.shape[3])
         CG_list.append(CG)
-        irreps_list.append(multiply(mul, ir_out))
+        irreps_list.append(lie.multiply(mul, ir_out))
     CG = np.concatenate(CG_list, axis=0)
     Q = np.linalg.inv(CG)
-    return change_basis(Q, direct_sum(*irreps_list))
+    return lie.change_basis(Q, lie.direct_sum(*irreps_list))
 
 
 @multimethod
-def tensor_product(mulrep: MulRep, rep: Rep) -> Rep:  # noqa: F811
+def tensor_product(mulrep: lie.MulRep, rep: lie.Rep) -> lie.Rep:  # noqa: F811
     assert np.allclose(mulrep.A, rep.A)  # same lie algebra
-    return multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
+    return lie.multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
 
 
 @multimethod
-def tensor_product(mulrep: MulRep, rep: MulRep) -> Rep:  # noqa: F811
+def tensor_product(mulrep: lie.MulRep, rep: lie.MulRep) -> lie.Rep:  # noqa: F811
     assert np.allclose(mulrep.A, rep.A)  # same lie algebra
-    return multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
+    return lie.multiply(mulrep.mul, tensor_product(mulrep.rep, rep))
 
 
 @multimethod
-def tensor_product(rep: Rep, mulrep: MulRep) -> Rep:  # noqa: F811
+def tensor_product(rep: lie.Rep, mulrep: lie.MulRep) -> lie.Rep:  # noqa: F811
     assert np.allclose(rep.A, mulrep.A)  # same lie algebra
 
     Q = np.reshape(
@@ -70,21 +66,21 @@ def tensor_product(rep: Rep, mulrep: MulRep) -> Rep:  # noqa: F811
             rep.dim * mulrep.rep.dim * mulrep.mul,
         ),
     )
-    return change_basis(Q, multiply(mulrep.mul, tensor_product(rep, mulrep.rep)))
+    return lie.change_basis(Q, lie.multiply(mulrep.mul, tensor_product(rep, mulrep.rep)))
 
 
 @multimethod
-def tensor_product(sumrep: SumRep, rep: Rep) -> Rep:  # noqa: F811
-    return direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
+def tensor_product(sumrep: lie.SumRep, rep: lie.Rep) -> lie.Rep:  # noqa: F811
+    return lie.direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
 
 
 @multimethod
-def tensor_product(sumrep: SumRep, rep: SumRep) -> Rep:  # noqa: F811
-    return direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
+def tensor_product(sumrep: lie.SumRep, rep: lie.SumRep) -> lie.Rep:  # noqa: F811
+    return lie.direct_sum(*[tensor_product(subrep, rep) for subrep in sumrep.reps])
 
 
 @multimethod
-def tensor_product(rep: Rep, sumrep: SumRep) -> Rep:  # noqa: F811
+def tensor_product(rep: lie.Rep, sumrep: lie.SumRep) -> lie.Rep:  # noqa: F811
     list = []
     Q = np.zeros((rep.dim, sumrep.dim, rep.dim * sumrep.dim))
     k = 0
@@ -98,36 +94,36 @@ def tensor_product(rep: Rep, sumrep: SumRep) -> Rep:  # noqa: F811
         j += subrep.dim
 
     Q = Q.reshape(rep.dim * sumrep.dim, rep.dim * sumrep.dim)
-    return change_basis(Q, direct_sum(*list))
+    return lie.change_basis(Q, lie.direct_sum(*list))
 
 
 @multimethod
-def tensor_product(qrep: QRep, rep: Rep) -> Rep:  # noqa: F811
+def tensor_product(qrep: lie.QRep, rep: lie.Rep) -> lie.Rep:  # noqa: F811
     dim = qrep.dim * rep.dim
     Q = np.einsum("ij,kl->ikjl", qrep.Q, np.eye(rep.dim)).reshape(dim, dim)
-    return change_basis(Q, tensor_product(qrep.rep, rep))
+    return lie.change_basis(Q, tensor_product(qrep.rep, rep))
 
 
 @multimethod
-def tensor_product(rep: Rep, qrep: QRep) -> Rep:  # noqa: F811
+def tensor_product(rep: lie.Rep, qrep: lie.QRep) -> lie.Rep:  # noqa: F811
     dim = rep.dim * qrep.dim
     Q = np.einsum("ij,kl->ikjl", np.eye(rep.dim), qrep.Q).reshape(dim, dim)
-    return change_basis(Q, tensor_product(rep, qrep.rep))
+    return lie.change_basis(Q, tensor_product(rep, qrep.rep))
 
 
 @multimethod
-def tensor_product(qrep1: QRep, qrep2: QRep) -> Rep:  # noqa: F811
+def tensor_product(qrep1: lie.QRep, qrep2: lie.QRep) -> lie.Rep:  # noqa: F811
     dim = qrep1.dim * qrep2.dim
     Q = np.einsum("ij,kl->ikjl", qrep1.Q, qrep2.Q).reshape(dim, dim)
-    return change_basis(Q, tensor_product(qrep1.rep, qrep2.rep))
+    return lie.change_basis(Q, tensor_product(qrep1.rep, qrep2.rep))
 
 
 @multimethod
-def tensor_product(rep1: ConjRep, rep2: ConjRep) -> Rep:  # noqa: F811
-    return conjugate(tensor_product(rep1.rep, rep2.rep))
+def tensor_product(rep1: lie.ConjRep, rep2: lie.ConjRep) -> lie.Rep:  # noqa: F811
+    return lie.conjugate(tensor_product(rep1.rep, rep2.rep))
 
 
-def tensor_power(rep: Rep, n: int) -> Rep:
+def tensor_power(rep: lie.Rep, n: int) -> lie.Rep:
     result = None
 
     while True:

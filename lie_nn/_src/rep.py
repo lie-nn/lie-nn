@@ -3,7 +3,7 @@ from typing import Iterator, Optional, Tuple, Type
 import numpy as np
 import scipy.linalg
 
-from .utils import direct_sum, infer_algebra_from_generators
+import lie_nn as lie
 
 
 class Rep:
@@ -115,7 +115,7 @@ class GenericRep(Rep):
         H: Optional[np.ndarray] = None,
         round_fn=lambda x: x,
     ) -> Optional["GenericRep"]:
-        A = infer_algebra_from_generators(X, round_fn=round_fn)
+        A = lie.utils.infer_algebra_from_generators(X, round_fn=round_fn)
         if A is None:
             return None
         if H is None:
@@ -212,13 +212,13 @@ class MulRep(Rep):
         X = self.rep.X
         if X.shape[0] == 0:
             return np.empty((0, self.dim, self.dim))
-        return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in X], axis=0)
+        return np.stack([lie.utils.direct_sum(*[x for _ in range(self.mul)]) for x in X], axis=0)
 
     def discrete_generators(self) -> np.ndarray:
         H = self.rep.H
         if H.shape[0] == 0:
             return np.empty((0, self.dim, self.dim))
-        return np.stack([direct_sum(*[x for _ in range(self.mul)]) for x in H], axis=0)
+        return np.stack([lie.utils.direct_sum(*[x for _ in range(self.mul)]) for x in H], axis=0)
 
     def create_trivial(self) -> Rep:
         return self.rep.create_trivial()
@@ -257,7 +257,7 @@ class SumRep(Rep):
             return np.empty((0, self.dim, self.dim))
         Xs = []
         for i in range(self.lie_dim):
-            Xs += [direct_sum(*[rep.X[i] for rep in self.reps])]
+            Xs += [lie.utils.direct_sum(*[rep.X[i] for rep in self.reps])]
         return np.stack(Xs)
 
     def discrete_generators(self) -> np.ndarray:
@@ -266,7 +266,7 @@ class SumRep(Rep):
             return np.empty((0, self.dim, self.dim))
         Hs = []
         for i in range(n):
-            Hs += [direct_sum(*[rep.H[i] for rep in self.reps])]
+            Hs += [lie.utils.direct_sum(*[rep.H[i] for rep in self.reps])]
         return np.stack(Hs)
 
     def create_trivial(self) -> Rep:

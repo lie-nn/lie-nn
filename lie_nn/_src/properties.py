@@ -1,40 +1,40 @@
 import numpy as np
 from multimethod import multimethod
 
-from .rep import ConjRep, Irrep, MulRep, QRep, Rep, SumRep
-from .utils import is_irreducible as _is_irreducible
+
+import lie_nn as lie
 
 # is_irreducible:
 
 
 @multimethod
-def is_irreducible(rep: Rep, *, epsilon: float = 1e-10) -> bool:
+def is_irreducible(rep: lie.Rep, *, epsilon: float = 1e-10) -> bool:
     """Returns True if the representation is irreducible."""
-    return _is_irreducible(np.concatenate([rep.X, rep.H], axis=0), epsilon=epsilon)
+    return lie.utils.is_irreducible(np.concatenate([rep.X, rep.H], axis=0), epsilon=epsilon)
 
 
 @multimethod
-def is_irreducible(rep: ConjRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+def is_irreducible(rep: lie.ConjRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
     return is_irreducible(rep.rep, epsilon=epsilon)
 
 
 @multimethod
-def is_irreducible(rep: MulRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+def is_irreducible(rep: lie.MulRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
     return is_irreducible(rep.rep, epsilon=epsilon)
 
 
 @multimethod
-def is_irreducible(rep: SumRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+def is_irreducible(rep: lie.SumRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
     return all(is_irreducible(subrep, epsilon=epsilon) for subrep in rep.reps)
 
 
 @multimethod
-def is_irreducible(rep: QRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+def is_irreducible(rep: lie.QRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
     return is_irreducible(rep.rep, epsilon=epsilon)
 
 
 @multimethod
-def is_irreducible(rep: Irrep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+def is_irreducible(rep: lie.Irrep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
     return True
 
 
@@ -42,7 +42,7 @@ def is_irreducible(rep: Irrep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
 
 
 @multimethod
-def is_unitary(rep: Rep, *, epsilon: float = 1e-10) -> bool:
+def is_unitary(rep: lie.Rep, *, epsilon: float = 1e-10) -> bool:
     X = rep.continuous_generators()
     H = rep.discrete_generators()
     # exp(X) @ exp(X^H) = 1
@@ -53,10 +53,10 @@ def is_unitary(rep: Rep, *, epsilon: float = 1e-10) -> bool:
 
 
 @multimethod
-def is_unitary(rep: SumRep) -> bool:  # noqa: F811
+def is_unitary(rep: lie.SumRep) -> bool:  # noqa: F811
     return all(is_unitary(subrep) for subrep in rep.reps)
 
 
 @multimethod
-def is_unitary(rep: MulRep) -> bool:  # noqa: F811
+def is_unitary(rep: lie.MulRep) -> bool:  # noqa: F811
     return is_unitary(rep.rep)

@@ -1,12 +1,10 @@
 import numpy as np
 from multimethod import multimethod
 
-from .rep import Rep, SumRep, QRep
-from .utils import direct_sum as ds
-from .change_basis import change_basis
+import lie_nn as lie
 
 
-def direct_sum(*reps) -> Rep:
+def direct_sum(*reps) -> lie.Rep:
     assert len(reps) > 0
     if len(reps) == 1:
         return reps[0]
@@ -19,48 +17,56 @@ def _chk(r1, r2):
 
 
 @multimethod
-def _direct_sum(rep1: Rep, rep2: Rep) -> SumRep:
+def _direct_sum(rep1: lie.Rep, rep2: lie.Rep) -> lie.SumRep:
     _chk(rep1, rep2)
-    return SumRep((rep1, rep2), force=True)
+    return lie.SumRep((rep1, rep2), force=True)
 
 
 @multimethod
-def _direct_sum(sumrep: SumRep, rep: Rep) -> SumRep:  # noqa: F811
+def _direct_sum(sumrep: lie.SumRep, rep: lie.Rep) -> lie.SumRep:  # noqa: F811
     _chk(sumrep, rep)
-    return SumRep(sumrep.reps + (rep,), force=True)
+    return lie.SumRep(sumrep.reps + (rep,), force=True)
 
 
 @multimethod
-def _direct_sum(rep: Rep, sumrep: SumRep) -> SumRep:  # noqa: F811
+def _direct_sum(rep: lie.Rep, sumrep: lie.SumRep) -> lie.SumRep:  # noqa: F811
     _chk(rep, sumrep)
-    return SumRep((rep,) + sumrep.reps, force=True)
+    return lie.SumRep((rep,) + sumrep.reps, force=True)
 
 
 @multimethod
-def _direct_sum(sumrep1: SumRep, sumrep2: SumRep) -> SumRep:  # noqa: F811
+def _direct_sum(sumrep1: lie.SumRep, sumrep2: lie.SumRep) -> lie.SumRep:  # noqa: F811
     _chk(sumrep1, sumrep2)
-    return SumRep(sumrep1.reps + sumrep2.reps, force=True)
+    return lie.SumRep(sumrep1.reps + sumrep2.reps, force=True)
 
 
 @multimethod
-def _direct_sum(qrep: QRep, rep: Rep) -> Rep:  # noqa: F811
+def _direct_sum(qrep: lie.QRep, rep: lie.Rep) -> lie.Rep:  # noqa: F811
     _chk(qrep, rep)
-    return change_basis(ds(qrep.Q, np.eye(rep.dim)), direct_sum(qrep.rep, rep))
+    return lie.change_basis(
+        lie.utils.direct_sum(qrep.Q, np.eye(rep.dim)), direct_sum(qrep.rep, rep)
+    )
 
 
 @multimethod
-def _direct_sum(rep: Rep, qrep: QRep) -> Rep:  # noqa: F811
+def _direct_sum(rep: lie.Rep, qrep: lie.QRep) -> lie.Rep:  # noqa: F811
     _chk(rep, qrep)
-    return change_basis(ds(np.eye(rep.dim), qrep.Q), direct_sum(rep, qrep.rep))
+    return lie.change_basis(
+        lie.utils.direct_sum(np.eye(rep.dim), qrep.Q), direct_sum(rep, qrep.rep)
+    )
 
 
 @multimethod
-def _direct_sum(qrep: QRep, rep: SumRep) -> Rep:  # noqa: F811
+def _direct_sum(qrep: lie.QRep, rep: lie.SumRep) -> lie.Rep:  # noqa: F811
     _chk(qrep, rep)
-    return change_basis(ds(qrep.Q, np.eye(rep.dim)), direct_sum(qrep.rep, rep))
+    return lie.change_basis(
+        lie.utils.direct_sum(qrep.Q, np.eye(rep.dim)), direct_sum(qrep.rep, rep)
+    )
 
 
 @multimethod
-def _direct_sum(rep: SumRep, qrep: QRep) -> Rep:  # noqa: F811
+def _direct_sum(rep: lie.SumRep, qrep: lie.QRep) -> lie.Rep:  # noqa: F811
     _chk(rep, qrep)
-    return change_basis(ds(np.eye(rep.dim), qrep.Q), direct_sum(rep, qrep.rep))
+    return lie.change_basis(
+        lie.utils.direct_sum(np.eye(rep.dim), qrep.Q), direct_sum(rep, qrep.rep)
+    )

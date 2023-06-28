@@ -1,27 +1,24 @@
 import numpy as np
 from multimethod import multimethod
 
-from .change_basis import change_basis
-from .direct_sum import direct_sum
-from .multiply import multiply
-from .rep import ConjRep, GenericRep, MulRep, QRep, Rep, SumRep
+import lie_nn as lie
 
 
 @multimethod
-def conjugate(rep: Rep) -> GenericRep:
-    return ConjRep(rep, force=True)
+def conjugate(rep: lie.Rep) -> lie.GenericRep:
+    return lie.ConjRep(rep, force=True)
 
 
 @multimethod
-def conjugate(rep: QRep) -> Rep:  # noqa: F811
-    return change_basis(np.conjugate(rep.Q), conjugate(rep.rep))
+def conjugate(rep: lie.QRep) -> lie.Rep:  # noqa: F811
+    return lie.change_basis(np.conjugate(rep.Q), conjugate(rep.rep))
 
 
 @multimethod
-def conjugate(rep: SumRep) -> Rep:  # noqa: F811
-    return direct_sum(*[conjugate(subrep) for subrep in rep.reps])
+def conjugate(rep: lie.SumRep) -> lie.Rep:  # noqa: F811
+    return lie.direct_sum(*[conjugate(subrep) for subrep in rep.reps])
 
 
 @multimethod
-def conjugate(rep: MulRep) -> Rep:  # noqa: F811
-    return multiply(rep.mul, conjugate(rep.rep))
+def conjugate(rep: lie.MulRep) -> lie.Rep:  # noqa: F811
+    return lie.multiply(rep.mul, conjugate(rep.rep))
