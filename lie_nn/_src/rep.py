@@ -3,7 +3,7 @@ from typing import Iterator, Optional, Tuple, Type
 import numpy as np
 import scipy.linalg
 
-from .util import direct_sum, infer_algebra_from_generators
+from .utils import direct_sum, infer_algebra_from_generators
 
 
 class Rep:

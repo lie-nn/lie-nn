@@ -47,7 +47,7 @@ def test_recompute_clebsch_gordan(
     ir1: lie.TabulatedIrrep, ir2: lie.TabulatedIrrep, ir3: lie.TabulatedIrrep
 ):
     tol = 1e-14
-    C1 = lie.clebsch_gordan(ir1, ir2, ir3, round_fn=lie.util.round_to_sqrt_rational)
+    C1 = lie.clebsch_gordan(ir1, ir2, ir3, round_fn=lie.utils.round_to_sqrt_rational)
     C2 = ir1.clebsch_gordan(ir1, ir2, ir3)
     assert np.allclose(C1, C2, atol=tol, rtol=tol) or np.allclose(C1, -C2, atol=tol, rtol=tol)
 

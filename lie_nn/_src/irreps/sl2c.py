@@ -6,7 +6,7 @@ from typing import Iterator
 import numpy as np
 
 from ..rep import TabulatedIrrep
-from ..util import permutation_sign, vmap
+from ..utils import permutation_sign, vmap
 from .su2 import SU2, clebsch_gordanSU2mat
 
 

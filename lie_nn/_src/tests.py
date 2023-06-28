@@ -1,6 +1,6 @@
 import numpy as np
 from .rep import Rep
-from .util import check_algebra_vs_generators
+from .utils import check_algebra_vs_generators
 
 
 def check_representation_triplet(rep1: Rep, rep2: Rep, rep3: Rep, rtol=1e-10, atol=1e-10):

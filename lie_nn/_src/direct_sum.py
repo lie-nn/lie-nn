@@ -2,7 +2,7 @@ import numpy as np
 from multimethod import multimethod
 
 from .rep import Rep, SumRep, QRep
-from .util import direct_sum as ds
+from .utils import direct_sum as ds
 from .change_basis import change_basis
 
 

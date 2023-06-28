@@ -6,7 +6,7 @@ from multimethod import multimethod
 from .conjugate import conjugate
 from .change_basis import change_basis
 from .rep import ConjRep, MulRep, QRep, Rep, SumRep
-from .util import kron, permutation_base, permutation_base_to_matrix
+from .utils import kron, permutation_base, permutation_base_to_matrix
 import lie_nn as lie
 
 

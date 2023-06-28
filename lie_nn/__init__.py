@@ -24,7 +24,7 @@ from ._src.group_product import group_product
 from ._src.symmetric_tensor_power import symmetric_tensor_power
 
 from lie_nn import irreps as irreps
-from lie_nn import util as util  # TODO: rename to utils
+from lie_nn import utils as utils
 from lie_nn import finite as finite
 from lie_nn import test as test
 
@@ -55,7 +55,7 @@ __all__ = [
     "group_product",
     "symmetric_tensor_power",
     "irreps",
-    "util",
+    "utils",
     "finite",
     "test",
 ]

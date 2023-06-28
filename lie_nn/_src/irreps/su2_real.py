@@ -3,7 +3,7 @@ import itertools
 from typing import Iterator
 
 import numpy as np
-from ..util import is_half_integer, is_integer, round_to_sqrt_rational
+from ..utils import is_half_integer, is_integer, round_to_sqrt_rational
 
 from ..rep import TabulatedIrrep
 from .su2 import SU2

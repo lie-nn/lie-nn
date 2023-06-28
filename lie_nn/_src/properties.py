@@ -2,7 +2,7 @@ import numpy as np
 from multimethod import multimethod
 
 from .rep import ConjRep, Irrep, MulRep, QRep, Rep, SumRep
-from .util import is_irreducible as _is_irreducible
+from .utils import is_irreducible as _is_irreducible
 
 # is_irreducible:
 

@@ -2,7 +2,7 @@ import numpy as np
 from multimethod import multimethod
 
 from .rep import QRep, Rep
-from .util import infer_change_of_basis as _infer_change_of_basis
+from .utils import infer_change_of_basis as _infer_change_of_basis
 
 
 @multimethod

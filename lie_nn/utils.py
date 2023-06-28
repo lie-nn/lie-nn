@@ -1,4 +1,4 @@
-from ._src.util import (
+from ._src.utils import (
     as_approx_integer_ratio,
     limit_denominator,
     round_to_sqrt_rational,

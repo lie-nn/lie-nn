@@ -1,7 +1,7 @@
 from multimethod import multimethod
 
 from .rep import Rep, MulRep, QRep, SumRep
-from .util import direct_sum as ds
+from .utils import direct_sum as ds
 from .change_basis import change_basis
 from .direct_sum import direct_sum
 import numpy as np

@@ -10,7 +10,7 @@ from lie_nn._src.irreps.sun import (
     lower_ladder_matrices,
     upper_ladder_matrices,
 )
-from lie_nn.util import commutator
+from lie_nn.utils import commutator
 
 j_max = 4
 

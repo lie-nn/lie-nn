@@ -7,7 +7,7 @@ from .direct_sum import direct_sum
 from .infer_change_of_basis import infer_change_of_basis
 from .multiply import multiply
 from .rep import ConjRep, GenericRep, Irrep, MulRep, QRep, Rep, SumRep
-from .util import decompose_rep_into_irreps
+from .utils import decompose_rep_into_irreps
 
 
 @multimethod
