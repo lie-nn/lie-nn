@@ -60,3 +60,35 @@ def is_unitary(rep: lie.SumRep) -> bool:  # noqa: F811
 @multimethod
 def is_unitary(rep: lie.MulRep) -> bool:  # noqa: F811
     return is_unitary(rep.rep)
+
+
+# are_isomorphic:
+
+
+@multimethod
+def are_isomorphic(rep1: lie.Rep, rep2: lie.Rep, *, epsilon: float = 1e-10) -> bool:
+    if isinstance(rep1, lie.MulRep) and isinstance(rep2, lie.MulRep) and rep1.mul == rep2.mul:
+        return are_isomorphic(rep1.rep, rep2.rep, epsilon=epsilon)
+
+    return lie.utils.are_isomorphic(
+        np.concatenate([rep1.X, rep1.H], axis=0),
+        np.concatenate([rep2.X, rep2.H], axis=0),
+        epsilon=epsilon,
+    )
+
+
+@multimethod
+def are_isomorphic(  # noqa: F811
+    rep1: lie.ConjRep, rep2: lie.ConjRep, *, epsilon: float = 1e-10
+) -> bool:
+    return are_isomorphic(rep1.rep, rep2.rep, epsilon=epsilon)
+
+
+@multimethod
+def are_isomorphic(rep1: lie.QRep, rep2: lie.Rep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+    return are_isomorphic(rep1.rep, rep2, epsilon=epsilon)
+
+
+@multimethod
+def are_isomorphic(rep1: lie.Rep, rep2: lie.QRep, *, epsilon: float = 1e-10) -> bool:  # noqa: F811
+    return are_isomorphic(rep1, rep2.rep, epsilon=epsilon)

@@ -20,7 +20,7 @@ from ._src.direct_sum import direct_sum
 from ._src.conjugate import conjugate
 
 from ._src.infer_change_of_basis import infer_change_of_basis
-from ._src.properties import is_unitary, is_irreducible
+from ._src.properties import is_unitary, is_irreducible, are_isomorphic
 
 from ._src.reduce import reduce
 from ._src.tensor_product import tensor_product, tensor_power
@@ -59,6 +59,7 @@ __all__ = [
     "is_real",
     "is_unitary",
     "is_irreducible",
+    "are_isomorphic",
     "group_product",
     "symmetric_tensor_power",
     "irreps",

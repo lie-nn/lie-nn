@@ -597,7 +597,9 @@ def are_isomorphic(X1: np.array, X2: np.array, *, epsilon: float = 1e-10) -> boo
     """Checks if representations are isomorphic."""
     if X1.shape != X2.shape:
         return False
-    return infer_change_of_basis(X1, X2, epsilon=epsilon).shape[0] > 0
+    Q = infer_change_of_basis(X1, X2, epsilon=epsilon)
+    Q = np.sum(Q * np.random.normal(size=Q.shape[0])[:, None, None], axis=0)
+    return np.linalg.matrix_rank(Q) == Q.shape[0]
 
 
 def decompose_rep_into_irreps(

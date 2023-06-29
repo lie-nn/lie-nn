@@ -21,6 +21,7 @@ from ._src.utils import (
     decompose_rep_into_irreps,
     is_irreducible,
     regular_representation,
+    are_isomorphic,
 )
 
 __all__ = [
@@ -46,4 +47,5 @@ __all__ = [
     "decompose_rep_into_irreps",
     "is_irreducible",
     "regular_representation",
+    "are_isomorphic",
 ]
