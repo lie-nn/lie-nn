@@ -348,3 +348,71 @@ class ConjRep(Rep):
 
     def __repr__(self) -> str:
         return f"({self.rep})*"
+
+
+class ReducedRep(Rep):
+    _A: np.ndarray
+    num_H: int
+    Q: np.ndarray
+    reps: Tuple[Tuple[int, Rep], ...]
+
+    def __init__(
+        self,
+        A: np.ndarray,
+        num_H: int,
+        Q: np.ndarray,
+        reps: Tuple[Tuple[int, Rep], ...],
+        *,
+        force=False,
+    ):
+        if not force:
+            raise RuntimeError("Use lie_nn.reduce instead")
+        self._A = A
+        self.num_H = num_H
+        self.Q = Q
+        self.reps = reps
+
+        dim = 0
+        for mul, rep in reps:
+            dim += mul * rep.dim
+            np.testing.assert_allclose(rep.A, A)
+            assert len(rep.H) == num_H
+        assert dim == Q.shape[0]
+
+    def split_Q(self) -> Tuple[np.ndarray, ...]:
+        Qs = []
+        i = 0
+        for mul, rep in self.reps:
+            Qs.append(self.Q[:, i : i + mul * rep.dim])
+            i += mul * rep.dim
+        return tuple(Qs)
+
+    def _into(self) -> Rep:
+        if len(self.reps) == 0:
+            return GenericRep(
+                self.A, np.empty((self.A.shape[0], 0, 0)), np.empty((self.num_H, 0, 0))
+            )
+        return QRep(
+            self.Q,
+            SumRep([MulRep(mul, rep, force=True) for mul, rep in self.reps], force=True),
+            force=True,
+        )
+
+    @property
+    def dim(self) -> int:
+        return self.Q.shape[0]
+
+    def algebra(self) -> np.ndarray:
+        return self._A
+
+    def continuous_generators(self) -> np.ndarray:
+        return self._into().continuous_generators()
+
+    def discrete_generators(self) -> np.ndarray:
+        return self._into().discrete_generators()
+
+    def create_trivial(self) -> "Rep":
+        return self._into().create_trivial()
+
+    def __repr__(self) -> str:
+        return f"ReducedRep({self._into()})"

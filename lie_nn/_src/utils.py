@@ -598,8 +598,9 @@ def are_isomorphic(X1: np.array, X2: np.array, *, epsilon: float = 1e-10) -> boo
     if X1.shape != X2.shape:
         return False
     Q = infer_change_of_basis(X1, X2, epsilon=epsilon)
-    Q = np.sum(Q * np.random.normal(size=Q.shape[0])[:, None, None], axis=0)
-    return np.linalg.matrix_rank(Q) == Q.shape[0]
+    w = np.random.rand(len(Q))
+    M = np.einsum("n,nij->ij", w, Q)
+    return np.linalg.matrix_rank(M) == len(M)
 
 
 def decompose_rep_into_irreps(

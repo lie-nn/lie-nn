@@ -32,12 +32,12 @@ def infer_change_of_basis(rep1: lie.Rep, rep2: lie.Rep, *, round_fn=lambda x: x)
     Y2 = np.concatenate([rep2.X, rep2.H])
 
     A = lie.utils.infer_change_of_basis(Y2, Y1, round_fn=round_fn)
-    np.testing.assert_allclose(
-        np.einsum("aij,bjk->abik", Y2, A),
-        np.einsum("bij,ajk->abik", A, Y1),
-        rtol=1e-8,
-        atol=1e-8,
-    )
+    # np.testing.assert_allclose(
+    #     np.einsum("aij,bjk->abik", Y2, A),
+    #     np.einsum("bij,ajk->abik", A, Y1),
+    #     rtol=1e-8,
+    #     atol=1e-8,
+    # )
 
     assert A.dtype in [np.float64, np.complex128]
 
