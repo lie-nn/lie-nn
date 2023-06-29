@@ -1,53 +1,69 @@
 __version__ = "0.0.0"
 
-from ._src.rep import Rep, GenericRep, check_representation_triplet
-from ._src.irrep import TabulatedIrrep
-from ._src.reduced_rep import MulIrrep, ReducedRep
-from ._src.change_basis import change_basis
-from ._src.reduce import reduce
-from ._src.change_algebra import change_algebra
-from ._src.tensor_product import tensor_product, tensor_power
-from ._src.direct_sum import direct_sum
-from ._src.reduced_tensor_product import (
-    reduced_tensor_product_basis,  # TODO: find a better API
-    reduced_symmetric_tensor_product_basis,
+from ._src.rep import (
+    Rep,
+    GenericRep,
+    Irrep,
+    TabulatedIrrep,
+    MulRep,
+    SumRep,
+    QRep,
+    ConjRep,
+    ReducedRep,
 )
-from ._src.clebsch_gordan import clebsch_gordan
-from ._src.infer_change_of_basis import infer_change_of_basis
+
+from lie_nn import utils as utils
+
+from ._src.change_basis import change_basis
+from ._src.change_algebra import change_algebra
+from ._src.multiply import multiply
+from ._src.direct_sum import direct_sum
 from ._src.conjugate import conjugate
+
+from ._src.infer_change_of_basis import infer_change_of_basis
+from ._src.properties import is_unitary, is_irreducible, are_isomorphic
+
+from ._src.reduce import reduce
+from ._src.tensor_product import tensor_product, tensor_power
+from ._src.clebsch_gordan import clebsch_gordan
 from ._src.real import make_explicitly_real, is_real
-from ._src.properties import is_unitary
 from ._src.group_product import group_product
-from ._src.is_irreducible import is_irreducible
+from ._src.symmetric_tensor_power import symmetric_tensor_power
 
 from lie_nn import irreps as irreps
-from lie_nn import util as util
 from lie_nn import finite as finite
+from lie_nn import test as test
+
 
 __all__ = [
     "Rep",
     "GenericRep",
-    "check_representation_triplet",
+    "Irrep",
     "TabulatedIrrep",
-    "MulIrrep",
+    "MulRep",
+    "SumRep",
+    "QRep",
+    "ConjRep",
     "ReducedRep",
+    "utils",
     "change_basis",
-    "reduce",
     "change_algebra",
+    "multiply",
+    "direct_sum",
+    "conjugate",
+    "infer_change_of_basis",
+    "is_unitary",
+    "is_irreducible",
+    "are_isomorphic",
+    "reduce",
     "tensor_product",
     "tensor_power",
-    "direct_sum",
-    "reduced_tensor_product_basis",
-    "reduced_symmetric_tensor_product_basis",
     "clebsch_gordan",
-    "infer_change_of_basis",
-    "conjugate",
     "make_explicitly_real",
     "is_real",
-    "is_unitary",
     "group_product",
-    "is_irreducible",
+    "symmetric_tensor_power",
     "irreps",
-    "util",
     "finite",
+    "test",
 ]

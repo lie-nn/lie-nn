@@ -1,0 +1,10 @@
+
+add conjugate class
+
+add tensor product class ?
+
+
+
+implementer:
+ - symmetric_tensor_power
+ - anti_symmetric_tensor_power

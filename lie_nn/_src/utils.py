@@ -1,8 +1,9 @@
+import functools
+import itertools
 from functools import reduce
-from typing import List, Optional, Tuple, Union
+from typing import FrozenSet, List, Optional, Tuple, Union
 
 import numpy as np
-import sympy as sp
 
 
 def prod(list_of_numbers: List[Union[int, float]]) -> Union[int, float]:
@@ -88,6 +89,8 @@ def _round_to_sqrt_rational(x, max_denominator):
 
 
 def _round_to_sqrt_rational_sympy(x, max_denominator):
+    import sympy as sp
+
     sign = np.sign(x)
     n, d = as_approx_integer_ratio(x**2)
     n, d = limit_denominator(n, d, max_denominator**2 + 1)
@@ -210,9 +213,7 @@ def direct_sum(A, *BCD):
 
 
 def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.ndarray:
-    """
-    Orthogonalize a matrix using the Gram-Schmidt process.
-    """
+    """Orthogonalize a matrix using the Gram-Schmidt process."""
     assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
     assert A.dtype in [
         np.float64,
@@ -228,6 +229,38 @@ def gram_schmidt(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x) -> np.nda
             v = round_fn(v / norm)
             Q += [v]
     return np.stack(Q) if len(Q) > 0 else np.empty((0, A.shape[1]))
+
+
+def gram_schmidt_with_change_of_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x):
+    """Gram-Schmidt process returning the change of basis matrix.
+
+    Q, U = gram_schmidt_with_change_of_basis(A)
+    Q = U @ A
+    """
+    assert A.ndim == 2, "Gram-Schmidt process only works for matrices."
+    assert A.dtype in [
+        np.float64,
+        np.complex128,
+    ], "Gram-Schmidt process only works for float64 matrices."
+    Q = []
+    U = []
+    for i in range(A.shape[0]):
+        v = np.copy(A[i])
+        u = np.zeros_like(v, shape=(A.shape[0],))
+        u[i] = 1.0
+        for v_, u_ in zip(Q, U):
+            c = np.dot(np.conj(v_), v)
+            v -= c * v_
+            u -= c * u_
+        norm = np.linalg.norm(v)
+        if norm > epsilon:
+            v = round_fn(v / norm)
+            u = u / norm
+            Q += [v]
+            U += [u]
+    if len(Q) > 0:
+        return np.stack(Q), np.stack(U)
+    return np.empty((0, A.shape[1])), np.empty((0, A.shape[0]))
 
 
 def extend_basis(A: np.ndarray, *, epsilon=1e-4, round_fn=lambda x: x, returns="Q") -> np.ndarray:
@@ -560,6 +593,16 @@ def eigenspaces(
     return [(val, vec[:, i == j]) for j, val in enumerate(unique_val)]
 
 
+def are_isomorphic(X1: np.array, X2: np.array, *, epsilon: float = 1e-10) -> bool:
+    """Checks if representations are isomorphic."""
+    if X1.shape != X2.shape:
+        return False
+    Q = infer_change_of_basis(X1, X2, epsilon=epsilon)
+    w = np.random.rand(len(Q))
+    M = np.einsum("n,nij->ij", w, Q)
+    return np.linalg.matrix_rank(M) == len(M)
+
+
 def decompose_rep_into_irreps(
     X: np.array, *, epsilon: float = 1e-10, round_fn=lambda x: x
 ) -> List[np.array]:
@@ -567,7 +610,8 @@ def decompose_rep_into_irreps(
     Input:
         X: np.array [num_gen, d, d] - generators of a representation.
     Output:
-        Ys: List[np.array] - list of generators of irreducible representations.
+        List of (multiplicity, irreducible representation) pairs.
+                    int      , np.array [num_gen, d, d]
     """
     Q = infer_change_of_basis(X, X, epsilon=epsilon, round_fn=round_fn)  # X @ Q == Q @ X
     w = np.random.rand(len(Q))
@@ -581,7 +625,21 @@ def decompose_rep_into_irreps(
         B = gram_schmidt(B.T.conj() @ B, epsilon=epsilon, round_fn=round_fn)  # Make it sparse!!
 
         Ys += [B @ X @ B.T.conj()]
-    return Ys
+
+    Ys = sorted(Ys, key=lambda x: x.shape[1])
+
+    Zs = []
+    while len(Ys) > 0:
+        Y = Ys.pop(0)
+        mul = 1
+        for i in range(len(Ys) - 1, -1, -1):
+            if are_isomorphic(Y, Ys[i], epsilon=epsilon):
+                Ys.pop(i)
+                mul += 1
+
+        Zs += [(mul, Y)]
+
+    return Zs
 
 
 def is_irreducible(X: np.array, *, epsilon: float = 1e-10) -> bool:
@@ -604,3 +662,60 @@ def regular_representation(table: np.array) -> np.array:
     reg_rep = np.zeros((n, n, n))
     reg_rep[g, gh, h] = 1
     return reg_rep
+
+
+@functools.lru_cache(maxsize=None)
+def full_base_fn(dims: Tuple[int, ...]) -> List[Tuple[int, ...]]:
+    return list(itertools.product(*(range(d) for d in dims)))
+
+
+@functools.lru_cache(maxsize=None)
+def permutation_base(
+    perm_repr: FrozenSet[Tuple[int, Tuple[int, ...]]], dims: Tuple[int, ...]
+) -> FrozenSet[FrozenSet[FrozenSet[Tuple[int, Tuple[int, ...]]]]]:
+    full_base = full_base_fn(dims)  # (0, 0, 0), (0, 0, 1), (0, 0, 2), ... (3, 3, 3)
+    # len(full_base) degrees of freedom in an unconstrained tensor
+
+    # but there is constraints given by the group `formulas`
+    # For instance if `ij=-ji`, then 00=-00, 01=-01 and so on
+    base = set()
+    for x in full_base:
+        # T[x] is a coefficient of the tensor T and is related to other coefficient T[y]
+        # if x and y are related by a formula
+        xs = {(s, tuple(x[i] for i in p)) for s, p in perm_repr}
+        # s * T[x] are all equal for all (s, x) in xs
+        # if T[x] = -T[x] it is then equal to 0 and we lose this degree of freedom
+        if not (-1, x) in xs:
+            # the sign is arbitrary, put both possibilities
+            base.add(frozenset({frozenset(xs), frozenset({(-s, x) for s, x in xs})}))
+
+    # len(base) is the number of degrees of freedom in the tensor.
+
+    return frozenset(base)
+
+
+@functools.lru_cache(maxsize=None)
+def permutation_base_to_matrix(
+    base: FrozenSet[FrozenSet[FrozenSet[Tuple[int, Tuple[int, ...]]]]],
+    dims: Tuple[int, ...],
+) -> np.ndarray:
+    base = sorted(
+        [sorted([sorted(xs) for xs in x]) for x in base]
+    )  # requested for python 3.7 but not for 3.8 (probably a bug in 3.7)
+
+    # First we compute the change of basis (projection) between full_base and base
+    d_sym = len(base)
+    Q = np.zeros((d_sym, prod(dims)), np.float64)
+
+    for i, x in enumerate(base):
+        x = max(x, key=lambda xs: sum(s for s, x in xs))
+        for s, e in x:
+            j = 0
+            for k, d in zip(e, dims):
+                j *= d
+                j += k
+            Q[i, j] = s / len(x) ** 0.5
+
+    np.testing.assert_allclose(Q @ Q.T, np.eye(d_sym))
+
+    return Q.reshape(d_sym, *dims)

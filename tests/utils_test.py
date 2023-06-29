@@ -1,11 +1,11 @@
 import numpy as np
-from lie_nn.util import (
+from lie_nn.utils import (
     nullspace,
     infer_change_of_basis,
     round_to_sqrt_rational,
 )
 
-from lie_nn._src.util import (
+from lie_nn._src.utils import (
     as_approx_integer_ratio,
     limit_denominator,
     normalize_integer_ratio,

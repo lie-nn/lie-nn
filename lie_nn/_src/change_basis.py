@@ -1,13 +1,11 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
-from .irrep import TabulatedIrrep
-from .reduced_rep import MulIrrep, ReducedRep
-from .rep import GenericRep, Rep
+import lie_nn as lie
 
 
-@dispatch(Rep, object)
-def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
+@multimethod
+def change_basis(Q: np.ndarray, rep: lie.Rep) -> lie.QRep:
     """Apply change of basis to generators.
 
     .. math::
@@ -19,29 +17,17 @@ def change_basis(rep: Rep, Q: np.ndarray) -> GenericRep:
         v' = Q v
 
     """
-    iQ = np.linalg.pinv(Q)
-    return GenericRep(
-        A=rep.algebra(),
-        X=Q @ rep.continuous_generators() @ iQ,
-        H=Q @ rep.discrete_generators() @ iQ,
-    )
+    assert Q.shape == (rep.dim, rep.dim), (Q.shape, rep.dim)
+
+    if np.allclose(Q.imag, 0.0, atol=1e-10):
+        Q = Q.real
+
+    if np.allclose(Q, np.eye(rep.dim), atol=1e-10):
+        return rep
+
+    return lie.QRep(Q, rep, force=True)
 
 
-@dispatch(ReducedRep, object)
-def change_basis(rep: ReducedRep, Q: np.ndarray) -> ReducedRep:  # noqa: F811
-    Q = Q if rep.Q is None else Q @ rep.Q
-    return ReducedRep(A=rep.A, irreps=rep.irreps, Q=Q)
-
-
-@dispatch(MulIrrep, object)
-def change_basis(rep: MulIrrep, Q: np.ndarray) -> ReducedRep:  # noqa: F811
-    return ReducedRep(
-        A=rep.algebra(),
-        irreps=(rep,),
-        Q=Q,
-    )
-
-
-@dispatch(TabulatedIrrep, object)
-def change_basis(rep: TabulatedIrrep, Q: np.ndarray) -> ReducedRep:  # noqa: F811
-    return change_basis(MulIrrep(mul=1, rep=rep), Q)
+@multimethod
+def change_basis(Q: np.ndarray, rep: lie.QRep) -> lie.Rep:  # noqa: F811
+    return change_basis(Q @ rep.Q, rep.rep)

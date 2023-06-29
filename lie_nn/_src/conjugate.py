@@ -1,15 +1,24 @@
 import numpy as np
-from multipledispatch import dispatch
+from multimethod import multimethod
 
-from .rep import GenericRep, Rep
-
-# TODO(mario): Implement conjugate for Irreps
+import lie_nn as lie
 
 
-@dispatch(Rep)
-def conjugate(rep: Rep) -> GenericRep:
-    return GenericRep(
-        A=rep.A,
-        X=np.conjugate(rep.X),
-        H=np.conjugate(rep.H),
-    )
+@multimethod
+def conjugate(rep: lie.Rep) -> lie.GenericRep:
+    return lie.ConjRep(rep, force=True)
+
+
+@multimethod
+def conjugate(rep: lie.QRep) -> lie.Rep:  # noqa: F811
+    return lie.change_basis(np.conjugate(rep.Q), conjugate(rep.rep))
+
+
+@multimethod
+def conjugate(rep: lie.SumRep) -> lie.Rep:  # noqa: F811
+    return lie.direct_sum(*[conjugate(subrep) for subrep in rep.reps])
+
+
+@multimethod
+def conjugate(rep: lie.MulRep) -> lie.Rep:  # noqa: F811
+    return lie.multiply(rep.mul, conjugate(rep.rep))

@@ -4,7 +4,7 @@ from typing import Iterator
 
 import numpy as np
 
-from ..irrep import TabulatedIrrep
+from ..rep import TabulatedIrrep
 from .su2 import SU2
 
 

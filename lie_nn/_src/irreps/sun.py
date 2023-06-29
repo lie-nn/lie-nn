@@ -7,8 +7,8 @@ from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
-from ..irrep import TabulatedIrrep
-from ..util import commutator, nullspace, round_to_sqrt_rational
+from ..rep import TabulatedIrrep
+from ..utils import commutator, nullspace, round_to_sqrt_rational
 
 WEIGHT = Tuple[int, ...]
 GT_PATTERN = Tuple[WEIGHT, ...]

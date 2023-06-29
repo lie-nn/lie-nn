@@ -3,9 +3,9 @@ import itertools
 from typing import Iterator
 
 import numpy as np
-from ..util import is_half_integer, is_integer, round_to_sqrt_rational
+from ..utils import is_half_integer, is_integer, round_to_sqrt_rational
 
-from ..irrep import TabulatedIrrep
+from ..rep import TabulatedIrrep
 from .su2 import SU2
 from lie_nn import clebsch_gordan
 
@@ -27,6 +27,7 @@ def change_basis_real_to_complex(j: float) -> np.ndarray:
     raise ValueError(f"j={j} is not an integer")
 
 
+# TODO: move this class somewhere else, and make it not a TabulatedIrrep
 @dataclass(frozen=True)
 class SU2Real(TabulatedIrrep):
     j: float  # j is a half-integer

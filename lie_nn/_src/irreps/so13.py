@@ -7,7 +7,7 @@ import numpy as np
 
 import lie_nn as lie
 from scipy.linalg import sqrtm
-from ..irrep import TabulatedIrrep
+from ..rep import TabulatedIrrep
 from .sl2c import SL2C
 
 
@@ -39,7 +39,7 @@ class SO13(
     def clebsch_gordan(cls, rep1: "SO13", rep2: "SO13", rep3: "SO13") -> np.ndarray:
         # Call the generic implementation
         return lie.clebsch_gordan(
-            lie.GenericRep.from_rep(rep1), rep2, rep3, round_fn=lie.util.round_to_sqrt_rational
+            lie.GenericRep.from_rep(rep1), rep2, rep3, round_fn=lie.utils.round_to_sqrt_rational
         )
 
     @property
@@ -69,8 +69,8 @@ class SO13(
         X[3:] *= 1j
 
         # Make the generators explicitly real, if possible
-        S = lie.util.infer_change_of_basis(
-            np.conjugate(X), X, round_fn=lie.util.round_to_sqrt_rational
+        S = lie.utils.infer_change_of_basis(
+            np.conjugate(X), X, round_fn=lie.utils.round_to_sqrt_rational
         ) * np.sqrt(rep.dim)
         if S.shape[0] == 0:
             assert rep.l != rep.k
@@ -80,7 +80,7 @@ class SO13(
         W = sqrtm(S[0])
         iW = np.linalg.inv(W)
         X = W @ X @ iW
-        return lie.util.round_to_sqrt_rational(X.real)
+        return lie.utils.round_to_sqrt_rational(X.real)
 
     def algebra(rep=None) -> np.ndarray:
         # [X_i, X_j] = A_ijk X_k
@@ -88,14 +88,14 @@ class SO13(
 
         # for generators J_0, J_1, J_2, K_0, K_1, K_2
         for i, j, k in itertools.permutations((0, 1, 2)):
-            algebra[i, j, k] = lie.util.permutation_sign((i, j, k))  # [J_i, J_j] = eps_ijk J_k
-            algebra[3 + i, 3 + j, k] = -lie.util.permutation_sign(
+            algebra[i, j, k] = lie.utils.permutation_sign((i, j, k))  # [J_i, J_j] = eps_ijk J_k
+            algebra[3 + i, 3 + j, k] = -lie.utils.permutation_sign(
                 (i, j, k)
             )  # [K_i, K_j] = -eps_ijk J_k
-            algebra[i, 3 + j, 3 + k] = lie.util.permutation_sign(
+            algebra[i, 3 + j, 3 + k] = lie.utils.permutation_sign(
                 (i, j, k)
             )  # [J_i, K_j] = eps_ijk K_k
-            algebra[3 + i, j, 3 + k] = lie.util.permutation_sign(
+            algebra[3 + i, j, 3 + k] = lie.utils.permutation_sign(
                 (i, j, k)
             )  # [K_i, J_j] = eps_ijk K_k
 
